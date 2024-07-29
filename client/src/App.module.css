@@ -1,0 +1,17 @@
+@font-face {
+    font-family: "Inter";
+    src: url("../public/resources/fonts/Inter-VariableFont.ttf");
+}
+body
+{
+  background-color: #242b38;
+}
+
+#demoText
+{
+    font-family: "Inter";
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.493) ;
+    font-size: 50px;
+}
