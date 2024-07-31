@@ -1,11 +1,30 @@
+import FullCalendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
 import styles from './App.module.css';
 
-function App() {
-  return (
-    <div className="App">
-        <p id={styles.demoText}>Web2Life</p>
-    </div>
-  );
-}
+export const App = () =>
+{
+    return (
+        <div id={styles.mainWrap}>
+            <FullCalendar 
+                plugins = {[dayGridPlugin]}
+                initialView = "dayGridMonth"
+                weekends = {false}
+                headerToolbar =
+                {
+                    { 
+                        left: null,
+                        center: 'title'
+                    }
+                }
+                viewClassNames={styles.calendarView}
+                dayHeaderClassNames =
+                {
+                    styles.calendarHeader
+                }
+            />
 
-export default App;
+            
+        </div>
+    );
+}

@@ -2,16 +2,42 @@
     font-family: "Inter";
     src: url("../public/resources/fonts/Inter-VariableFont.ttf");
 }
+:root
+{
+    --fc-border-color: black;
+}
 body
 {
-  background-color: #242b38;
+    background-color: #242b38;
+
+    margin: 0;
+    padding: 0;
+}
+#mainWrap
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-family: "Inter";
+    background-color: #313d52a9;
+    color: white;
+    min-height: 100vh;
 }
 
-#demoText
+.calendarView
 {
+    justify-self: center;
+    max-width: 80vw;
+}
+
+.calendarHeader
+{
+    background-color: rgb(252, 252, 252);
+    color: black;
     font-family: "Inter";
-    color: white;
-    text-align: center;
-    text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.493) ;
-    font-size: 50px;
+    font-size: 1.5rem;
+    line-height: 2;
+    user-select: none;
+    font-weight: 500;
+    
 }
