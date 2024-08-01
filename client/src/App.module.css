@@ -7,19 +7,47 @@
 {
     padding: 80px;
     font-family: "Inter";
-    background-color: #313d52a9;
     color: white;
 }
-
+.fc-dayGridMonth-view .fc-day-grid {
+  display: flex;
+  flex-direction: column;
+}
 .calendarHeader
 {
-    background-color: rgb(252, 252, 252);
-    color: black;
+    background-color: rgb(50, 56, 66);
+    color: white;
     font-family: "Inter";
     font-size: 1.5rem;
     line-height: 2;
     user-select: none;
     font-weight: 500;
-    
-    
+}
+
+.monthCells
+{
+    cursor: pointer;
+    background-color: rgba(202, 202, 202, 0.055);
+    transition: background-color ease-in-out 250ms;
+}
+.monthCells:hover
+{
+    background-color: rgba(255, 255, 255, 0.397) ;
+}
+.fc 
+{
+    max-width: 80vw;
+}
+.externalDraggable 
+{
+    width: 150px;
+    padding: 10px;
+    background-color: #243242;
+    color: white;
+    text-align: center;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    user-select: none;
+    font-family: "Inter";
 }
