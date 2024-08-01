@@ -2,32 +2,13 @@
     font-family: "Inter";
     src: url("../public/resources/fonts/Inter-VariableFont.ttf");
 }
-:root
-{
-    --fc-border-color: black;
-}
-body
-{
-    background-color: #242b38;
 
-    margin: 0;
-    padding: 0;
-}
 #mainWrap
 {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding: 80px;
     font-family: "Inter";
     background-color: #313d52a9;
     color: white;
-    min-height: 100vh;
-}
-
-.calendarView
-{
-    justify-self: center;
-    max-width: 80vw;
 }
 
 .calendarHeader
@@ -39,5 +20,6 @@ body
     line-height: 2;
     user-select: none;
     font-weight: 500;
+    
     
 }
