@@ -3,6 +3,7 @@ from django.db import models
 
 # Create your models here.
 
+
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
     projectName = models.CharField(max_length=32)

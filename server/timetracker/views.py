@@ -27,7 +27,6 @@ def serve_react(request, path, document_root=None):
 
 def get_event():
     print("In get_event")
-    print(allevents)
     allevents = Events.objects.all()
     print(allevents)
     return JsonResponse({"data": json.dumps(allevents)})
@@ -35,11 +34,12 @@ def get_event():
 
 def set_event(request):
     print("in set_event")
-    print(request.POST)
+    k = request.body.decode("utf-8").split('"')
+    print(k[7])
     event = Events(
-        projectName=request.POST["project"],
-        taskName=request.POST["task"],
-        eventDescription=request.POST["description"],
+        projectName=k[5],
+        taskName=k[9],
+        eventDescription=k[13],
     )
     event.save()
     return None
