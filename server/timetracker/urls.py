@@ -28,4 +28,5 @@ urlpatterns = [
     ),
     path("getEvent/", views.get_event),
     path("setEvent/", views.set_event),
+    path("getCsrfToken/", views.get_csrf_token),
 ]
