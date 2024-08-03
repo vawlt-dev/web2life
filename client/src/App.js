@@ -9,7 +9,7 @@ export const App = () =>
 {
     const calRef = useRef(null);
     const [events, setEvents] = useState([]);
-
+    const [CSRFToken, setCSRFToken] = useState(null)
     useEffect( () =>
     {
         // for the outer calendar wrapper
@@ -19,9 +19,30 @@ export const App = () =>
 
     useEffect( () =>
     {
-        fetch("/getCsrfToken").then((data) => console.log(data.body.getReader().read().then(res => console.log(res))))
+        console.log("Calling /getCsrfToken")
+        fetch("/getCsrfToken",
+        {
+            method: 'GET'
+        })
+        .then((res) => 
+        {
+            console.log(res)
+            if(res.ok)
+            {
+                res.text().then(data =>
+                {
+                    setCSRFToken(data.token);
+                })
+            }
+            else
+            {
+                console.log("Issue getting csrf token")
+            }
+        }).then(data => 
+        {
+            console.log(data)
+        })
     })
-
 
     const opacityAnimation = (obj, animDuration) =>
     {

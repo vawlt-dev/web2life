@@ -5,12 +5,20 @@ from django.views.static import serve
 
 from django.http import JsonResponse, HttpResponse
 import json
+import django.middleware.csrf
 from .models import Events
-import os
 
 
-def serve_react(path):
-    print("test")
+def serve_react(request, path, document_root=None):
+    path = posixpath.normpath(path).lstrip("/")
+    print(path)
+    if path == "getCsrfToken":
+        print("getting csrf token from server")
+        return get_csrf_token(request)
+    if Path(safe_join(document_root, path)).is_file():
+        return serve(request, path, document_root)
+    else:
+        return serve(request, "index.html", document_root)
 
 
 def get_event():
@@ -31,6 +39,4 @@ def set_event(request):
 
 def get_csrf_token(request):
 
-    print(request)
-    print("getting csrf token")
-    return JsonResponse({token: get_csrf_token(request)})
+    return JsonResponse({"token": django.middleware.csrf.get_token(request)})
