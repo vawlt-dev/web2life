@@ -28,14 +28,31 @@ img
     margin-bottom: 20px;
     margin-right: 20px;
     cursor: pointer;
+    transition: all ease 250ms;
+    user-select: none;
 }
 
 #slider
 {
     position: relative;
-    background-color: rgb(53, 53, 53);
+    background-color: rgb(50, 50, 50);
     height: 20px;
     width: 20px;
     left: 2px;
     border-radius: 10px;
+    transition: all ease 250ms;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.5;
+
+}
+
+#themeSlider:has(#slider.active)
+{
+    background-color: aliceblue;
+}
+#slider.active
+{
+    transform: translateX(76px);
+    background-color: rgb(56, 79, 103);
 }

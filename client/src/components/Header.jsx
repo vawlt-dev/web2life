@@ -1,17 +1,30 @@
 import styles from "./Header.module.css"
 import logo from "../resources/images/logo.png"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 export const Header = () =>
 {
     const sliderRef = useRef(null);
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(true);
+    useEffect(()=> { console.log(darkMode)}, [darkMode])
     return(
         <header>
             <a href="/">
                 <img src={logo} alt="webToLife"></img>
             </a>
             <div id={styles.themeSlider} onClick={() => setDarkMode(!darkMode)}>
-                <div ref={sliderRef} id={styles.slider}/>
+                <div ref={sliderRef} id={styles.slider} className={darkMode ? "" : styles.active}>
+                    {
+                        darkMode ? 
+                        (
+                            "🌙"
+                        ) 
+                        :
+                        (
+                            "🔆"
+                        )
+                        
+                    }
+                </div>
             </div>
         </header>
 
