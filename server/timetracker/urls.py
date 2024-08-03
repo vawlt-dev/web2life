@@ -26,4 +26,6 @@ urlpatterns = [
         views.serve_react,
         {"document_root": settings.FRONTEND_BUILD_PATH},
     ),
+    path("getEvent/", views.get_event),
+    path("setEvent/", views.set_event),
 ]
