@@ -13,8 +13,12 @@ def serve_react(request, path, document_root=None):
     path = posixpath.normpath(path).lstrip("/")
     print(path)
     if path == "getCsrfToken":
-        print("getting csrf token from server")
         return get_csrf_token(request)
+    if path == "getEvent":
+        print("getting events")
+        return get_event()
+    if path == "setEvent":
+        set_event(request)
     if Path(safe_join(document_root, path)).is_file():
         return serve(request, path, document_root)
     else:
@@ -22,16 +26,20 @@ def serve_react(request, path, document_root=None):
 
 
 def get_event():
+    print("In get_event")
+    print(allevents)
     allevents = Events.objects.all()
-
-    return HttpResponse(json.dumps(allevents))
+    print(allevents)
+    return JsonResponse({"data": json.dumps(allevents)})
 
 
 def set_event(request):
+    print("in set_event")
+    print(request.POST)
     event = Events(
-        projectName=request.POST["projectName"],
-        taskName=request.POST["taskName"],
-        eventDescription=request.POST["eventDescription"],
+        projectName=request.POST["project"],
+        taskName=request.POST["task"],
+        eventDescription=request.POST["description"],
     )
     event.save()
     return None

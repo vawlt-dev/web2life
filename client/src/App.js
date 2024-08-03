@@ -16,23 +16,17 @@ export const App = () =>
         calRef.current.elRef.current.id = styles.calendar
     }, [calRef]) 
     
-
     useEffect( () =>
     {
-        console.log("Calling /getCsrfToken")
         fetch("/getCsrfToken",
         {
             method: 'GET'
         })
         .then((res) => 
         {
-            console.log(res)
             if(res.ok)
             {
-                res.text().then(data =>
-                {
-                    setCSRFToken(data.token);
-                })
+                return res.text()
             }
             else
             {
@@ -40,10 +34,14 @@ export const App = () =>
             }
         }).then(data => 
         {
-            console.log(data)
+            //have to do this bc response returns raw string
+            setCSRFToken(data.split('"')[3])
         })
-    })
-
+    }, [])
+    useEffect(() =>
+    {
+        console.log(CSRFToken + " ----")
+    }, [CSRFToken])
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -72,14 +70,22 @@ export const App = () =>
     }
     const setEvent = () =>
     {
+        console.log(events[events.length - 1])
         fetch("/setEvent",
         {
-            method: "POST",
+           
+            method: "POST", 
             headers: 
             {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRFToken
             },
-            body: JSON.stringify(events[0])
+            body: JSON.stringify
+            (
+                {
+                    event: (events[events.length - 1])
+                }
+            )
         }).then(res =>
         {
             if(res.ok)
