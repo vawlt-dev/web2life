@@ -21,12 +21,8 @@ from . import views
 from django.conf import settings
 
 urlpatterns = [
-    re_path(
-        r"^(?P<path>.*)$",
-        views.serve_react,
-        {"document_root": settings.FRONTEND_BUILD_PATH},
-    ),
+    path("", views.serve_react),
     path("getEvent/", views.get_event),
     path("setEvent/", views.set_event),
-    path("getCsrfToken/", views.get_csrf_token),
+    path("getCsrfToken/", views.get_csrf_token, name="get_csrf-"),
 ]
