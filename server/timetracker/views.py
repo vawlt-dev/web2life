@@ -1,8 +1,8 @@
+from django.contrib.gis.gdal.geomtype.OGRGeomType import django
 from django.utils._os import safe_join
 import posixpath
 from pathlib import Path
 from django.views.static import serve
-
 
 from django.http import JsonResponse, HttpResponse
 import json
@@ -32,3 +32,7 @@ def set_event(request):
     )
     event.save()
     return None
+
+
+def get_csrf_token(request):
+    return HttpResponse(django.middleware.csrf.get_token(request))
