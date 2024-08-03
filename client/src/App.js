@@ -16,6 +16,13 @@ export const App = () =>
         calRef.current.elRef.current.id = styles.calendar
     }, [calRef]) 
     
+
+    useEffect( () =>
+    {
+        fetch("/getCsrfToken").then((data) => console.log(data.body.getReader().read().then(res => console.log(res))))
+    })
+
+
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -51,7 +58,7 @@ export const App = () =>
             {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(events)            
+            body: JSON.stringify(events[0])
         }).then(res =>
         {
             if(res.ok)

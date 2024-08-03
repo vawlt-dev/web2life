@@ -1,4 +1,3 @@
-from django.contrib.gis.gdal.geomtype.OGRGeomType import django
 from django.utils._os import safe_join
 import posixpath
 from pathlib import Path
@@ -6,7 +5,7 @@ from django.views.static import serve
 
 from django.http import JsonResponse, HttpResponse
 import json
-
+import django.middleware.csrf
 from .models import Events
 
 
@@ -26,13 +25,14 @@ def get_event():
 
 def set_event(request):
     event = Events(
-        projectName=request.POST['projectName'],
-        taskName=request.POST['taskName'],
-        eventDescription=request.POST['eventDescription'],
+        projectName=request.POST["projectName"],
+        taskName=request.POST["taskName"],
+        eventDescription=request.POST["eventDescription"],
     )
     event.save()
     return None
 
 
 def get_csrf_token(request):
+    print(django.middleware.csrf.get_token(request))
     return HttpResponse(django.middleware.csrf.get_token(request))
