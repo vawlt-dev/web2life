@@ -3,13 +3,12 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
 import styles from "./App.module.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const App = () =>
 {
     const calRef = useRef(null);
-
-    const [events, setEvents] = useState([])
+    const [events, setEvents] = useState([]);
 
     useEffect( () =>
     {
@@ -17,8 +16,6 @@ export const App = () =>
         calRef.current.elRef.current.id = styles.calendar
     }, [calRef]) 
     
-  
-
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -37,6 +34,37 @@ export const App = () =>
             )
         }
     }
+    
+    const getEvent = () =>
+    {
+        fetch("/getEvent").then(data =>
+        {
+            console.log(data)
+        })
+    }
+    const setEvent = () =>
+    {
+        fetch("/setEvent",
+        {
+            method: "POST",
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(events)            
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully posted data")
+            }
+            else
+            {
+                console.log("Oh no")
+            }
+        })
+    }
+    
     const handleHeaderButtonClick = (method, date) =>
     {
         const api = calRef.current.getApi();
@@ -68,7 +96,6 @@ export const App = () =>
         // half duration time so switch triggers on centre keyframe
     }
     
-
     const submitCustomEvent = (e) =>
     {
         e.preventDefault();
@@ -114,10 +141,10 @@ export const App = () =>
                         },
                     },
                 });
-            });
-            
+            });        
         }
     }, [events]);
+
     return (
         <div id={styles.mainWrap}>
             <div id={styles.eventsContainer}>
@@ -125,15 +152,15 @@ export const App = () =>
                 Create an Event
                 <div>
                     <label>Project</label>
-                    <input name="proj" type="text" required={true} maxLength={20}/>
+                    <input name="proj" type="text" required={true} maxLength={32}/>
                 </div>
                 <div>
                     <label>Task</label>
-                    <input name="task" type="text" required={true}maxLength={30}/>
+                    <input name="task" type="text" required={true}maxLength={32}/>
                 </div>
                 <div>
                     <label>Description</label>
-                    <textarea name="desc"/>
+                    <textarea name="desc" maxLength={500}/>
                 </div>
                 <button type="submit">Add</button>
             </form>
@@ -153,8 +180,12 @@ export const App = () =>
                     Test Event
                 </div>
             </div>
-        </div>
 
+        </div>
+        <div id={styles.dataWrap}>
+            <button onClick={setEvent}>Save Data</button>
+            <button onClick={getEvent}>Load Data</button>
+        </div>
 
         <FullCalendar
             ref={calRef}
@@ -190,7 +221,6 @@ export const App = () =>
                     }
                 }
             }
-            
 
             dayHeaderClassNames={styles.calendarHeader}
             viewClassNames={styles.calView}
