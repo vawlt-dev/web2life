@@ -7,8 +7,5 @@ body, #root
 #root
 {
     background-color: #242b38;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;   
     min-height: 100vh;
 }

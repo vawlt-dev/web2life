@@ -5,12 +5,16 @@
 header
 {
     display: flex;
+    position: static;
+    top: 0;
     justify-content: space-between;
     border-bottom: 2px solid rgb(54, 58, 75);
+    max-height: 100px;
 }
 img
 {
     filter: hue-rotate(190deg) invert();
+    max-width: 200px;
 }
 #themeSlider
 {
