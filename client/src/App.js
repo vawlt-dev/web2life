@@ -18,30 +18,19 @@ export const App = () =>
     
     useEffect( () =>
     {
+        //set CSRF token for database modification
         fetch("/getCsrfToken",
         {
             method: 'GET'
         })
-        .then((res) => 
+        .then(res => res.json().then(data =>
         {
-            if(res.ok)
-            {
-                return res.text()
-            }
-            else
-            {
-                console.log("Issue getting csrf token")
-            }
-        }).then(data => 
-        {
-            //have to do this bc response returns raw string
-            setCSRFToken(data.split('"')[3])
-        })
+            setCSRFToken(data['csrf-token'])
+        }))
+
+        getEvents();
     }, [])
-    useEffect(() =>
-    {
-        console.log(CSRFToken + " ----")
-    }, [CSRFToken])
+
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -61,16 +50,18 @@ export const App = () =>
         }
     }
     
-    const getEvent = () =>
+    const getEvents = () =>
     {
-        fetch("/getEvent").then(data =>
+        //gets all user events
+        fetch("/getEvent").then(res => res.json())
+        .then(data =>
         {
-            console.log(data)
+            setEvents(data.data)
         })
     }
-    const setEvent = () =>
+    const setEvent = (event) =>
     {
-        console.log(events[events.length - 1])
+        console.log(event)
         fetch("/setEvent",
         {
            
@@ -80,12 +71,7 @@ export const App = () =>
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': CSRFToken
             },
-            body: JSON.stringify
-            (
-                {
-                    event: (events[events.length - 1])
-                }
-            )
+            body: JSON.stringify(event)
         }).then(res =>
         {
             if(res.ok)
@@ -98,7 +84,11 @@ export const App = () =>
             }
         })
     }
-    
+    const clearEvents = () =>
+    {
+        fetch("/clearEvents");
+        setEvents([])
+    }
     const handleHeaderButtonClick = (method, date) =>
     {
         const api = calRef.current.getApi();
@@ -142,6 +132,7 @@ export const App = () =>
             description: formData.get("desc")
         }
         setEvents([...events, event])
+        setEvent(event);
     }
 
     const handleDrag = (element, index) => 
@@ -156,18 +147,30 @@ export const App = () =>
         })
         console.log(drag)
     }
+
     useEffect(() => 
     {
+        //creates draggable instances for loaded (test) events
+        const existingDraggables = document.querySelectorAll(`.${styles.externalDraggable}`);
+        existingDraggables.forEach((element) => 
+        {
+            const draggableInstance = element.draggableInstance;
+            if (draggableInstance) 
+            {
+                draggableInstance.destroy();
+            }
+        });
+
         if (events.length > 0) 
         {
             const externalDraggableElements = document.querySelectorAll(`.${styles.externalDraggable}`);
             externalDraggableElements.forEach((element, index) => 
             {
-                new Draggable(element, 
+                const drag = new Draggable(element, 
                 {
                     eventData: 
                     {
-                        title: events[index]?.task || "Test Event",
+                        title: events[index]?.task,
                         extendedProps: 
                         {
                             project: events[index]?.project,
@@ -175,7 +178,8 @@ export const App = () =>
                         },
                     },
                 });
-            });        
+                element.draggableInstance = drag;
+            });
         }
     }, [events]);
 
@@ -183,7 +187,9 @@ export const App = () =>
         <div id={styles.mainWrap}>
             <div id={styles.eventsContainer}>
             <form id={styles.createEvent} onSubmit={e => submitCustomEvent(e)}>
-                Create an Event
+                <label>
+                    Create an Event
+                </label>
                 <div>
                     <label>Project</label>
                     <input name="proj" type="text" required={true} maxLength={32}/>
@@ -196,29 +202,63 @@ export const App = () =>
                     <label>Description</label>
                     <textarea name="desc" maxLength={500}/>
                 </div>
-                <button type="submit">Add</button>
+                <div id={styles.createEventButtonWrap}>
+                    <button type="submit">Add</button>
+                    <button type="reset">Clear</button>
+                </div>
             </form>
             
-            <div id={styles.eventList}>
-                {
-                   events.map( (item, index) => (
-                        <div className={styles.externalDraggable} 
-                            key={index}
-                            draggable={true}
-                        >
-                            {item.task}
-                        </div>
-                   ))
-                }
-                <div className={styles.externalDraggable} draggable={true}>
-                    Test Event
-                </div>
+            <div id={styles.eventListWrapper}>
+                    <label>Your Events</label>
+                    <div id={styles.eventList}>
+                    {
+                      events.map( (item, index) => (
+                           <div className={styles.externalDraggable} 
+                               key={index}
+                               draggable={true}
+                           >
+                               {item.task}
+                           </div>
+                      ))
+                    }
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
+                    <div className={styles.externalDraggable}>Test</div>
             </div>
 
-        </div>
+            </div>
+            </div>
         <div id={styles.dataWrap}>
-            <button onClick={setEvent}>Save Data</button>
-            <button onClick={getEvent}>Load Data</button>
+            <button onClick={clearEvents}>Clear Data</button>
         </div>
 
         <FullCalendar
