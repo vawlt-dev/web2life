@@ -56,12 +56,14 @@ export const App = () =>
         fetch("/getEvent").then(res => res.json())
         .then(data =>
         {
+            console.log(data.data)
             setEvents(data.data)
         })
     }
-    const setEvent = (event) =>
+    const putEvent = (event) =>
     {
         console.log(event)
+        console.log("*************")
         fetch("/setEvent",
         {
            
@@ -84,6 +86,26 @@ export const App = () =>
             }
         })
     }
+    
+    const updateEventStartTime = (eventID, newTime) =>
+    {
+        const data = 
+        {
+            newTime: newTime, 
+            id: eventID
+        };
+        fetch("/updateEvent",
+        {
+            method: "PATCH",
+            headers:
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        })
+    }
+
     const clearEvents = () =>
     {
         fetch("/clearEvents");
@@ -127,25 +149,14 @@ export const App = () =>
         
         const event =
         {
+            task: formData.get("task"), 
+            start: null,
+            end: null,
             project: formData.get("proj"),
-            task: formData.get("task"),
             description: formData.get("desc")
         }
         setEvents([...events, event])
-        setEvent(event);
-    }
-
-    const handleDrag = (element, index) => 
-    {
-        let drag = new Draggable(element,
-        {
-            eventData: () =>(
-            {
-                title: events[index].task,
-                extendedProps: {},
-            })
-        })
-        console.log(drag)
+        putEvent(event);
     }
 
     useEffect(() => 
@@ -170,6 +181,7 @@ export const App = () =>
                 {
                     eventData: 
                     {
+                        id: events[index]?.id,
                         title: events[index]?.task,
                         extendedProps: 
                         {
@@ -182,7 +194,6 @@ export const App = () =>
             });
         }
     }, [events]);
-
     return (
         <div id={styles.mainWrap}>
             <div id={styles.eventsContainer}>
@@ -221,38 +232,6 @@ export const App = () =>
                            </div>
                       ))
                     }
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
-                    <div className={styles.externalDraggable}>Test</div>
             </div>
 
             </div>
@@ -266,7 +245,6 @@ export const App = () =>
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             weekends={false}
-        
             headerToolbar =
             {
                 {
@@ -288,7 +266,7 @@ export const App = () =>
                         text: "Today",
                         click: () => handleHeaderButtonClick("Today")
                     },
-                    customMonthButton:
+                    customMonthButton: 
                     {
                         text: "Month",
                         click: () => handleHeaderButtonClick("Month")
@@ -298,19 +276,36 @@ export const App = () =>
 
             dayHeaderClassNames={styles.calendarHeader}
             viewClassNames={styles.calView}
-            slotMinTime="08:00:00"
+            slotMinTime="06:00:00"
             slotDuration="00:15:00"
             slotMaxTime="18:15:00"
             dayCellClassNames={styles.monthCells}
 
-            events = { [] }
+            events = {events.map(event => 
+            ({
+                id: event.id,
+                title: event.task,
+                start: event.start,
+                end: event.end,
+                allDay: true,
+                extendedProps:
+                {
+                    project: event.project,
+                    description: event.description
+                }
+                
+            
+            }))}
             editable = { true }
             droppable = { true }
             eventReceive =
             {   
                 (info) =>
                 {
-                    console.log(info)
+                    //get dragged elements id
+                    
+                    //type mismatch unless string cast
+                    updateEventStartTime(events.find(event => (event.id).toString() === (info.event.id).toString()).id, info.event.start)
                 }
             }
             dateClick = 

@@ -23,8 +23,9 @@ from django.conf import settings
 urlpatterns = [
     path("getEvent/", views.get_event),
     path("setEvent/", views.set_event),
+    path("updateEvent/", views.update_event),
     path("clearEvents/", views.clear_events),
-    path("getCsrfToken/", views.get_csrf_token, name="get_csrf-"),
+    path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
     re_path(
         r"^(?P<path>.*)$",
         views.serve_react,

@@ -18,6 +18,11 @@ def serve_react(request, path, document_root=None):
         return get_event()
     if path == "setEvent":
         set_event(request)
+    if path == "updateEvent":
+        update_event(request)
+    if path == "removeEvent":
+        # TODO
+        pass
     if path == "clearEvents":
         clear_events()
     if Path(safe_join(document_root, path)).is_file():
@@ -32,13 +37,31 @@ def get_event():
 
 def set_event(request):
     print("in set_event")
-    data = json.loads(request.body)
-    event = Events(
-        project=data["project"],
-        task=data["task"],
-        description=data["description"],
-    )
-    event.save()
+    print(request.body)
+    try:
+        data = json.loads(request.body)
+        event = Events(
+            task=data["task"],
+            start=data["start"],
+            end=data["end"],
+            project=data["project"],
+            description=data["description"],
+        )
+        event.save()
+    except Exception as e:
+        print(e)
+
+
+def update_event(request):
+    try:
+        data = json.loads(request.body)
+
+        event = Events.objects.get(id=data["id"])
+        event.start = data["newTime"]
+        event.save()
+    except Exception as e:
+        print(e)
+    pass
 
 
 def clear_events():

@@ -6,8 +6,11 @@ from django.db import models
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
-    project = models.CharField(max_length=32)
     task = models.CharField(max_length=32)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
+    isAllDay = models.BooleanField(default=True)
+    project = models.CharField(max_length=32)
     description = models.CharField(max_length=500)
 
     # Define the table name
