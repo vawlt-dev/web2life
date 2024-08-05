@@ -15,10 +15,11 @@ def serve_react(request, path, document_root=None):
     if path == "getCsrfToken":
         return get_csrf_token(request)
     if path == "getEvent":
-        print("getting events")
         return get_event()
     if path == "setEvent":
         set_event(request)
+    if path == "clearEvents":
+        clear_events()
     if Path(safe_join(document_root, path)).is_file():
         return serve(request, path, document_root)
     else:
@@ -26,25 +27,24 @@ def serve_react(request, path, document_root=None):
 
 
 def get_event():
-    print("In get_event")
-    allevents = Events.objects.all()
-    print(allevents)
-    return JsonResponse({"data": json.dumps(allevents)})
+    return JsonResponse({"data": list(Events.objects.all().values())})
 
 
 def set_event(request):
     print("in set_event")
-    k = request.body.decode("utf-8").split('"')
-    print(k[7])
+    data = json.loads(request.body)
     event = Events(
-        projectName=k[5],
-        taskName=k[9],
-        eventDescription=k[13],
+        project=data["project"],
+        task=data["task"],
+        description=data["description"],
     )
     event.save()
-    return None
+
+
+def clear_events():
+    Events.objects.all().delete()
 
 
 def get_csrf_token(request):
 
-    return JsonResponse({"token": django.middleware.csrf.get_token(request)})
+    return JsonResponse({"csrf-token": django.middleware.csrf.get_token(request)})

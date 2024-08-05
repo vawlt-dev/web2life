@@ -7,20 +7,19 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Events',
+            name="Events",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('projectName', models.CharField(max_length=32)),
-                ('taskName', models.CharField(max_length=32)),
-                ('eventDescription', models.CharField(max_length=500)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("projectName", models.CharField(max_length=32)),
+                ("taskName", models.CharField(max_length=32)),
+                ("eventDescription", models.CharField(max_length=500)),
             ],
             options={
-                'db_table': 'Events',
+                "db_table": "Events",
             },
         ),
     ]
