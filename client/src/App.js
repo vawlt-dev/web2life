@@ -15,7 +15,6 @@ export const App = () =>
         // for the outer calendar wrapper
         calRef.current.elRef.current.id = styles.calendar
     }, [calRef]) 
-    
     useEffect( () =>
     {
         //set CSRF token for database modification
@@ -80,8 +79,11 @@ export const App = () =>
             }
             else
             {
-                console.log("Oh no")
+                console.log("Error with submitting custom event")
             }
+        }).then(()=>
+        {
+            getEvents()
         })
     }
     
@@ -180,7 +182,6 @@ export const App = () =>
             description: formData.get("desc")
         }
         putEvent(event);
-        getEvents()
     }
 
     const displayEvents = () => 
@@ -222,6 +223,8 @@ export const App = () =>
                 tempEvents.push(eventData);
             }
         }
+        console.log("Temp Events:")
+        console.log(tempEvents)
         return tempEvents;
     }
 
@@ -290,21 +293,32 @@ export const App = () =>
             
             <div id={styles.eventListWrapper}>
                     <label>Your Events</label>
-                    <div id={styles.eventList}>
                     {
-                      events.map( (item, index) => (
-                           <div className={styles.externalDraggable} 
-                               key={index}
-                               draggable={true}
-                           >
-                               {item.task}
-                           </div>
-                      ))
+                        events.length > 0 ?
+                        (
+                            <div id={styles.eventList}>
+                            {
+                                events.map((item, index) => 
+                                (
+                                    <div className={styles.externalDraggable} 
+                                    key={index}
+                                    draggable={true}
+                                >
+                                    {item.task}
+                                </div>
+                                )
+                                )
+                            }
+                            </div>
+                        )
+                        :
+                        (
+                            <div>No events yet</div>
+                        )
                     }
             </div>
+        </div>
 
-            </div>
-            </div>
         <div id={styles.dataWrap}>
             <button onClick={clearEvents}>Clear Data</button>
         </div>
@@ -313,6 +327,9 @@ export const App = () =>
             ref={calRef}
             plugins={[timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
+            //add key because there was a phenomenon with the calendar not rendering after a new event was added,
+            //adding a key forces a rerender of the calendar when the events change
+            key={events}
             headerToolbar =
             {
                 {
@@ -360,7 +377,7 @@ export const App = () =>
                     end: event.end,
                     allDay: event.allDay
                 }))
-            
+                
             }
             editable = { true }
             droppable = { true }

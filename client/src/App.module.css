@@ -40,6 +40,7 @@
     justify-content: space-between;
     margin-bottom: 20px;
     gap: 20px;
+    height: 400px;
 }
 
 #createEvent
@@ -105,12 +106,13 @@
 {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     background-color: #29323d;
     border-radius: 10px;
     border: 2px solid rgba(128, 128, 128, 0.075);
     padding: 20px;
     gap: 25px;
+    width: 100%;
+    text-align: center;
 }
 #eventListWrapper > label
 {
@@ -120,8 +122,9 @@
 #eventList
 {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 20px
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    text-align: center;
 }
 .externalDraggable 
 {
