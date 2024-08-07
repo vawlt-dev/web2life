@@ -1,8 +1,12 @@
 from django.db import models
 
+class User(models.Model):
+    id = models.AutoField(primary_key=True)
+    firstName = models.CharField(max_length=64)
+    lastName = models.CharField(max_length=64)
 
-# Create your models here.
-
+    class Meta:
+        db_table = "Users"
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
@@ -10,7 +14,8 @@ class Events(models.Model):
     times = models.JSONField(default=list, null=True)
     project = models.CharField(max_length=32)
     description = models.CharField(max_length=500)
+    # When the user is deleted, the user's events in the table are deleted too
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
-    # Define the table name
     class Meta:
         db_table = "Events"
