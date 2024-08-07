@@ -1,5 +1,4 @@
 import FullCalendar from "@fullcalendar/react"
-import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
 import styles from "./App.module.css";
@@ -9,6 +8,7 @@ export const App = () =>
 {
     const calRef = useRef(null);
     const [events, setEvents] = useState([]);
+    const [droppedEvents, setDroppedEvents] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
     useEffect( () =>
     {
@@ -53,7 +53,7 @@ export const App = () =>
     const getEvents = () =>
     {
         //gets all user events
-        fetch("/getEvent").then(res => res.json())
+        fetch("/getEvents").then(res => res.json())
         .then(data =>
         {
             console.log(data.data)
@@ -62,8 +62,6 @@ export const App = () =>
     }
     const putEvent = (event) =>
     {
-        console.log(event)
-        console.log("*************")
         fetch("/setEvent",
         {
            
@@ -87,14 +85,41 @@ export const App = () =>
         })
     }
     
-    const updateEventStartTime = (eventID, newTime) =>
+    const updateEventTimes = (info) =>
     {
-        const data = 
+        console.log(info);
+        const eventID =events.find(event => (event.id).toString() === (info.event.id).toString()).id, 
+              newStart = info.event.start, 
+              newEnd = info.event.end, 
+              newAllDay = info.event.allDay
+        let data = 
         {
-            newTime: newTime, 
+            time:
+            {
+                start: newStart,
+                end: newEnd,
+                allDay: newAllDay
+            },
             id: eventID
         };
-        fetch("/updateEvent",
+        
+        if(info.oldEvent)
+        {
+            data = 
+            {
+                time:
+                {
+                    oldStart: info.oldEvent.start,
+                    oldEnd: info.oldEvent.end,
+                    oldAllDay:info.oldEvent.allDay,
+                    newStart: newStart,
+                    newEnd: newEnd,
+                    newAllDay: newAllDay
+                },
+                id: eventID
+            };
+        }
+        fetch("/updateEventTimes",
         {
             method: "PATCH",
             headers:
@@ -136,7 +161,7 @@ export const App = () =>
             }
             else
             {
-                api.changeView("dayGridMonth")
+                api.changeView("timeGridWeek")
             }
         }, 375);            
         // half duration time so switch triggers on centre keyframe
@@ -150,18 +175,60 @@ export const App = () =>
         const event =
         {
             task: formData.get("task"), 
-            start: null,
-            end: null,
+            times: [],
             project: formData.get("proj"),
             description: formData.get("desc")
         }
-        setEvents([...events, event])
         putEvent(event);
+        getEvents()
     }
+
+    const displayEvents = () => 
+    {
+        let tempEvents = [];
+        for(let i = 0; i < events.length; i++)
+        {
+            let eventData;
+            if(events[i].times.length > 0)
+            {
+                for(let j = 0; j < events[i].times.length; j++)
+                {
+                    eventData = 
+                    {
+                        id: events[i].id,
+                        title: events[i].task,
+                        start: events[i].times[j].start,
+                        end: events[i].times[j].end,
+                        allDay: events[i].times[j].allDay,
+                        project: events[i].project,
+                        description: events[i].description
+                        
+                    }
+                    tempEvents.push(eventData);
+                }
+            }
+            else
+            {
+                eventData = 
+                    {
+                        id: events[i].id,
+                        title: events[i].task,
+                        start: events[i].times,
+                        end: events[i].times,
+                        allDay: events[i].times,
+                        project: events[i].project,
+                        description: events[i].description
+                    }
+                tempEvents.push(eventData);
+            }
+        }
+        return tempEvents;
+    }
+
 
     useEffect(() => 
     {
-        //creates draggable instances for loaded (test) events
+        //creates draggable instances for loaded events
         const existingDraggables = document.querySelectorAll(`.${styles.externalDraggable}`);
         existingDraggables.forEach((element) => 
         {
@@ -183,6 +250,7 @@ export const App = () =>
                     {
                         id: events[index]?.id,
                         title: events[index]?.task,
+                        times: events[index]?.times,
                         extendedProps: 
                         {
                             project: events[index]?.project,
@@ -194,6 +262,7 @@ export const App = () =>
             });
         }
     }, [events]);
+
     return (
         <div id={styles.mainWrap}>
             <div id={styles.eventsContainer}>
@@ -242,14 +311,13 @@ export const App = () =>
 
         <FullCalendar
             ref={calRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            weekends={false}
+            plugins={[timeGridPlugin, interactionPlugin]}
+            initialView="timeGridWeek"
             headerToolbar =
             {
                 {
                     left: "title",
-                    right: "prevYear prev customDayButton customTodayButton customMonthButton next nextYear",
+                    right: "prevYear prev customDayButton customTodayButton customWeekButton next nextYear",
                 }
                 
             }
@@ -266,55 +334,46 @@ export const App = () =>
                         text: "Today",
                         click: () => handleHeaderButtonClick("Today")
                     },
-                    customMonthButton: 
+                    customWeekButton: 
                     {
-                        text: "Month",
-                        click: () => handleHeaderButtonClick("Month")
+                        text: "Week",
+                        click: () => handleHeaderButtonClick("Week")
                     }
                 }
             }
-
             dayHeaderClassNames={styles.calendarHeader}
             viewClassNames={styles.calView}
-            slotMinTime="06:00:00"
+            slotMinTime="08:00:00"
             slotDuration="00:15:00"
             slotMaxTime="18:15:00"
-            dayCellClassNames={styles.monthCells}
-
-            events = {events.map(event => 
-            ({
-                id: event.id,
-                title: event.task,
-                start: event.start,
-                end: event.end,
-                allDay: true,
-                extendedProps:
-                {
-                    project: event.project,
-                    description: event.description
-                }
-                
+            dayCellClassNames={styles.weekCells}
+            slotLaneClassNames={styles.slotLane}
             
-            }))}
+            classname
+            events = { 
+            
+                displayEvents().map(event =>
+                ({
+                    id: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    allDay: event.allDay
+                }))
+            
+            }
             editable = { true }
             droppable = { true }
-            eventReceive =
-            {   
-                (info) =>
-                {
-                    //get dragged elements id
-                    
-                    //type mismatch unless string cast
-                    updateEventStartTime(events.find(event => (event.id).toString() === (info.event.id).toString()).id, info.event.start)
-                }
-            }
+            eventReceive = { info => updateEventTimes(info) }
+            eventDrop={ info => updateEventTimes(info)}
+            eventResize={ info => updateEventTimes(info)}
             dateClick = 
             {
                 (info) => 
                 {
                     switch(info.view.type)
                     {
-                        case "dayGridMonth":
+                        case "timeGridWeek":
                         {
                             //clicking on a day of month cell takes user to day view of that day
                             handleHeaderButtonClick("Day", info.date)

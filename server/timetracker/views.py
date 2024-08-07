@@ -14,12 +14,12 @@ def serve_react(request, path, document_root=None):
     print(path)
     if path == "getCsrfToken":
         return get_csrf_token(request)
-    if path == "getEvent":
-        return get_event()
+    if path == "getEvents":
+        return get_events()
     if path == "setEvent":
         set_event(request)
-    if path == "updateEvent":
-        update_event(request)
+    if path == "updateEventTimes":
+        update_event_times(request)
     if path == "removeEvent":
         # TODO
         pass
@@ -31,7 +31,7 @@ def serve_react(request, path, document_root=None):
         return serve(request, "index.html", document_root)
 
 
-def get_event():
+def get_events():
     return JsonResponse({"data": list(Events.objects.all().values())})
 
 
@@ -42,8 +42,7 @@ def set_event(request):
         data = json.loads(request.body)
         event = Events(
             task=data["task"],
-            start=data["start"],
-            end=data["end"],
+            times=data["times"],
             project=data["project"],
             description=data["description"],
         )
@@ -52,13 +51,41 @@ def set_event(request):
         print(e)
 
 
-def update_event(request):
+def update_event_times(request):
+
+    print(request)
     try:
         data = json.loads(request.body)
-
+        print(data)
         event = Events.objects.get(id=data["id"])
-        event.start = data["newTime"]
+        tData = data.get("time")
+
+        oStart = tData.get("oldStart")
+        nStart = tData.get("newStart")
+        oEnd = tData.get("oldEnd")
+        nEnd = tData.get("newEnd")
+        oAllDay = tData.get("oldAllDay")
+        nAllDay = tData.get("newAllDay")
+
+        if oStart or oEnd or oAllDay:
+            for time in event.times:
+                print(time)
+                if (
+                    time.get("start") == oStart
+                    and time.get("end") == oEnd
+                    and time.get("allDay") == oAllDay
+                ):
+                    time["start"] = nStart
+                    time["end"] = nEnd
+                    time["allDay"] = nAllDay
+                    break
+                    # breaking because we only want to update one entry
+        else:
+            if not data["time"] in event.times:
+                event.times.append(data["time"])
+
         event.save()
+        print(event.times)
     except Exception as e:
         print(e)
     pass

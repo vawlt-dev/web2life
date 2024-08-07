@@ -21,9 +21,9 @@ from . import views
 from django.conf import settings
 
 urlpatterns = [
-    path("getEvent/", views.get_event),
+    path("getEvents/", views.get_events),
     path("setEvent/", views.set_event),
-    path("updateEvent/", views.update_event),
+    path("updateEventTimes/", views.update_event_times),
     path("clearEvents/", views.clear_events),
     path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
     re_path(

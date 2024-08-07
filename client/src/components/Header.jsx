@@ -5,7 +5,7 @@ export const Header = () =>
 {
     const sliderRef = useRef(null);
     const [darkMode, setDarkMode] = useState(true);
-    useEffect(()=> { console.log(darkMode)}, [darkMode])
+    useEffect(()=> { }, [darkMode])
     return(
         <header>
             <a href="/">
