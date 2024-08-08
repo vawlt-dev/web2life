@@ -26,9 +26,6 @@ urlpatterns = [
     path("updateEventTimes/", views.update_event_times),
     path("clearEvents/", views.clear_events),
     path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
-    re_path(
-        r"^(?P<path>.*)$",
-        views.serve_react,
-        {"document_root": settings.FRONTEND_BUILD_PATH},
-    ),
+    re_path(r"^static/(?P<path>.*)$", views.serve_static),
+    path("", views.index)
 ]

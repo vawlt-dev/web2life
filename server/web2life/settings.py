@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import mimetypes
+from django.utils._os import safe_join
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -117,11 +118,16 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+FRONTEND_BUILD_PATH = "../client/build"
+
+STATIC_SOURCE = safe_join(FRONTEND_BUILD_PATH, "static")
+
+STATICFILES_DIRS = [STATIC_SOURCE]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-FRONTEND_BUILD_PATH = "../client/build"
 
 mimetypes.add_type("application/javascript", ".js", True)

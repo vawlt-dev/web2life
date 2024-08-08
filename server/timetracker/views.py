@@ -7,40 +7,24 @@ from django import views
 from django.http import JsonResponse, HttpResponse
 import json
 import django.middleware.csrf
+from django.conf import settings
 from .models import Events
 
+def index(request):
+    print("Serve index")
+    print(safe_join(settings.FRONTEND_BUILD_PATH, "index.html"))
+    return serve(request, "index.html", settings.FRONTEND_BUILD_PATH)
 
-def serve_react(request, path, document_root=None):
-    path = posixpath.normpath(path).lstrip("/")
-    print(path)
-    if path == "getCsrfToken":
-        return get_csrf_token(request)
-    if path == "getEvents":
-        return get_events()
-    if path == "setEvent":
-        set_event(request)
-    if path == "updateEventTimes":
-        update_event_times(request)
-    if path == "removeEvent":
-        # TODO
-        pass
-    if path == "clearEvents":
-        clear_events()
-
-    full_path = Path(safe_join(document_root, path))
-
-    print(f"Trying to serve {full_path}")
-
+def serve_static(request, path):
+    full_path = Path(safe_join(settings.STATIC_SOURCE, path))
+    print(f"serve_static(): {full_path}")
     if full_path.is_file():
-        print("Serve static")
-        return serve(request, path, document_root)
+        return serve(request, path, settings.STATIC_SOURCE)
     else:
-        return serve(request, "index.html", document_root)
+        return views.default.page_not_found(request, FileNotFoundError())
 
-
-def get_events():
+def get_events(request):
     return JsonResponse({"data": list(Events.objects.all().values())})
-
 
 def set_event(request):
     print("in set_event")
@@ -56,7 +40,6 @@ def set_event(request):
         event.save()
     except Exception as e:
         print(e)
-
 
 def update_event_times(request):
 
@@ -98,10 +81,9 @@ def update_event_times(request):
     pass
 
 
-def clear_events():
+def clear_events(request):
     Events.objects.all().delete()
 
 
 def get_csrf_token(request):
-
     return JsonResponse({"csrf-token": django.middleware.csrf.get_token(request)})
