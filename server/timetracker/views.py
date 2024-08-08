@@ -2,6 +2,7 @@ from django.utils._os import safe_join
 import posixpath
 from pathlib import Path
 from django.views.static import serve
+from django import views
 
 from django.http import JsonResponse, HttpResponse
 import json
@@ -25,7 +26,13 @@ def serve_react(request, path, document_root=None):
         pass
     if path == "clearEvents":
         clear_events()
-    if Path(safe_join(document_root, path)).is_file():
+
+    full_path = Path(safe_join(document_root, path))
+
+    print(f"Trying to serve {full_path}")
+
+    if full_path.is_file():
+        print("Serve static")
         return serve(request, path, document_root)
     else:
         return serve(request, "index.html", document_root)
