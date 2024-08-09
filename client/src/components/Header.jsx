@@ -5,7 +5,10 @@ export const Header = () =>
 {
     const sliderRef = useRef(null);
     const [darkMode, setDarkMode] = useState(true);
-    useEffect(()=> { }, [darkMode])
+    useEffect(() => 
+    { 
+        darkMode ? localStorage['theme'] = "dark" : localStorage['theme'] = "light"
+    },[darkMode])
     return(
         <header>
             <a href="/">
@@ -27,6 +30,5 @@ export const Header = () =>
                 </div>
             </div>
         </header>
-
     )
 }

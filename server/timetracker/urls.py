@@ -19,6 +19,9 @@ from django.contrib import admin
 from django.urls import path, re_path
 from . import views
 from django.conf import settings
+from django.views.generic.base import RedirectView
+
+favicon_view = RedirectView.as_view(url="/static/favicon.ico")
 
 urlpatterns = [
     path("getEvents/", views.get_events),
@@ -28,6 +31,8 @@ urlpatterns = [
     path("deleteEvent/", views.delete_event),
     path("deleteEventTime/", views.delete_event_time),
     path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
+    path("manifest.json/", views.serve_manifest),
+    re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),
 ]

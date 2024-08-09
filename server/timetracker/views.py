@@ -3,7 +3,7 @@ import posixpath
 from pathlib import Path
 from django.views.static import serve
 from django import views
-
+import os
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 import json
@@ -136,3 +136,15 @@ def clear_events(request):
 
 def get_csrf_token(request):
     return JsonResponse({"csrf-token": django.middleware.csrf.get_token(request)})
+
+
+def serve_manifest(request):
+    with open((settings.FRONTEND_BUILD_PATH + "/manifest.json"), "r") as file:
+        data = file.read()
+    return HttpResponse(data)
+
+
+def serve_ico(request):
+    with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
+        data = file.read()
+    return HttpResponse(data)
