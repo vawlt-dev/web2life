@@ -5,15 +5,18 @@ from django.views.static import serve
 from django import views
 
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_POST
 import json
 import django.middleware.csrf
 from django.conf import settings
 from .models import Events
 
+
 def index(request):
     print("Serve index")
     print(safe_join(settings.FRONTEND_BUILD_PATH, "index.html"))
     return serve(request, "index.html", settings.FRONTEND_BUILD_PATH)
+
 
 def serve_static(request, path):
     full_path = Path(safe_join(settings.STATIC_SOURCE, path))
@@ -23,11 +26,15 @@ def serve_static(request, path):
     else:
         return views.default.page_not_found(request, FileNotFoundError())
 
+
 def get_events(request):
     return JsonResponse({"data": list(Events.objects.all().values())})
 
+
+@require_POST
 def set_event(request):
     print("in set_event")
+    print(request)
     print(request.body)
     try:
         data = json.loads(request.body)
@@ -40,6 +47,9 @@ def set_event(request):
         event.save()
     except Exception as e:
         print(e)
+    finally:
+        return HttpResponse()
+
 
 def update_event_times(request):
 
@@ -78,11 +88,27 @@ def update_event_times(request):
         print(event.times)
     except Exception as e:
         print(e)
+    finally:
+        return HttpResponse()
     pass
 
 
+def delete_event(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["id"])
+        event.delete()
+        print(event)
+    except Exception as e:
+        print(e)
+    finally:
+        return HttpResponse()
+
+
 def clear_events(request):
+    print("In clear_events")
     Events.objects.all().delete()
+    return HttpResponse()
 
 
 def get_csrf_token(request):

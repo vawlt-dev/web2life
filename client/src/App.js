@@ -2,19 +2,23 @@ import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
 import styles from "./App.module.css";
+import trashImage from "./resources/images/trash.svg"
 import { useEffect, useRef, useState } from "react";
 
 export const App = () =>
 {
     const calRef = useRef(null);
+    const trashRef = useRef(null);
     const [events, setEvents] = useState([]);
-    const [droppedEvents, setDroppedEvents] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
+    const [currentDraggedEvent, setCurrentDraggedEvent] = useState(null);
+
     useEffect( () =>
     {
         // for the outer calendar wrapper
         calRef.current.elRef.current.id = styles.calendar
     }, [calRef]) 
+
     useEffect( () =>
     {
         //set CSRF token for database modification
@@ -28,7 +32,36 @@ export const App = () =>
         }))
 
         getEvents();
+        window.addEventListener("mouseup", () =>
+        {
+            setCurrentDraggedEvent(null);
+        })
     }, [])
+
+
+    useEffect(() => 
+    {
+        const draggables = document.querySelectorAll(`.${styles.externalDraggable}`);
+        
+        draggables.forEach((draggable, index) => 
+        {
+            new Draggable(draggable, 
+            {
+                eventData: 
+                { 
+                    id: events[index]?.id,
+                    title: events[index]?.title,
+                    times: events[index]?.times,
+                    extendedProps:
+                    {
+                        project: events[index]?.project,
+                        description: events[index]?.description
+                    }
+                },
+            });   
+        });
+    }, [events]);
+
 
     const opacityAnimation = (obj, animDuration) =>
     {
@@ -55,19 +88,59 @@ export const App = () =>
         fetch("/getEvents").then(res => res.json())
         .then(data =>
         {
-            console.log(data.data)
-            setEvents(data.data)
+            /*
+                this iterates over data.data (all of the events) by first destructuring 
+                the event into its constituent properties, then, if the event has more than one time,
+                it creates a new entry in the (temp) array with that time. if the time.length is 0 it 
+                just appends what was originally passed in the destructure. 
+                finally, both arrays are joined and returned as one array
+
+                TLDR: this parses the data from the server so that an individual event is made for each event and its specific event times
+            */
+            const tempEvents = data.data.reduce((accumulator, event) =>
+            {
+                const { id, task, project, description, times } = event;
+
+                const eventTimes = times.length > 0 ?
+                times.map(time => 
+                (
+                    {
+                        id,
+                        title: task,
+                        start: time.start,
+                        end: time.end,
+                        allDay: time.allDay,
+                        project,
+                        description
+                    }
+                )) 
+                :
+                [
+                    {
+                        id,
+                        title: task,
+                        start: times,
+                        end: times,
+                        allDay: times,
+                        project,
+                        description
+                    }
+                ];
+                return [...accumulator, ...eventTimes]
+            }, [])
+            
+            console.log(tempEvents)
+            setEvents(tempEvents)
         })
     }
     const putEvent = (event) =>
     {
-        fetch("/setEvent",
+        //append '/' to posts otherwise will reset to a GET request
+        fetch("/setEvent/",
         {
-           
             method: "POST", 
             headers: 
             {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': CSRFToken
             },
             body: JSON.stringify(event)
@@ -86,11 +159,29 @@ export const App = () =>
             getEvents()
         })
     }
-    
+    const deleteEvent = (event) =>
+    {
+        fetch("/deleteEvent/",
+            {
+                method: "POST",
+                headers:
+                {
+                    'X-CSRFToken': CSRFToken
+                },
+                body: JSON.stringify(event)
+            }
+        ).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully removed event")
+                getEvents();
+            }
+        })
+    }
     const updateEventTimes = (info) =>
     {
-        console.log(info);
-        const eventID =events.find(event => (event.id).toString() === (info.event.id).toString()).id, 
+        const eventID = events.find(event => (event.id).toString() === (info.event.id).toString()).id, 
               newStart = info.event.start, 
               newEnd = info.event.end, 
               newAllDay = info.event.allDay
@@ -121,7 +212,7 @@ export const App = () =>
                 id: eventID
             };
         }
-        fetch("/updateEventTimes",
+        fetch("/updateEventTimes/",
         {
             method: "PATCH",
             headers:
@@ -135,8 +226,13 @@ export const App = () =>
 
     const clearEvents = () =>
     {
-        fetch("/clearEvents");
-        setEvents([])
+        fetch("/clearEvents").then(res =>
+        {
+            setEvents([])
+        }).then( () =>
+        {
+            fetch("/getEvents")
+        });
     }
     const handleHeaderButtonClick = (method, date) =>
     {
@@ -184,88 +280,6 @@ export const App = () =>
         putEvent(event);
     }
 
-    const displayEvents = () => 
-    {
-        let tempEvents = [];
-        for(let i = 0; i < events.length; i++)
-        {
-            let eventData;
-            if(events[i].times.length > 0)
-            {
-                for(let j = 0; j < events[i].times.length; j++)
-                {
-                    eventData = 
-                    {
-                        id: events[i].id,
-                        title: events[i].task,
-                        start: events[i].times[j].start,
-                        end: events[i].times[j].end,
-                        allDay: events[i].times[j].allDay,
-                        project: events[i].project,
-                        description: events[i].description
-                        
-                    }
-                    tempEvents.push(eventData);
-                }
-            }
-            else
-            {
-                eventData = 
-                    {
-                        id: events[i].id,
-                        title: events[i].task,
-                        start: events[i].times,
-                        end: events[i].times,
-                        allDay: events[i].times,
-                        project: events[i].project,
-                        description: events[i].description
-                    }
-                tempEvents.push(eventData);
-            }
-        }
-        console.log("Temp Events:")
-        console.log(tempEvents)
-        return tempEvents;
-    }
-
-
-    useEffect(() => 
-    {
-        //creates draggable instances for loaded events
-        const existingDraggables = document.querySelectorAll(`.${styles.externalDraggable}`);
-        existingDraggables.forEach((element) => 
-        {
-            const draggableInstance = element.draggableInstance;
-            if (draggableInstance) 
-            {
-                draggableInstance.destroy();
-            }
-        });
-
-        if (events.length > 0) 
-        {
-            const externalDraggableElements = document.querySelectorAll(`.${styles.externalDraggable}`);
-            externalDraggableElements.forEach((element, index) => 
-            {
-                const drag = new Draggable(element, 
-                {
-                    eventData: 
-                    {
-                        id: events[index]?.id,
-                        title: events[index]?.task,
-                        times: events[index]?.times,
-                        extendedProps: 
-                        {
-                            project: events[index]?.project,
-                            description: events[index]?.description,
-                        },
-                    },
-                });
-                element.draggableInstance = drag;
-            });
-        }
-    }, [events]);
-
     return (
         <div id={styles.mainWrap}>
             <div id={styles.eventsContainer}>
@@ -298,16 +312,23 @@ export const App = () =>
                         (
                             <div id={styles.eventList}>
                             {
-                                events.map((item, index) => 
+                                /* 
+                                    maps over the events array, and checks for duplicate elements, then converts this into a Map object with key-value pairs,
+                                    before converting it again into a new (filtered) array from the values of the Map object -> this removes duplicate elements
+                                */
+                                
+                                [...new Map(events.map(item => [item.id, item])).values()].map((item, index) => 
                                 (
                                     <div className={styles.externalDraggable} 
                                     key={index}
                                     draggable={true}
-                                >
-                                    {item.task}
-                                </div>
-                                )
-                                )
+                                    onMouseDown={() => setCurrentDraggedEvent(item)}
+                                    >
+                                        {item.title}
+                                    </div>
+
+                                ))
+                                
                             }
                             </div>
                         )
@@ -319,17 +340,31 @@ export const App = () =>
             </div>
         </div>
 
-        <div id={styles.dataWrap}>
-            <button onClick={clearEvents}>Clear Data</button>
+
+
+        <div id={styles.trash}  
+            ref={trashRef}
+            onMouseUp =
+            {
+                (e) => 
+                {
+                    if(currentDraggedEvent)
+                    {
+                        deleteEvent(currentDraggedEvent)
+                    }
+                    console.log(currentDraggedEvent)
+                    setCurrentDraggedEvent(null)
+                }
+            }
+        >
+            <img src={trashImage} alt="Trash"></img>
         </div>
 
         <FullCalendar
             ref={calRef}
             plugins={[timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
-            //add key because there was a phenomenon with the calendar not rendering after a new event was added,
-            //adding a key forces a rerender of the calendar when the events change
             key={events}
+            initialView="timeGridWeek"
             headerToolbar =
             {
                 {
@@ -364,21 +399,8 @@ export const App = () =>
             slotDuration="00:15:00"
             slotMaxTime="18:15:00"
             dayCellClassNames={styles.weekCells}
-            slotLaneClassNames={styles.slotLane}
-            
-            classname
-            events = { 
-            
-                displayEvents().map(event =>
-                ({
-                    id: event.id,
-                    title: event.title,
-                    start: event.start,
-                    end: event.end,
-                    allDay: event.allDay
-                }))
-                
-            }
+            slotLaneClassNames={styles.slotLane}            
+            events = { events }
             editable = { true }
             droppable = { true }
             eventReceive = { info => updateEventTimes(info) }

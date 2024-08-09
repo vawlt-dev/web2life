@@ -2,7 +2,7 @@
   "short_name": "Web2Life",
   "name": "Web2Life Time Tracking App",
   "icons": [],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"

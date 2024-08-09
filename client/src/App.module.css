@@ -149,3 +149,24 @@
     border: 2px solid rgba(124, 124, 124, 0.562);
     color: black;
 }
+#trash
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100px;
+    background-color: #29323d;
+    border: 2px solid white;
+    border-radius: 10px;
+    transition: all ease 250ms;
+}
+#trash > img
+{
+    height: 50%;
+    
+}
+#trash:hover
+{
+    background-color: #505050;
+}
