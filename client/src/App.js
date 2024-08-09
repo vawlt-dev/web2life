@@ -217,10 +217,35 @@ export const App = () =>
             method: "PATCH",
             headers:
             {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': CSRFToken
             },
             body: JSON.stringify(data)
+        })
+    }
+    const removeEventTime = (info) =>
+    {
+        let data =
+        {
+            id: info.event.id,
+            start: info.event.start,
+            end: info.event.end,
+            allDay: info.event.allDay
+        }
+        fetch("/deleteEventTime/", 
+        {
+            method: "POST",
+            headers:
+            {
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Event time successfully removed")
+                getEvents()
+            }
         })
     }
 
@@ -340,8 +365,6 @@ export const App = () =>
             </div>
         </div>
 
-
-
         <div id={styles.trash}  
             ref={trashRef}
             onMouseUp =
@@ -352,7 +375,6 @@ export const App = () =>
                     {
                         deleteEvent(currentDraggedEvent)
                     }
-                    console.log(currentDraggedEvent)
                     setCurrentDraggedEvent(null)
                 }
             }
@@ -406,6 +428,17 @@ export const App = () =>
             eventReceive = { info => updateEventTimes(info) }
             eventDrop={ info => updateEventTimes(info)}
             eventResize={ info => updateEventTimes(info)}
+            eventDragStop=
+            {
+                (info) => 
+                {
+                    //delete event time from calendar
+                    if(info.jsEvent.target.id === styles.trash)
+                    {
+                        removeEventTime(info);
+                    }
+                }
+            }
             dateClick = 
             {
                 (info) => 

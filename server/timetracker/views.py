@@ -56,7 +56,6 @@ def update_event_times(request):
     print(request)
     try:
         data = json.loads(request.body)
-        print(data)
         event = Events.objects.get(id=data["id"])
         tData = data.get("time")
 
@@ -90,7 +89,31 @@ def update_event_times(request):
         print(e)
     finally:
         return HttpResponse()
-    pass
+
+
+def delete_event_time(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["id"])
+
+        event.times = [
+            # no idea how this works but it does
+            # can't directly delete the time, so have to
+            # re-create the times array with the time to delete
+            # filtered out
+            time
+            for time in event.times
+            if not (
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
+            )
+        ]
+        event.save()
+    except Exception as e:
+        print(e)
+    finally:
+        return HttpResponse()
 
 
 def delete_event(request):
