@@ -1,3 +1,12 @@
+:root
+{
+    /* variable definitions for theme changing */
+    --primaryColor: rgb(35, 45, 60);
+    --secondaryColor: rgb(40, 50, 60);
+    --textColor: white;
+    --textColor-invertHover: black; 
+    --logoInvert: hue-rotate(190deg) invert()
+}
 body, #root
 {
     margin: 0;
@@ -6,6 +15,8 @@ body, #root
 }
 #root
 {
-    background-color: #242b38;
+    background-color: var(--primaryColor);
     min-height: 100vh;
+
+    transition: background-color ease 500ms;
 }

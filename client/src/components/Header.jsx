@@ -4,26 +4,28 @@ import { useEffect, useRef, useState } from "react"
 export const Header = () =>
 {
     const sliderRef = useRef(null);
-    const [darkMode, setDarkMode] = useState(true);
+    const [lightMode, setLightMode] = useState(localStorage['theme'] === "light");
     useEffect(() => 
     { 
-        darkMode ? localStorage['theme'] = "dark" : localStorage['theme'] = "light"
-    },[darkMode])
+        localStorage.setItem('theme', lightMode);        
+        const event = new CustomEvent("themeChange", {detail: lightMode});
+        window.dispatchEvent(event);
+    },[lightMode])
     return(
         <header>
             <a href="/">
                 <img src={logo} alt="webToLife"></img>
             </a>
-            <div id={styles.themeSlider} onClick={() => setDarkMode(!darkMode)}>
-                <div ref={sliderRef} id={styles.slider} className={darkMode ? "" : styles.active}>
+            <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
+                <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
                     {
-                        darkMode ? 
+                        lightMode ? 
                         (
-                            "🌙"
+                            "🔆"
                         ) 
                         :
                         (
-                            "🔆"
+                            "🌙"
                         )
                         
                     }

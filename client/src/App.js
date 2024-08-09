@@ -1,6 +1,7 @@
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
+import "./index.css";
 import styles from "./App.module.css";
 import trashImage from "./resources/images/trash.svg"
 import { useEffect, useRef, useState } from "react";
@@ -36,8 +37,27 @@ export const App = () =>
         {
             setCurrentDraggedEvent(null);
         })
-    }, [])
+        window.addEventListener('themeChange', (e) =>
+        {
+            if (localStorage.getItem('theme') === "true")
+            {
+                document.documentElement.style.setProperty('--primaryColor', 'rgb(255, 255, 255)');
+                document.documentElement.style.setProperty('--secondaryColor', 'rgb(200, 200, 200)')
+                document.documentElement.style.setProperty('--textColor', 'black')
+                document.documentElement.style.setProperty('--textColor-invertHover', 'black')
+                document.documentElement.style.setProperty('--logoInvert', 'unset')
+            }
+            else
+            {
+                document.documentElement.style.setProperty('--primaryColor', 'rgb(35, 45, 60)')
+                document.documentElement.style.setProperty('--secondaryColor', 'rgb(40, 50, 60)')
+                document.documentElement.style.setProperty('--textColor', 'white')
+                document.documentElement.style.setProperty('--textColor-invertHover', 'black')
+                document.documentElement.style.setProperty('--logoInvert', 'hue-rotate(190deg) invert()')
+            }
+        })
 
+    }, [])
 
     useEffect(() => 
     {
@@ -412,9 +432,11 @@ export const App = () =>
                     {
                         text: "Week",
                         click: () => handleHeaderButtonClick("Week")
+                        
                     }
                 }
             }
+        
             dayHeaderClassNames={styles.calendarHeader}
             viewClassNames={styles.calView}
             slotMinTime="08:00:00"

@@ -7,18 +7,20 @@
 {
     padding: 80px;
     font-family: "Inter";
-    color: white;
+    color: var(--textColor);
 }
 
 .calendarHeader
 {
-    background-color: rgb(50, 56, 66);
-    color: white;
+    background-color: var(--primaryColor);
+    color: var(--textColor);
     font-family: "Inter";
     font-size: 1.5rem;
     line-height: 2;
     user-select: none;
     font-weight: 500;
+
+    transition: background-color ease 500ms;
 }
 .weekCells
 {
@@ -53,9 +55,11 @@
     width: 300px;
     padding: 20px;
     gap: 15px;
-    background-color: #29323d;
+    background-color: var(--secondaryColor);
     border-radius: 10px;
     border: 2px solid rgba(128, 128, 128, 0.075);
+
+    transition: background-color ease 500ms;
 }
 #createEventButtonWrap > button
 {
@@ -106,13 +110,14 @@
 {
     display: flex;
     flex-direction: column;
-    background-color: #29323d;
+    background-color: var(--secondaryColor);
     border-radius: 10px;
     border: 2px solid rgba(128, 128, 128, 0.075);
     padding: 20px;
     gap: 25px;
     width: 100%;
     text-align: center;
+    transition: background-color ease 500ms;
 }
 #eventListWrapper > label
 {
@@ -130,8 +135,8 @@
 {
     width: 150px;
     padding: 10px;
-    background-color: #243242;
-    color: white;
+    background-color: var(--primaryColor);
+    color: var(--textColor);
     text-align: center;
     border: 2px solid rgba(255, 255, 255, 0.25);
     border-radius: 4px;
@@ -147,7 +152,7 @@
 {
     background-color: #ebebeb;
     border: 2px solid rgba(124, 124, 124, 0.562);
-    color: black;
+    color: calc(var(--textColor) - var(--textColor));
 }
 #trash
 {
@@ -158,11 +163,12 @@
     height: 100px;
     margin-bottom: 50px;
 
-    background-color: #29323d;
+    background-color: var(--secondaryColor);
     border: 2px solid white;
     border-radius: 10px;
     transition: all ease 250ms;
 
+    transition: background-color ease 500ms;
 }
 #trash > img
 {
@@ -172,4 +178,9 @@
 #trash:hover
 {
     background-color: #505050;
+}
+
+button.fc-button .fc-button-primary
+{
+    background-color: red !important;
 }
