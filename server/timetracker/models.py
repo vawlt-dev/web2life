@@ -10,6 +10,7 @@ class User(models.Model):
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
+    # projid = models.AutoField(forign_key=True)
     task = models.CharField(max_length=32)
     times = models.JSONField(default=list, null=True)
     project = models.CharField(max_length=32)

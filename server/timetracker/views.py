@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 import json
 import django.middleware.csrf
 from django.conf import settings
-from .models import Events
+from .models import Events, Projects
 
 
 def index(request):
@@ -50,6 +50,53 @@ def set_event(request):
     finally:
         return HttpResponse()
 
+
+def get_event_by_id(request):
+    print(request)
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["id"])
+    except Exception as e:
+        print(e)
+        return HttpResponse()
+    finally:
+        return JsonResponse({"data": event.task})
+
+def get_project_by_id(request):
+    print(request)
+    try:
+        data = json.loads(request.body)
+        project = Projects.objects.get(id=data["project"])
+    except Exception as e:
+        print(e)
+        return HttpResponse()
+    finally:
+        return JsonResponse({"data": project})
+
+def get_projects_by_name(request):
+    print(request)
+    try:
+        data = json.loads(request.body)
+        projects = Projects.objects.filter(name__icontains=data["name"])
+    except Exception as e:
+        print(e)
+        return HttpResponse()
+    finally:
+        return JsonResponse({"data": projects})
+
+def get_events_by_date(request):
+    print(request)
+    some = []
+    try:
+        data = json.loads(request.body)
+        events = Events.objects.all()
+        some = [time for time in events.times.all() if time.get("start") is data["start"]]
+        print(events)
+    except Exception as e:
+        print(e)
+        return HttpResponse()
+    finally:
+        return JsonResponse({"data": some})
 
 def update_event_times(request):
 
