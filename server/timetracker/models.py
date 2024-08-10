@@ -19,3 +19,10 @@ class Events(models.Model):
 
     class Meta:
         db_table = "Events"
+
+class Projects(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=64)
+
+    class Meta:
+        db_table = "Projects"
