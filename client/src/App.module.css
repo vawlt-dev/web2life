@@ -8,6 +8,8 @@
     padding: 80px;
     font-family: "Inter";
     color: var(--textColor);
+    transition: color ease 500ms,
+                border-color ease 500ms;
 }
 
 .calendarHeader
@@ -20,7 +22,8 @@
     user-select: none;
     font-weight: 500;
 
-    transition: background-color ease 500ms;
+    transition: background-color ease 500ms,
+                color ease 500ms;
 }
 .weekCells
 {
@@ -57,9 +60,11 @@
     gap: 15px;
     background-color: var(--secondaryColor);
     border-radius: 10px;
-    border: 2px solid rgba(128, 128, 128, 0.075);
+    border: 2px solid;
+    border-color: var(--borderColor);
 
-    transition: background-color ease 500ms;
+    transition: background-color ease 500ms,
+                border-color ease 500ms;
 }
 #createEventButtonWrap > button
 {
@@ -98,8 +103,10 @@
     font-family: "Inter";
     width: 175px;
     padding: 4px;
-    border: 2px solid rgb(200, 200, 200);
+    border: 2px solid;
+    border-color: var(--borderColor);
     border-radius: 4px;
+    transition: border-color ease 500ms;
 }
 #createEvent > div > textarea
 {
@@ -112,12 +119,14 @@
     flex-direction: column;
     background-color: var(--secondaryColor);
     border-radius: 10px;
-    border: 2px solid rgba(128, 128, 128, 0.075);
+    border: 2px solid;
+    border-color: var(--borderColor);
     padding: 20px;
     gap: 25px;
     width: 100%;
     text-align: center;
-    transition: background-color ease 500ms;
+    transition: background-color ease 500ms,
+                border-color ease 500ms;
 }
 #eventListWrapper > label
 {
@@ -131,6 +140,10 @@
     gap: 20px;
     text-align: center;
 }
+.customButton
+{
+    color:red;
+}
 .externalDraggable 
 {
     width: 150px;
@@ -138,21 +151,26 @@
     background-color: var(--primaryColor);
     color: var(--textColor);
     text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid;
+    border-color: var(--borderColor);
     border-radius: 4px;
     cursor: pointer;
     user-select: none;
     font-family: "Inter";
 
-    transition: background-color ease-in-out 250ms,
-                border ease-in-out 250ms,
-                color ease-in-out 250ms
+    transition: all ease 500ms,
+                top unset 0ms,
+                right unset 0ms,
+                bottom unset 0ms,
+                left unset 0ms,
+    /* leave t-r-b-l unset cos otherwise the drag looks wonky */
 }
 .externalDraggable:hover
 {
     background-color: #ebebeb;
-    border: 2px solid rgba(124, 124, 124, 0.562);
-    color: calc(var(--textColor) - var(--textColor));
+    border: 2px solid;
+    border-color: var(--borderColor);
+    color: calc(var(--textColor-invertHover));
 }
 #trash
 {
@@ -164,7 +182,8 @@
     margin-bottom: 50px;
 
     background-color: var(--secondaryColor);
-    border: 2px solid white;
+    border: 2px solid;
+    border-color: var(--borderColor);
     border-radius: 10px;
     transition: all ease 250ms;
 
@@ -178,9 +197,4 @@
 #trash:hover
 {
     background-color: #505050;
-}
-
-button.fc-button .fc-button-primary
-{
-    background-color: red !important;
 }

@@ -2,6 +2,7 @@ import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
 import "./index.css";
+import "./calendarStyles.css"
 import styles from "./App.module.css";
 import trashImage from "./resources/images/trash.svg"
 import { useEffect, useRef, useState } from "react";
@@ -42,10 +43,11 @@ export const App = () =>
             if (localStorage.getItem('theme') === "true")
             {
                 document.documentElement.style.setProperty('--primaryColor', 'rgb(255, 255, 255)');
-                document.documentElement.style.setProperty('--secondaryColor', 'rgb(200, 200, 200)')
+                document.documentElement.style.setProperty('--secondaryColor', 'rgb(240, 240, 255)')
                 document.documentElement.style.setProperty('--textColor', 'black')
                 document.documentElement.style.setProperty('--textColor-invertHover', 'black')
                 document.documentElement.style.setProperty('--logoInvert', 'unset')
+                document.documentElement.style.setProperty('--borderColor', 'rgba(150, 150, 150, 0.5)')
             }
             else
             {
@@ -54,6 +56,8 @@ export const App = () =>
                 document.documentElement.style.setProperty('--textColor', 'white')
                 document.documentElement.style.setProperty('--textColor-invertHover', 'black')
                 document.documentElement.style.setProperty('--logoInvert', 'hue-rotate(190deg) invert()')
+                document.documentElement.style.setProperty('--borderColor', 'rgba(128, 128, 128, 0.1)')
+                
             }
         })
 
@@ -431,12 +435,11 @@ export const App = () =>
                     customWeekButton: 
                     {
                         text: "Week",
-                        click: () => handleHeaderButtonClick("Week")
-                        
+                        click: () => handleHeaderButtonClick("Week"),
+                        className: styles.customButton
                     }
                 }
             }
-        
             dayHeaderClassNames={styles.calendarHeader}
             viewClassNames={styles.calView}
             slotMinTime="08:00:00"
@@ -485,6 +488,7 @@ export const App = () =>
                     }
                 }
             } 
+            
         />
     </div>
   );

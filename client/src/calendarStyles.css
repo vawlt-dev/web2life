@@ -1,0 +1,11 @@
+.fc button
+{
+    /* bad practise to use !important but don't want to delete styles in the fullcalendar.css file */
+    background-color: var(--primaryColor) !important;
+    color: var(--textColor) !important;
+    transition: all ease 500ms;    
+}
+.fc thead
+{
+    border-radius: 5px;
+}
