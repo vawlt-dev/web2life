@@ -136,7 +136,7 @@
 #eventList
 {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: 20px;
     text-align: center;
 }
@@ -159,18 +159,18 @@
     font-family: "Inter";
 
     transition: all ease 500ms,
-                top unset 0ms,
-                right unset 0ms,
-                bottom unset 0ms,
-                left unset 0ms,
+                top 0ms,
+                right 0ms,
+                bottom 0ms,
+                left 0ms,
     /* leave t-r-b-l unset cos otherwise the drag looks wonky */
 }
 .externalDraggable:hover
 {
-    background-color: #ebebeb;
+    background-color: #ffffffd3;
     border: 2px solid;
     border-color: var(--borderColor);
-    color: calc(var(--textColor-invertHover));
+    color: var(--textColor-invertHover);
 }
 #trash
 {
