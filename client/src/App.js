@@ -12,14 +12,103 @@ export const App = () =>
     const calRef = useRef(null);
     const trashRef = useRef(null);
     const [events, setEvents] = useState([]);
+    const [calendarEvents, setCalendarEvents] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
     const [currentDraggedEvent, setCurrentDraggedEvent] = useState(null);
 
-    useEffect( () =>
+    const getEvents = () =>
     {
-        // for the outer calendar wrapper
-        calRef.current.elRef.current.id = styles.calendar
-    }, [calRef]) 
+        //gets all user events
+        fetch("/getEvents").then(res => 
+        {
+            if(res.ok)
+            {
+                return res.json()
+            }
+        })
+        .then(data =>
+        {
+            setEvents(data.data);
+           
+        })
+    }
+    useEffect(() =>
+    {
+        /*
+            this iterates over data.data (all of the events) by first destructuring 
+            the event into its constituent properties, then, if the event has more than one time,
+            it creates a new entry in the (temp) array with that time. if the time.length is 0 it 
+            just appends what was originally passed in the destructure. 
+            finally, both arrays are joined and returned as one array
+
+            TLDR: this parses the data from the server so that an individual event is made for 
+                  each event and its specific event times
+        */
+        
+        setCalendarEvents
+        (
+            events.reduce((accumulator, event) => 
+            {
+                const { id, task, description, times } = event;
+                const eventTimes = times.length > 0 
+                ? times.map(time => (
+                {
+                    id,
+                    title: task,
+                    start: time.start,
+                    end: time.end,
+                    allDay: time.allDay,
+                    description,
+                })) 
+                : 
+                [{
+                    id,
+                    title: task,
+                    start: times,
+                    end: times,
+                    allDay: times,
+                    description,
+                }];
+
+            return [...accumulator, ...eventTimes];
+            },[])
+        )
+
+    }, [events]);        
+
+    useEffect(() =>
+    {
+        /*
+            absolutely no idea why, but whenever the events array changes, the events in the 
+            calendars internal state either get wiped or duplicated, so half the existing events
+            disappear or multiply. 
+            
+            i think this has to do with the reference to the events array
+            pointing to a shallow copy and the events in it somehow don't get transfered over when 
+            the state updates??? 
+
+            please manually set the events or the calendar gets confused and violently breaks
+        */
+        if(calRef.current)
+        {
+            const cApi = calRef.current.getApi();
+            cApi.getEvents().forEach(event =>
+            {
+                event.remove()
+            })
+            calendarEvents.forEach(event =>
+            {
+                cApi.addEvent(
+                {
+                    id: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    allDay: event.allDay    
+                })
+            })
+        }
+    },[calendarEvents])
 
     useEffect( () =>
     {
@@ -74,7 +163,7 @@ export const App = () =>
                 eventData: 
                 { 
                     id: events[index]?.id,
-                    title: events[index]?.title,
+                    title: events[index]?.task,
                     times: events[index]?.times,
                     extendedProps:
                     {
@@ -86,7 +175,7 @@ export const App = () =>
         });
     }, [events]);
 
-
+    
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -106,57 +195,7 @@ export const App = () =>
         }
     }
     
-    const getEvents = () =>
-    {
-        //gets all user events
-        fetch("/getEvents").then(res => res.json())
-        .then(data =>
-        {
-            /*
-                this iterates over data.data (all of the events) by first destructuring 
-                the event into its constituent properties, then, if the event has more than one time,
-                it creates a new entry in the (temp) array with that time. if the time.length is 0 it 
-                just appends what was originally passed in the destructure. 
-                finally, both arrays are joined and returned as one array
-
-                TLDR: this parses the data from the server so that an individual event is made for each event and its specific event times
-            */
-            const tempEvents = data.data.reduce((accumulator, event) =>
-            {
-                const { id, task, project, description, times } = event;
-
-                const eventTimes = times.length > 0 ?
-                times.map(time => 
-                (
-                    {
-                        id,
-                        title: task,
-                        start: time.start,
-                        end: time.end,
-                        allDay: time.allDay,
-                        project,
-                        description
-                    }
-                )) 
-                :
-                [
-                    {
-                        id,
-                        title: task,
-                        start: times,
-                        end: times,
-                        allDay: times,
-                        project,
-                        description
-                    }
-                ];
-                return [...accumulator, ...eventTimes]
-            }, [])
-            
-            console.log(tempEvents)
-            setEvents(tempEvents)
-        })
-    }
+  
     const putEvent = (event) =>
     {
         //append '/' to posts otherwise will reset to a GET request
@@ -373,7 +412,7 @@ export const App = () =>
                                     draggable={true}
                                     onMouseDown={() => setCurrentDraggedEvent(item)}
                                     >
-                                        {item.title}
+                                        {item.task}
                                     </div>
 
                                 ))
@@ -447,13 +486,12 @@ export const App = () =>
             slotMaxTime="18:15:00"
             dayCellClassNames={styles.weekCells}
             slotLaneClassNames={styles.slotLane}            
-            events = { events }
             editable = { true }
             droppable = { true }
             eventReceive = { info => updateEventTimes(info) }
             eventDrop={ info => updateEventTimes(info)}
             eventResize={ info => updateEventTimes(info)}
-            eventDragStop=
+            eventDragStop =
             {
                 (info) => 
                 {
