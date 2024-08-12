@@ -1,3 +1,6 @@
+import datetime
+
+from django.utils import timezone
 from django.utils._os import safe_join
 import posixpath
 from pathlib import Path
@@ -62,6 +65,7 @@ def get_event_by_id(request):
     finally:
         return JsonResponse({"data": event.task})
 
+
 def get_project_by_id(request):
     print(request)
     try:
@@ -72,6 +76,7 @@ def get_project_by_id(request):
         return HttpResponse()
     finally:
         return JsonResponse({"data": project})
+
 
 def get_projects_by_name(request):
     print(request)
@@ -84,22 +89,25 @@ def get_projects_by_name(request):
     finally:
         return JsonResponse({"data": projects})
 
-def get_events_by_date(request):
-    print(request)
+
+def get_events_by_date(request): ####### IMPORTANT ######
+    print(request)               ####### Events.objects.all().filter(times__0__start__icontains="08-11")
+    print(Events.objects.all().filter(times__0__start__icontains="08-11"))
+    # print(Events.objects.get(id=67).times[0]["start"])
     some = []
     try:
-        data = json.loads(request.body)
-        events = Events.objects.all()
-        some = [time for time in events.times.all() if time.get("start") is data["start"]]
-        print(events)
+        # data = json.loads(request.body)
+        # events = Events.objects.all().filter(times__gt=datetime.date(2024, 12, 8))
+        # some = [time for time in events.times.all() if time.get("start") is data["start"]]
+        print("")
     except Exception as e:
         print(e)
         return HttpResponse()
     finally:
         return JsonResponse({"data": some})
 
-def update_event_times(request):
 
+def update_event_times(request):
     print(request)
     try:
         data = json.loads(request.body)
@@ -117,9 +125,9 @@ def update_event_times(request):
             for time in event.times:
                 print(time)
                 if (
-                    time.get("start") == oStart
-                    and time.get("end") == oEnd
-                    and time.get("allDay") == oAllDay
+                        time.get("start") == oStart
+                        and time.get("end") == oEnd
+                        and time.get("allDay") == oAllDay
                 ):
                     time["start"] = nStart
                     time["end"] = nEnd
@@ -132,6 +140,7 @@ def update_event_times(request):
 
         event.save()
         print(event.times)
+        print(event.id)
     except Exception as e:
         print(e)
     finally:
@@ -151,9 +160,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
+                    time.get("start") == data["start"]
+                    and time.get("end") == data["end"]
+                    and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -195,3 +204,15 @@ def serve_ico(request):
     with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
         data = file.read()
     return HttpResponse(data)
+
+
+def set_user(request):
+    return None
+
+
+def get_user_by_id(request):
+    return None
+
+
+def get_users(request):
+    return None
