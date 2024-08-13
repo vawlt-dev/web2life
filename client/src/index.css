@@ -6,7 +6,10 @@
     --textColor: white;
     --textColor-invertHover: black; 
     --logoInvert: hue-rotate(190deg) invert();
-    --borderColor: rgba(128, 128, 128, 0.1);
+    --borderColor: rgb(55, 69, 95);
+    
+    --buttonHoverColor: rgba()
+    
 }
 body, #root
 {

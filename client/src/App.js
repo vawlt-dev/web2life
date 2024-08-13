@@ -1,20 +1,14 @@
-import FullCalendar from "@fullcalendar/react"
-import timeGridPlugin from "@fullcalendar/timegrid"
-import interactionPlugin, { Draggable } from "@fullcalendar/interaction"
-import "./index.css";
-import "./calendarStyles.css"
-import styles from "./App.module.css";
-import trashImage from "./resources/images/trash.svg"
 import { useEffect, useRef, useState } from "react";
+import { AppCalendar } from "./components/AppCalendar";
+import styles from "./App.module.css";
+import "./index.css";
 
 export const App = () =>
 {
     const calRef = useRef(null);
-    const trashRef = useRef(null);
     const [events, setEvents] = useState([]);
     const [calendarEvents, setCalendarEvents] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
-    const [currentDraggedEvent, setCurrentDraggedEvent] = useState(null);
 
     const getEvents = () =>
     {
@@ -123,10 +117,7 @@ export const App = () =>
         }))
 
         getEvents();
-        window.addEventListener("mouseup", () =>
-        {
-            setCurrentDraggedEvent(null);
-        })
+
         window.addEventListener('themeChange', (e) =>
         {
             if (localStorage.getItem('theme') === "true")
@@ -151,29 +142,6 @@ export const App = () =>
         })
 
     }, [])
-
-    useEffect(() => 
-    {
-        const draggables = document.querySelectorAll(`.${styles.externalDraggable}`);
-        
-        draggables.forEach((draggable, index) => 
-        {
-            new Draggable(draggable, 
-            {
-                eventData: 
-                { 
-                    id: events[index]?.id,
-                    title: events[index]?.task,
-                    times: events[index]?.times,
-                    extendedProps:
-                    {
-                        project: events[index]?.project,
-                        description: events[index]?.description
-                    }
-                },
-            });   
-        });
-    }, [events]);
 
     
     const opacityAnimation = (obj, animDuration) =>
@@ -222,7 +190,7 @@ export const App = () =>
             getEvents()
         })
     }
-    const deleteEvent = (event) =>
+    /* const deleteEvent = (event) =>
     {
         fetch("/deleteEvent/",
             {
@@ -366,168 +334,11 @@ export const App = () =>
             description: formData.get("desc")
         }
         putEvent(event);
-    }
+    } */
 
     return (
         <div id={styles.mainWrap}>
-            <div id={styles.eventsContainer}>
-            <form id={styles.createEvent} onSubmit={e => submitCustomEvent(e)}>
-                <label>
-                    Create an Event
-                </label>
-                <div>
-                    <label>Project</label>
-                    <input name="proj" type="text" required={true} maxLength={32}/>
-                </div>
-                <div>
-                    <label>Task</label>
-                    <input name="task" type="text" required={true}maxLength={32}/>
-                </div>
-                <div>
-                    <label>Description</label>
-                    <textarea name="desc" maxLength={500}/>
-                </div>
-                <div id={styles.createEventButtonWrap}>
-                    <button type="submit">Add</button>
-                    <button type="reset">Clear</button>
-                </div>
-            </form>
-            
-            <div id={styles.eventListWrapper}>
-                    <label>Your Events</label>
-                    {
-                        events.length > 0 ?
-                        (
-                            <div id={styles.eventList}>
-                            {
-                                /* 
-                                    maps over the events array, and checks for duplicate elements, then converts this into a Map object with key-value pairs,
-                                    before converting it again into a new (filtered) array from the values of the Map object -> this removes duplicate elements
-                                */
-                                
-                                [...new Map(events.map(item => [item.id, item])).values()].map((item, index) => 
-                                (
-                                    <div className={styles.externalDraggable} 
-                                    key={index}
-                                    draggable={true}
-                                    onMouseDown={() => setCurrentDraggedEvent(item)}
-                                    >
-                                        {item.task}
-                                    </div>
-
-                                ))
-                                
-                            }
-                            </div>
-                        )
-                        :
-                        (
-                            <div>No events yet</div>
-                        )
-                    }
-            </div>
+            <AppCalendar/>
         </div>
-
-        <div id={styles.trash}  
-            ref={trashRef}
-            onMouseUp =
-            {
-                (e) => 
-                {
-                    if(currentDraggedEvent)
-                    {
-                        deleteEvent(currentDraggedEvent)
-                    }
-                    setCurrentDraggedEvent(null)
-                }
-            }
-        >
-            <img src={trashImage} alt="Trash"></img>
-        </div>
-
-        <FullCalendar
-            ref={calRef}
-            plugins={[timeGridPlugin, interactionPlugin]}
-            key={events}
-            initialView="timeGridWeek"
-            headerToolbar =
-            {
-                {
-                    left: "title",
-                    right: "prevYear prev customDayButton customTodayButton customWeekButton next nextYear",
-                }
-                
-            }
-            customButtons = 
-            {
-                {
-                    customDayButton: 
-                    {
-                        text: "Day",
-                        click: () => handleHeaderButtonClick("Day")
-                    },
-                    customTodayButton:
-                    {
-                        text: "Today",
-                        click: () => handleHeaderButtonClick("Today")
-                    },
-                    customWeekButton: 
-                    {
-                        text: "Week",
-                        click: () => handleHeaderButtonClick("Week"),
-                        className: styles.customButton
-                    }
-                }
-            }
-            dayHeaderClassNames={styles.calendarHeader}
-            viewClassNames={styles.calView}
-            slotMinTime="08:00:00"
-            slotDuration="00:15:00"
-            slotMaxTime="18:15:00"
-            dayCellClassNames={styles.weekCells}
-            slotLaneClassNames={styles.slotLane}            
-            editable = { true }
-            droppable = { true }
-            eventReceive = { info => updateEventTimes(info) }
-            eventDrop={ info => updateEventTimes(info)}
-            eventResize={ info => updateEventTimes(info)}
-            eventDragStop =
-            {
-                (info) => 
-                {
-                    //delete event time from calendar
-                    if(info.jsEvent.target.id === styles.trash)
-                    {
-                        removeEventTime(info);
-                    }
-                }
-            }
-            dateClick = 
-            {
-                (info) => 
-                {
-                    switch(info.view.type)
-                    {
-                        case "timeGridWeek":
-                        {
-                            //clicking on a day of month cell takes user to day view of that day
-                            handleHeaderButtonClick("Day", info.date)
-                            break;
-                        }   
-                        case "timeGridDay":
-                        {
-                            //alert("Day Grid")
-                            break;
-                        }
-                        default:
-                        {
-                            return;
-                        }
-                    }
-                }
-            } 
-            
-        />
-    </div>
-  );
+    );
 }

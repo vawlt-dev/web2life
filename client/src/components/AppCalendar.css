@@ -1,0 +1,17 @@
+.rbc-calendar
+{
+    height: 100vh;
+}
+.rbc-today
+{
+    background-color: transparent;
+    transition: all ease-in-out 500ms;
+}
+.rbc-header
+{
+    display: flex;
+}
+.rbc-row-content
+{
+    z-index: 0;
+}

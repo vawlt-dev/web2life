@@ -5,7 +5,6 @@
 
 #mainWrap
 {
-    padding: 80px;
     font-family: "Inter";
     color: var(--textColor);
     transition: color ease 500ms,
@@ -25,20 +24,7 @@
     transition: background-color ease 500ms,
                 color ease 500ms;
 }
-.weekCells
-{
-    cursor: pointer;
-    background-color: rgba(202, 202, 202, 0.055);
-    transition: background-color ease-in-out 250ms;
-}
-.slotLane:hover
-{
-    background-color: white;
-}
-.weekCells:hover
-{
-    background-color: rgba(255, 255, 255, 0.397) ;
-}
+
 #eventsContainer
 {
     display: flex;

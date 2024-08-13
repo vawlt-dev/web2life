@@ -1,0 +1,168 @@
+@font-face {
+    font-family: "Inter";
+    src: url("../../public/resources/fonts/Inter-VariableFont.ttf");
+}
+header
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(128, 128, 128, 0.175);
+    min-height: 75px;
+}
+img
+{
+    filter: var(--logoInvert);
+    max-width: 200px;
+}
+#themeSlider
+{
+    display: flex;
+    align-items: center;
+    background-color: rgb(133, 133, 133);
+    width: 100px;
+    height: 25px;
+    border-radius: 20px;
+    align-self: flex-end;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    cursor: pointer;
+    transition: all ease 250ms;
+    user-select: none;
+}
+
+#addEventButtonWrap > button
+{
+    font-family: "Inter";
+    border: 1px solid var(--borderColor);
+    color: var(--textColor);
+    border-radius: 6px;
+    font-size: 12px;
+
+    padding: 10px;
+    background-color: transparent;
+    transition: all ease 250ms;
+
+    display: inline-flex;
+    justify-content: center;
+    display: inline-flex;
+    font-size: 30px;
+    padding: 0;
+    height: 40px;
+    border-radius: 20px;
+    width: 40px;
+}
+#addEventButtonWrap > button:hover
+{
+    background-color: white;
+    color: black;
+}
+#date > span
+{
+    font-size: 24px;
+}
+
+#dropDownWrapper
+{
+    user-select: none;
+    z-index: 1;
+}
+
+#dropDownButton
+{
+    display: flex;
+    align-items: center;
+    border: 0;
+    font-size: 20px;
+    gap: 10px;
+    border: 2px solid var(--borderColor);
+    padding: 10px;
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--textColor);
+}
+
+
+#dropDownMenu
+{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 100px;
+    
+    
+    gap: 10px;
+    padding: 15px 8px 15px 8px;
+    top: 55px;
+    transform: translateY(0px);
+    
+    background-color: white;
+    border-radius: 10px;
+    border: 2px solid rgb(201, 201, 201);
+    list-style: none;
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity ease 500ms,
+                transform ease 500ms,
+                visibility ease 0ms 500ms;
+z-index: 222;
+}
+
+#dropDownMenu::before, #dropDownMenu.active::before
+{
+    background-color: white;
+    transform: rotate(45deg);
+    content: '';
+    position: absolute;
+    top: -5px;
+    height: 10px;
+    width: 10px;
+    opacity: 1;
+}
+
+
+#dropDownMenu.active
+{
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(6px);
+    transition: opacity ease 500ms,
+                transform cubic-bezier(.24,1.31,.66,1.5) 500ms ;
+                z-index: 22222;
+}
+#dropDownMenu > li > button
+{
+    
+    width: 100%;
+    border: 2px solid gray;
+    border-radius: 4px;
+    padding: 6px;
+    font-family: "Inter";
+    cursor: pointer;
+}
+
+#slider
+{
+    position: relative;
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    border-radius: 10px;
+    transition: all ease 250ms;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.5;
+    background-color: aliceblue;
+
+}
+
+#themeSlider:has(#slider.active)
+{
+    background-color: rgb(56, 79, 103);
+}
+#slider.active
+{
+    transform: translateX(76px);
+    background-color: rgb(50, 50, 50);
+}
