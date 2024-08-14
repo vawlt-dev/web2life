@@ -1,0 +1,74 @@
+#editModal
+{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 999;
+    height: 300px;
+    justify-content: space-between;
+    transition: opacity ease-in-out 250ms;
+    opacity: 0;
+}
+#editModal.active
+{
+    opacity: 1;
+}
+#editModal > p
+{
+    padding: 0;
+    font-size: 22px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: underline;
+}
+#editModal > form
+{
+    display: inline-flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-evenly;
+}
+#editModal > form > div
+{   
+    display: inline-flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+#editModal > form > div > label 
+{
+    font-weight: 500;
+}
+#editModal > form > div > select, #editModal > form > div > textarea
+{
+    width: 200px; 
+    padding: 0;
+    box-sizing: border-box;
+}
+#editModal > form > div > textarea
+{
+    height: 100px;
+    white-space: break-spaces;
+    resize: none;
+    font-family: "Inter";
+    font-size: 14px;
+}
+#editModalButtonWrap
+{
+    display: inline-flex;
+    justify-content: space-between;
+}
+#editModalButtonWrap > button
+{
+    height: 30px;
+    width: 75px;
+    border: 0;
+    background-color: rgb(47, 91, 172);
+    color: white;
+    border-radius: 6px;
+    font-family: "Inter";
+}
+

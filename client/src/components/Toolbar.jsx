@@ -32,13 +32,13 @@ export const Toolbar = (toolbar) =>
     {
         if(dropDownActive)
         {
-            window.addEventListener("mousedown", handleNonDropdownClick)
+            window.addEventListener("click", handleNonDropdownClick)
         }
         else
         {
-            window.removeEventListener("mousedown", handleNonDropdownClick)
+            window.removeEventListener("click", handleNonDropdownClick)
         }
-        return () => document.removeEventListener("mousedown", handleNonDropdownClick)
+        return () => document.removeEventListener("click", handleNonDropdownClick)
     }, [dropDownActive, handleNonDropdownClick])
 
     useEffect(() =>
