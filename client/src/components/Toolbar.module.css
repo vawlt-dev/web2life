@@ -31,6 +31,23 @@ img
     user-select: none;
 }
 
+#toolbarLeftButtonWrap
+{
+    display: inline-flex;
+    gap: 20px;    
+    
+}
+#toolbarLeftButtonWrap > button
+{
+    background-color: transparent;
+    color: var(--textColor);
+    font-family: "Inter";
+    font-size: 15px;
+    border: 2px solid var(--borderColor);
+    padding: 6px 10px 6px 10px;
+    border-radius: 6px;
+}
+
 #addEventButtonWrap > button
 {
     font-family: "Inter";

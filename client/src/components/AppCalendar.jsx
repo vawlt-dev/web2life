@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Calendar, momentLocalizer } from 'react-big-calendar'
+import React, { useEffect, useRef, useState } from 'react'
+import { Calendar, Views, momentLocalizer } from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
@@ -28,14 +28,34 @@ const createEvent = (id, title, start, end, allDay, resource) =>
     return createdEvent;
 }
 
+const customColumnWrapper = () =>
+{
+    return(
+        <div className="height600"> 
+            <div></div>
+            <div></div>
+        </div>
+    )
+}
+
 export const AppCalendar = (eventsArray) => 
 {
     const [events, setEvents] = useState([eventsArray]);
     const [editModalActive, setEditModalActive] = useState(false);
+    const calRef = useRef(null);
+    const [view, setView] = useState(Views.MONTH)
+    
+   
 
 
 
-
+    useEffect(() =>
+    {
+        if(view === Views.DAY)
+        {
+            console.log("its day")
+        }
+    }, [view])
     const openModal = (args) =>
     {
         setEditModalActive(false)
@@ -155,8 +175,9 @@ export const AppCalendar = (eventsArray) =>
                 
 
             <DragAndDropCalendar 
+                ref={calRef}
                 localizer = {localizer}
-                defaultView='week'
+                defaultView='day'
                 events={events}
                 onDragStart={() => "dragging"}
                 onEventDrop={(info) => handleEventDrop(info)}
@@ -165,15 +186,18 @@ export const AppCalendar = (eventsArray) =>
                 onDoubleClickEvent={(info) => editEvent(info)}
                 resizableAccessor={() => true}
                 onEventResize={(info) => handleEventResize(info)}
-                
+                dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
-
+                
                 components =
                 {
                     {
-                        toolbar: Toolbar
+                        toolbar: Toolbar,
+                        //timeSlotWrapper: customColumnWrapper
+                        //dayColumnWrapper: customColumnWrapper
                     }
+
                 }
             />
         </main>

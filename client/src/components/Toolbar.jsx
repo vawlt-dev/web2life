@@ -71,7 +71,7 @@ export const Toolbar = (toolbar) =>
                 <img src={logo} alt=""/>
             </div>
            
-            <div>
+            <div id={styles.toolbarLeftButtonWrap}>
                 <button onClick={goToToday}>Today</button>
                 <button onClick={back}>Back</button>
                 <button onClick={next}>Next</button>
@@ -82,18 +82,14 @@ export const Toolbar = (toolbar) =>
             </div>
             
 
-            <div id={styles.dropDownWrapper}>
-                <button id={styles.dropDownButton} onClick={() => setDropDownActive(!dropDownActive)}>
-                <div>{(toolbar.view.toString().charAt(0).toUpperCase() + toolbar.view.toString().substr(1).toLowerCase())}</div>
-                <div>
-                
-                    <svg width={20} height={20} >
-                        <polygon points="1 5,19 5, 10 17" fill="transparent" stroke={lightMode ? "black" : "white"} strokeWidth={2} radius={2}/>
-                        
-                    </svg>
-
-                </div>
-
+            <div id={styles.dropDownWrapper} onClick={() => setDropDownActive(!dropDownActive)}>
+                <button id={styles.dropDownButton} >
+                    <div>{(toolbar.view.toString().charAt(0).toUpperCase() + toolbar.view.toString().substr(1).toLowerCase())}</div>
+                    <div>
+                        <svg width={20} height={20} >
+                            <polygon points="1 5,19 5, 10 17" fill="transparent" stroke={lightMode ? "black" : "white"} strokeWidth={2} radius={2}/>
+                        </svg>
+                    </div>
                 </button>
                 <div id={styles.dropDownMenu} className={dropDownActive ? styles.active : ""}>
                     <DropDownButton callback={() => changeView(Views.DAY)} text={"Day"}/>
