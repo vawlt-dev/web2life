@@ -38,17 +38,36 @@ const customColumnWrapper = () =>
     )
 }
 
-export const AppCalendar = (eventsArray) => 
-{
-    const [events, setEvents] = useState([eventsArray]);
+export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, deleteEvent}) => 
+{    
+    const [tempEvent, setTempEvent] = useState(null);
+    const [projectNames, setProjectNames] = useState(null);
+    const [taskNames, setTaskNames] = useState(null);
+
+    const [events, setEvents] = useState(eventsArray);
     const [editModalActive, setEditModalActive] = useState(false);
     const calRef = useRef(null);
+    const modalInputRef = useRef(null);
     const [view, setView] = useState(Views.MONTH)
     
+    useEffect(() =>
+    {
+        setEvents(eventsArray);
+
+        const projects = new Set(), 
+              tasks = new Set();
+
+        eventsArray.forEach((event) =>
+        {
+            if(event.project) projects.add(event.project)
+            if(event.task) tasks.add(event.task)
+        })
+        
+        setProjectNames(Array.from(projects))
+        setTaskNames(Array.from(tasks));
+        console.log(eventsArray)
+    },[eventsArray])
    
-
-
-
     useEffect(() =>
     {
         if(view === Views.DAY)
@@ -56,10 +75,10 @@ export const AppCalendar = (eventsArray) =>
             console.log("its day")
         }
     }, [view])
+
     const openModal = (args) =>
     {
         setEditModalActive(false)
-        console.log(args)
         setTimeout(() => 
         {
             setEditModalActive(true);
@@ -102,75 +121,136 @@ export const AppCalendar = (eventsArray) =>
     const handleCancel = () =>
     {
         setEditModalActive(false)
-    }
-    const putEvent = () =>
-    {
-    
-    }
-    const createTempEvent = (args) =>
-    {
-        const createdEvent = createEvent(1, "New Event", args.start, args.end, false, null);
-        setEvents(prevEvents => [...prevEvents, createdEvent])
-        openModal(args)
-    }
-    const handleEventResize = (info) =>
-    {
-        let event = events.find(e => e.id === info.event.id);
-        let resizedEvent = createEvent(1, event.title, info.start, info.end, false, null);
-        setEvents( prevEvents =>
-            {
-                const updatedEvents = prevEvents.filter(e => 
-                {   
-                    console.log(e)
-                    return e.id !== event.id
-                });
-                console.log(updatedEvents)
-                return [...updatedEvents, resizedEvent]
-
-            }
-        )
+        events.pop();
         console.log(events)
     }
-    const handleEventDrop = (info) =>
+
+    const createTempEvent = (args) =>
     {
-        let droppedEvent = createEvent(1, "Dropped Event", info.start, info.end, false, null);
-        console.log("dropped")
-        setEvents(prevEvents => [...prevEvents, droppedEvent])
+        if(editModalActive)
+        {
+            console.log("Event popped")
+            events.pop();
+        } 
+        const event = createEvent(null, "New Event", args.start, args.end, false, null);
+        setTempEvent(event);
+        
+        //set as event instead of tempEvent cos useState is asynchronous
+        setEvents(prevEvents => [...prevEvents, event])
+
+        openModal(args)
     }
+
     const editEvent = (info) =>
     {
         console.log(info)
     }
-    
+    const handleSubmit = (e) =>
+    {
+        e.preventDefault();
+        const formData = new FormData(modalInputRef.current);
+        
+        const data = 
+        {
+            title: formData.get("title"),
+            project: formData.get("project"),
+            task: formData.get("task"),
+            description: formData.get("description"),
+            start: tempEvent.start,
+            end: tempEvent.end,
+            allDay: tempEvent.allDay
+        }
+        putEvent(data)
+        setTempEvent(null);
+        setEditModalActive(false)
+    }
+    const handleEventTimeChange = (info) =>
+    {
+        let event = events.find(e => e.id === info.event.id);
+        const data = 
+        {
+            title: event.title,
+            project: event.project,
+            task: event.task,
+            description: event.description,
+            start: info.start,
+            end: info.end,
+            allDay: event.allDay
+        }
+
+        //fixes a stutter issue by temporarily loading a new event into the calendar
+        //before the state change dispatches and updates - not very clean 
+        //way around this might be to go async instead? 
+        let tempEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
+        setEvents( prevEvents =>
+        {
+            const updatedEvents = prevEvents.filter(e => 
+            {   
+                return e.id !== event.id
+            });
+            return [...updatedEvents, tempEvent]
+        }) 
+        
+        patchEvent(event, data);
+    }
+
     return (
         <main>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
-                <p>{events[events.length - 1].title}</p>
                 
-                <form>
+                <form ref={modalInputRef} onSubmit={handleSubmit}>
+                    <input placeholder='Add a title' name='title' required={true} maxLength={50}/>
                     <div>
                         <label>Project</label>
-                        <select>
-                            <option>a</option>
-                            <option>b</option>
-                            <option>c</option>
+                        <select name='project'>
+                            {
+                                projectNames && projectNames.length > 0 ?
+                                (
+                                    projectNames.map((project, index) =>
+                                    (
+                                        <option key={index}>
+                                            {project}
+                                        </option>
+                                    ))
+                                )
+                                :
+                                (
+                                    <option>No projects yet... Add one?</option>
+                                )
+
+                            }
                         </select>
                     </div>
                     <div>
                         <label>Task</label>
-                        <select>
+                        <select name='task'>
+                        {
+                            taskNames && taskNames.length > 0 ?
+                            (
+                                taskNames.map((task, index) => 
+                                (
+                                    <option key={index}>
+                                        {task}
+                                    </option>
+                                ))
+                            )
+                            :
+                            (
+                                <option>No tasks yet... Add one?</option>
+                            )
+                        }
                         </select>
                     </div>
                     <div>
                         <label>Description</label>
-                        <textarea/>
+                        <textarea name='description' maxLength={500}/>
                     </div>
                     
-                </form>
                 <div id={styles.editModalButtonWrap}>
-                    <button onClick={() => handleCancel()}>Cancel</button>
-                    <button onClick={() => putEvent()}>Save</button>
+                    <button type='button' onClick={() => handleCancel()}>Cancel</button>
+                    <button type="submit">Save</button>
                 </div>
+                </form>
             </div>
                 
 
@@ -179,16 +259,26 @@ export const AppCalendar = (eventsArray) =>
                 localizer = {localizer}
                 defaultView='day'
                 events={events}
+                
                 onDragStart={() => "dragging"}
-                onEventDrop={(info) => handleEventDrop(info)}
-                draggableAccessor={() =>true}
+                onEventDrop={(info) => handleEventTimeChange(info)}
                 onSelectSlot={info => createTempEvent(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
-                resizableAccessor={() => true}
-                onEventResize={(info) => handleEventResize(info)}
+                onEventResize={(info) => handleEventTimeChange(info)}
+                
                 dayLayoutAlgorithm={'overlap'}
+                
                 resizable
                 selectable
+                
+                min={new Date(new Date().setHours(6, 0, 0, 0))}
+                max={new Date(new Date().setHours(18, 0, 0, 0))}
+                
+                allDayAccessor={(event) =>  event.allDay}
+                startAccessor={(event) => { return new Date(event.start) }}
+                endAccessor={(event) => { return new Date(event.end) }}
+                resizableAccessor={() => true}
+                draggableAccessor={() =>true}
                 
                 components =
                 {

@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 import json
 import django.middleware.csrf
 from django.conf import settings
-from .models import Events, Projects
+from .models import Events
 
 
 def index(request):
@@ -36,16 +36,16 @@ def get_events(request):
 
 @require_POST
 def set_event(request):
-    print("in set_event")
-    print(request)
-    print(request.body)
     try:
         data = json.loads(request.body)
         event = Events(
-            task=data["task"],
-            times=data["times"],
+            title=data["title"],
             project=data["project"],
+            task=data["task"],
             description=data["description"],
+            start=data["start"],
+            end=data["end"],
+            allDay=data["allDay"],
         )
         event.save()
     except Exception as e:
@@ -90,8 +90,10 @@ def get_projects_by_name(request):
         return JsonResponse({"data": projects})
 
 
-def get_events_by_date(request): ####### IMPORTANT ######
-    print(request)               ####### Events.objects.all().filter(times__0__start__icontains="08-11")
+def get_events_by_date(request):  ####### IMPORTANT ######
+    print(
+        request
+    )  ####### Events.objects.all().filter(times__0__start__icontains="08-11")
     print(Events.objects.all().filter(times__0__start__icontains="08-11"))
     # print(Events.objects.get(id=67).times[0]["start"])
     some = []
@@ -108,39 +110,20 @@ def get_events_by_date(request): ####### IMPORTANT ######
 
 
 def update_event_times(request):
-    print(request)
     try:
         data = json.loads(request.body)
-        event = Events.objects.get(id=data["id"])
-        tData = data.get("time")
+        event = Events.objects.get(id=data["originalEvent"]["id"])
+        newEvent = data["newEvent"]
 
-        oStart = tData.get("oldStart")
-        nStart = tData.get("newStart")
-        oEnd = tData.get("oldEnd")
-        nEnd = tData.get("newEnd")
-        oAllDay = tData.get("oldAllDay")
-        nAllDay = tData.get("newAllDay")
+        newStart = newEvent.get("start")
+        newEnd = newEvent.get("end")
+        newAllDay = newEvent.get("allDay")
 
-        if oStart or oEnd or oAllDay:
-            for time in event.times:
-                print(time)
-                if (
-                        time.get("start") == oStart
-                        and time.get("end") == oEnd
-                        and time.get("allDay") == oAllDay
-                ):
-                    time["start"] = nStart
-                    time["end"] = nEnd
-                    time["allDay"] = nAllDay
-                    break
-                    # breaking because we only want to update one entry
-        else:
-            if not data["time"] in event.times:
-                event.times.append(data["time"])
+        event.start = newStart
+        event.end = newEnd
+        event.allDay = newAllDay
 
         event.save()
-        print(event.times)
-        print(event.id)
     except Exception as e:
         print(e)
     finally:
@@ -160,9 +143,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                    time.get("start") == data["start"]
-                    and time.get("end") == data["end"]
-                    and time.get("allDay") == data["allDay"]
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
