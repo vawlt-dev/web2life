@@ -5,7 +5,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
-import moment from 'moment'
+import moment, { duration } from 'moment'
 import { Toolbar } from './Toolbar'
 
 
@@ -46,10 +46,13 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
 
     const [events, setEvents] = useState(eventsArray);
     const [editModalActive, setEditModalActive] = useState(false);
+    const [view, setView] = useState(Views.MONTH)
+
     const calRef = useRef(null);
     const modalInputRef = useRef(null);
-    const [view, setView] = useState(Views.MONTH)
-    
+    const projectRef = useRef(null);
+    const taskRef = useRef(null);
+
     useEffect(() =>
     {
         setEvents(eventsArray);
@@ -75,12 +78,9 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
             console.log("its day")
         }
     }, [view])
-
     const openModal = (args) =>
     {
         setEditModalActive(false)
-        setTimeout(() => 
-        {
             setEditModalActive(true);
             let modal = document.getElementById(styles.editModal),
                 main = document.querySelector('main');
@@ -96,7 +96,6 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 {
                     args.box.y -= 350;
                 }
-                console.log(document.querySelector('main').getBoundingClientRect().width)
                 modal.style.top = `${args.box.y}px`
                 modal.style.left = `${args.box.x}px`
             }
@@ -115,7 +114,6 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 modal.style.left = `${args.bounds.left}px`
             }
             
-        }, 250);
     } 
 
     const handleCancel = () =>
@@ -129,8 +127,8 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
     {
         if(editModalActive)
         {
-            console.log("Event popped")
             events.pop();
+            console.log("Event popped")
         } 
         const event = createEvent(null, "New Event", args.start, args.end, false, null);
         setTempEvent(event);
@@ -198,58 +196,131 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
         <main>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
                 
-                <form ref={modalInputRef} onSubmit={handleSubmit}>
+                <button type='button' id={styles.editModalExit} onClick={() => handleCancel()}>
+                    &#10006;
+                </button>
+
+                <form id={styles.editModalForm} ref={modalInputRef} onSubmit={handleSubmit}>
                     <input placeholder='Add a title' name='title' required={true} maxLength={50}/>
-                    <div>
+                    <div id={styles.editModalProject}>
                         <label>Project</label>
-                        <select name='project'>
                             {
                                 projectNames && projectNames.length > 0 ?
                                 (
-                                    projectNames.map((project, index) =>
-                                    (
-                                        <option key={index}>
-                                            {project}
-                                        </option>
-                                    ))
+                                    <select name='project'>
+                                    {
+                                        projectNames.map((project, index) =>
+                                        (
+                                            <option key={index}>
+                                                {project}
+                                            </option>
+                                        ))
+                                    }
+                                    </select>
                                 )
                                 :
                                 (
-                                    <option>No projects yet... Add one?</option>
+                                    <div ref={projectRef}  className={styles.noTaskProject}>
+                                        <section>
+                                            <span>No projects yet... Add one?</span>
+                                            <input placeholder="Name of Project"/>
+                                            <button className='editModalTick'>✓</button>
+                                        </section>
+                                        <button type='button' onClick={() =>
+                                        {
+                                            if(projectRef)
+                                            {
+                                                let section = projectRef.current.children[0];
+                                                let button = projectRef.current.children[1];
+
+                                                if(section.classList.contains(styles.active))
+                                                {
+                                                    section.classList.remove(styles.active)
+                                                    button.textContent = "+";
+
+                                                }
+                                                else
+                                                {
+                                                    section.classList.add(styles.active);
+                                                    button.textContent = "-"
+                                                }
+                                            }
+                                        }}>
+                                            +
+                                        </button>
+                                    </div>
                                 )
 
                             }
-                        </select>
                     </div>
-                    <div>
+                    <div id={styles.editModalTask}>
                         <label>Task</label>
-                        <select name='task'>
                         {
                             taskNames && taskNames.length > 0 ?
-                            (
-                                taskNames.map((task, index) => 
+                            <select name='task'>
+                            {
                                 (
-                                    <option key={index}>
-                                        {task}
-                                    </option>
-                                ))
-                            )
+                                    taskNames.map((task, index) => 
+                                    (
+                                        <option key={index}>
+                                            {task}
+                                        </option>
+                                    ))
+                                )
+                            }
+                            </select>
                             :
                             (
-                                <option>No tasks yet... Add one?</option>
+                                <div ref={taskRef}  className={styles.noTaskProject}>
+                                    <section>
+                                        <span>No projects yet... Add one?</span>
+                                        <input placeholder="Name of Project"/>
+                                        <button className='editModalTick'>✓</button>
+                                    </section>
+                                    <button type='button' onClick={() => 
+                                    {
+                                        if(taskRef)
+                                        {
+                                            let section = taskRef.current.children[0];
+                                            let button = taskRef.current.children[1];
+
+                                            if(section.classList.contains(styles.active))
+                                            {
+                                                section.classList.remove(styles.active)
+                                                button.textContent = "+";
+
+                                            }
+                                            else
+                                            {
+                                                section.classList.add(styles.active);
+                                                button.textContent = "-"
+                                            }
+                                        }
+                                    }}>
+                                        +
+                                    </button>
+                                </div>
                             )
                         }
-                        </select>
+                    </div>
+                    <div>
+                        <label>Start Time</label>
+                        <input type='datetime-local'></input>
+                    </div>
+                    <div>
+                        <label>End Time</label>
+                        <input type='datetime-local'></input>
+                    </div>
+                    <div>
+                        <label>All Day Event</label>
+                        <input type='checkbox'/>
                     </div>
                     <div>
                         <label>Description</label>
                         <textarea name='description' maxLength={500}/>
                     </div>
                     
-                <div id={styles.editModalButtonWrap}>
-                    <button type='button' onClick={() => handleCancel()}>Cancel</button>
-                    <button type="submit">Save</button>
-                </div>
+                    <button type="submit" id={styles.editModalSubmit}>Save</button>
                 </form>
             </div>
                 

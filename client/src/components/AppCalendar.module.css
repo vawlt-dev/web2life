@@ -1,21 +1,48 @@
+#editModalExit
+{
+    width: 24px;
+    height: 24px;
+    align-self: flex-end;
+    background-color: rgb(215, 215, 215);
+    color: rgb(85, 85, 85);
+    font-size: 14px;    
+
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    
+    
+    border: 0;
+    transition: background-color ease 250ms,
+                color ease 250ms;
+}
+#editModalExit:hover
+{
+    background-color: rgb(68, 114, 201);
+    color: white;
+}
+
 #editModal
 {
+    
+    padding: 20px;
     position: absolute;
     display: flex;
     flex-direction: column;
     background-color: white;
     color: black;
     border-radius: 8px;
-    padding: 20px;
     z-index: 999;
-    height: 300px;
+    
+    width: 400px;
     justify-content: space-between;
     transition: opacity ease-in-out 250ms,
-                visibility linear 0ms 250ms;
+                visibility linear 0ms;
     opacity: 0;
     
     visibility: hidden;
     pointer-events: none;
+    user-select: none;
 }
 #editModal.active
 {
@@ -23,6 +50,11 @@
     visibility: visible;
     transition: opacity ease-in-out 250ms;
     pointer-events: all;
+}
+#editModalForm
+{
+    display: flex;
+    gap: 16px;
 }
 #editModal > form > input
 {
@@ -33,6 +65,7 @@
     text-align: left;
     border: 0;
     padding: 12px 0px 6px 0px;
+    margin-bottom: 10px;
     border-bottom: 2px solid rgb(235, 235, 235);
     
     font-family: "Inter";
@@ -78,13 +111,39 @@
     font-family: "Inter";
     font-size: 14px;
 }
-#editModalButtonWrap
+#editModal > form > div > input[type="checkbox"]
 {
-    display: inline-flex;
-    justify-content: space-between;
+    width: 20px;
+    height: 20px;
 }
-#editModalButtonWrap > button
+
+.noTaskProject
 {
+    display: flex;
+}
+.noTaskProject > button,
+#editModalProject > div > section > button, 
+#editModalTask > div > section > button
+
+{
+    border: 0;
+    background-color: rgb(47, 91, 172);
+    color: white;
+    font-family: "Inter";
+    font-size: 16px;
+    text-align: center;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 0;
+    font-weight: 400;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#editModalSubmit
+{
+    align-self: flex-end;
     height: 30px;
     width: 75px;
     border: 0;
@@ -95,8 +154,86 @@
     cursor: pointer;
     transition: background-color ease 250ms;
 }
-#editModalButtonWrap > button:hover
+#editModalForm > button:hover
 {
     background-color: rgb(68, 114, 201);
 }
 
+#editModalProject > div > section,
+#editModalTask > div > section
+{
+    display: flex;
+    
+    height: 20px;
+}
+
+#editModalProject > div > section > span,
+#editModalTask > div > section > span
+{
+    opacity: 1;    
+    max-width:  100%;
+    transform: translateX(-10px);
+    transition: opacity ease 300ms 200ms,
+                max-width ease 0ms 200ms,
+                transform ease 300ms 200ms;
+}
+#editModalProject > div > section.active > span,
+#editModalTask > div > section.active > span
+{
+    opacity: 0;
+    max-width: 0px;
+    transform: translateX(5px);
+    transition: max-width 0ms ease 400ms,
+                opacity ease 400ms,
+                transform ease 0ms 400ms;
+    
+}
+
+#editModalProject > div > section > input,
+#editModalProject > div > section > button,
+#editModalTask > div > section > input,
+#editModalTask > div > section > button
+{
+    opacity: 0 ;
+    width: 0;
+    padding: 0;
+    border: 0;
+    pointer-events: none;            
+}
+
+#editModalProject > div > section > input,
+#editModalTask > div > section > input
+{
+    font-size: 14px;
+    font-family: "Inter";
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    transform: translateY(-2.5px);
+}
+
+#editModalProject > div > section.active > input,
+#editModalTask > div > section.active > input
+{
+    opacity: 1;
+    margin-right: 10px;
+    width: 200px;
+    height: 20px;
+    padding: 2px 5px 2px 8px;
+    
+    border: 2px solid gray;
+
+    transition: all ease 350ms 300ms,
+                border 0ms 300ms;
+    pointer-events: all;
+}
+#editModalProject > div > section.active > button,
+#editModalTask > div > section.active > button
+{
+    opacity: 1;
+    width: 20px;
+    transform: translateX(-5px);
+    transition: opacity ease 350ms 300ms,
+                transform 600ms 300ms,
+                width 0ms 300ms;
+    pointer-events: all;
+}
