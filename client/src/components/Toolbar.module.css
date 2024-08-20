@@ -89,7 +89,7 @@ img
 #dropDownWrapper
 {
     user-select: none;
-    z-index: 1;
+    z-index: 4;
 }
 
 #dropDownButton
@@ -109,6 +109,7 @@ img
                 border-color ease 350ms;
     font-family: "Inter";
     font-weight: 300;
+    
 }
 #dropDownButton:hover
 {
