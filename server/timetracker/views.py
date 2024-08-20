@@ -90,13 +90,23 @@ def get_projects_by_name(request):
         return JsonResponse({"data": projects})
 
 # FIXME: Naive timezone warnings?
+# Needs min and max parameters in url in format Y-M-D
+# To get all events on a certain date just use that date
+# as both the min and max arguments
 def get_events_by_date(request):
     print(request)
+    today = datetime.datetime.now()
+    min_arg = request.GET.get("min", "?")
+    max_arg = request.GET.get("max", "?")
+    min_ts = datetime.datetime.strptime(request.GET.get("min", "?"), "%Y-%m-%d").date() if (min_arg != '?') else today
+    max_ts = datetime.datetime.strptime(request.GET.get("max", "?"), "%Y-%m-%d").date() if (max_arg != '?') else today
+
     try:
-        events = Events.objects.filter(start__gt=datetime.date(2024, 8, 19), end__lt=datetime.date(2024, 8, 28)).all()
+        events = Events.objects.filter(start__gte=min_ts, end__lte=max_ts).all()
         event_ids = []
         for e in events:
             event_ids.append(e.id)
+        # Don't know in what format the front-end wants the events
         return JsonResponse({"data": event_ids})
     except Exception as e:
         print(e)
