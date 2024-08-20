@@ -59,7 +59,7 @@
 #editModal > form > input
 {
     
-    font-weight: 600;
+    font-weight: 500;
     color: rgb(60, 60, 60);
     font-size: 20px;
     text-align: left;
@@ -70,6 +70,10 @@
     
     font-family: "Inter";
     transition: border-color ease 300ms;
+}
+#editModal > form > input::placeholder
+{
+    font-weight: 400;
 }
 
 #editModal > form > input:focus-visible
@@ -110,6 +114,9 @@
     resize: none;
     font-family: "Inter";
     font-size: 14px;
+    border: 2px solid rgb(200, 200, 200);
+    padding: 6px;
+    border-radius: 12px;
 }
 #editModal > form > div > input[type="checkbox"]
 {
@@ -236,4 +243,12 @@
                 transform 600ms 300ms,
                 width 0ms 300ms;
     pointer-events: all;
+}
+
+#editModal input[type="datetime-local"]
+{
+    font-family: "Inter";
+    padding: 6px;
+    border: 2px solid gray;
+    border-radius: 6px;
 }
