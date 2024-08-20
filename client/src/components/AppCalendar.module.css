@@ -33,11 +33,11 @@
     color: black;
     border-radius: 8px;
     z-index: 999;
-    
+    border: 2px solid rgb(200, 200, 200);
     width: 400px;
     justify-content: space-between;
     transition: opacity ease-in-out 250ms,
-                visibility linear 0ms;
+                visibility linear 0ms 250ms;
     opacity: 0;
     
     visibility: hidden;
@@ -47,6 +47,7 @@
 #editModal.active
 {
     opacity: 1;
+    
     visibility: visible;
     transition: opacity ease-in-out 250ms;
     pointer-events: all;

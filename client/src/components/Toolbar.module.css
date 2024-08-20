@@ -46,6 +46,12 @@ img
     border: 2px solid var(--borderColor);
     padding: 6px 10px 6px 10px;
     border-radius: 6px;
+    transition: all ease 350ms;
+    cursor: pointer;
+}
+#toolbarLeftButtonWrap > button:hover
+{
+    border-color: var(--textColor);
 }
 
 #addEventButtonWrap > button
@@ -68,11 +74,12 @@ img
     height: 40px;
     border-radius: 20px;
     width: 40px;
+    cursor: pointer;
 }
+   
 #addEventButtonWrap > button:hover
 {
-    background-color: white;
-    color: black;
+    border-color: var(--textColor);
 }
 #date > span
 {
@@ -87,6 +94,7 @@ img
 
 #dropDownButton
 {
+    cursor: pointer;
     display: flex;
     align-items: center;
     border: 0;
@@ -97,9 +105,24 @@ img
     border-radius: 5px;
     background-color: transparent;
     color: var(--textColor);
+    transition: background-color ease 350ms,
+                border-color ease 350ms;
+    font-family: "Inter";
+    font-weight: 300;
 }
-
-
+#dropDownButton:hover
+{
+    border-color: var(--textColor);
+    
+}
+#dropDownButton > div > svg
+{
+    transition: all ease 350ms;
+}
+#dropDownButton > div > svg.active
+{
+    transform: rotateX(-180deg);
+}
 #dropDownMenu
 {
     display: flex;

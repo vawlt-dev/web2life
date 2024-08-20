@@ -115,7 +115,22 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
             }
             
     } 
-
+    const handleToolbarEventAdd = () =>
+    {
+        const data = 
+        {
+            //round to nearest 15 min period
+            start: new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0)), 
+            //round to next nearest 15 min period and account for hour rollover
+            end: new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0) + 15 * 60000), 
+            box:
+            {
+                x: 250,
+                y: 250
+            }
+        }
+        createTempEvent(data)
+    }
     const handleCancel = () =>
     {
         setEditModalActive(false)
@@ -354,7 +369,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 components =
                 {
                     {
-                        toolbar: Toolbar,
+                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd}/>
                         //timeSlotWrapper: customColumnWrapper
                         //dayColumnWrapper: customColumnWrapper
                     }

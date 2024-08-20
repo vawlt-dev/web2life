@@ -12,7 +12,7 @@ const DropDownButton = (props) =>
     );
 };
 
-export const Toolbar = (toolbar) => {
+export const Toolbar = ({toolbarEventAdd, ...toolbar}) => {
     const sliderRef = useRef(null);
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "light");
     const [dropDownActive, setDropDownActive] = useState(false);
@@ -91,9 +91,9 @@ export const Toolbar = (toolbar) => {
                         toolbar.view.toString().substr(1).toLowerCase()}
                     </div>
                     <div>
-                        <svg width={20} height={20}>
+                        <svg width={20} height={10} className={dropDownActive ? styles.active : ""}>
                             <polygon
-                                points="1 5,19 5, 10 17"
+                                points="5 1,15 1, 10 9"
                                 fill="transparent"
                                 stroke={lightMode ? "black" : "white"}
                                 strokeWidth={2}
@@ -113,7 +113,7 @@ export const Toolbar = (toolbar) => {
                 </div>
             </div>
 
-            <div id={styles.addEventButtonWrap}>
+            <div id={styles.addEventButtonWrap} onClick={() => toolbarEventAdd()}>
                 <button>+</button>
             </div>
 
