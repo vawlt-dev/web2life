@@ -89,24 +89,18 @@ def get_projects_by_name(request):
     finally:
         return JsonResponse({"data": projects})
 
-
-def get_events_by_date(request):  ####### IMPORTANT ######
-    print(
-        request
-    )  ####### Events.objects.all().filter(times__0__start__icontains="08-11")
-    print(Events.objects.all().filter(times__0__start__icontains="08-11"))
-    # print(Events.objects.get(id=67).times[0]["start"])
-    some = []
+# FIXME: Naive timezone warnings?
+def get_events_by_date(request):
+    print(request)
     try:
-        # data = json.loads(request.body)
-        # events = Events.objects.all().filter(times__gt=datetime.date(2024, 12, 8))
-        # some = [time for time in events.times.all() if time.get("start") is data["start"]]
-        print("")
+        events = Events.objects.filter(start__gt=datetime.date(2024, 8, 19), end__lt=datetime.date(2024, 8, 28)).all()
+        event_ids = []
+        for e in events:
+            event_ids.append(e.id)
+        return JsonResponse({"data": event_ids})
     except Exception as e:
         print(e)
         return HttpResponse()
-    finally:
-        return JsonResponse({"data": some})
 
 
 def update_event_times(request):
@@ -178,15 +172,17 @@ def get_csrf_token(request):
 
 
 def serve_manifest(request):
-    with open((settings.FRONTEND_BUILD_PATH + "/manifest.json"), "r") as file:
-        data = file.read()
-    return HttpResponse(data)
+    #with open((settings.FRONTEND_BUILD_PATH + "/manifest.json"), "r") as file:
+    #    data = file.read()
+    #return HttpResponse(data);
+    return serve(request, "manifest.json", settings.FRONTEND_BUILD_PATH)
 
 
 def serve_ico(request):
-    with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
-        data = file.read()
-    return HttpResponse(data)
+    #with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
+    #    data = file.read()
+    #return HttpResponse(data)
+    return serve(request, "favicon.ico", settings.FRONTEND_BUILD_PATH)
 
 
 def set_user(request):
