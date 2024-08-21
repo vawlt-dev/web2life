@@ -14,7 +14,7 @@ const DropDownButton = (props) =>
 
 export const Toolbar = ({toolbarEventAdd, ...toolbar}) => {
     const sliderRef = useRef(null);
-    const [lightMode, setLightMode] = useState(localStorage['theme'] === "light");
+    const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
     const [dropDownActive, setDropDownActive] = useState(false);
     const dropDownRef = useRef(null);
 
