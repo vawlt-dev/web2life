@@ -5,7 +5,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
-import moment, { duration } from 'moment'
+import moment from 'moment'
 import { Toolbar } from './Toolbar'
 
 
@@ -68,6 +68,8 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
         
         setProjectNames(Array.from(projects))
         setTaskNames(Array.from(tasks));
+
+        
         console.log(eventsArray)
     },[eventsArray])
    
@@ -147,10 +149,11 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
         } 
         const event = createEvent(null, "New Event", args.start, args.end, false, null);
         setTempEvent(event);
+        console.log(event)
         
         //set as event instead of tempEvent cos useState is asynchronous
         setEvents(prevEvents => [...prevEvents, event])
-
+        console.log(events)
         openModal(args)
     }
 
@@ -169,8 +172,8 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
             project: formData.get("project"),
             task: formData.get("task"),
             description: formData.get("description"),
-            start: new Date(tempEvent.start).toUTCString(),
-            end: new Date(tempEvent.end).toUTCString(),
+            start: tempEvent.start,
+            end: tempEvent.end,
             allDay: tempEvent.allDay
         }
         console.log(data)
@@ -212,7 +215,14 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
     {
         console.log(info)
     }
-
+    const handleSelectAdd = (method) =>
+    {
+    
+    }
+    const handleSelectDelete = (method) =>
+    {
+    
+    }
     return (
         <main>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
@@ -226,77 +236,161 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                     <div id={styles.editModalProject}>
                         <label>Project</label>
                             {
-                                projectNames && projectNames.length > 0 ?
-                                (
-                                    <select name='project'>
+                            projectNames && projectNames.length > 0 ?
+                            <div>
+                                <div ref={projectRef} className={styles.expandingMenu}>
+                                    
+                                    <select name='task'>
                                     {
-                                        projectNames.map((project, index) =>
                                         (
-                                            <option key={index}>
-                                                {project}
-                                            </option>
-                                        ))
+                                            projectNames.map((project, index) => 
+                                            (
+                                                <option key={index}>
+                                                    {project}
+                                                </option>
+                                            ))
+                                        )
                                     }
                                     </select>
-                                )
-                                :
-                                (
-                                    <div ref={projectRef}  className={styles.noTaskProject}>
-                                        <section>
-                                            <span>No projects yet... Add one?</span>
-                                            <input placeholder="Name of Project"/>
-                                            <button className='editModalTick'>✓</button>
-                                        </section>
-                                        <button type='button' onClick={() =>
-                                        {
-                                            if(projectRef)
-                                            {
-                                                let section = projectRef.current.children[0];
-                                                let button = projectRef.current.children[1];
 
-                                                if(section.classList.contains(styles.active))
+                                    <div>
+                                        <section>
+                                            <input placeholder="Name of Project"/>
+                                            <button onClick={() => {handleSelectAdd("Project")}}>✓</button>
+                                        </section>
+
+                                        <button type='button' onClick={() => 
+                                        {
+                                            if(taskRef)
+                                            {
+                                                let select = projectRef.current.children[0];
+                                                let section = projectRef.current.children[1].children[0];
+                                                let button = projectRef.current.children[1].children[1];
+
+                                                if(select.classList.contains(styles.active))
                                                 {
+                                                    select.classList.remove(styles.active)
                                                     section.classList.remove(styles.active)
                                                     button.textContent = "+";
 
                                                 }
                                                 else
                                                 {
-                                                    section.classList.add(styles.active);
+                                                    select.classList.add(styles.active);
+                                                    section.classList.add(styles.active)
                                                     button.textContent = "-"
                                                 }
                                             }
                                         }}>
                                             +
                                         </button>
+                                        <button onClick={() => handleSelectDelete("Project")}>🗑</button>
                                     </div>
-                                )
-
-                            }
-                    </div>
-                    <div id={styles.editModalTask}>
-                        <label>Task</label>
-                        {
-                            taskNames && taskNames.length > 0 ?
-                            <select name='task'>
-                            {
-                                (
-                                    taskNames.map((task, index) => 
-                                    (
-                                        <option key={index}>
-                                            {task}
-                                        </option>
-                                    ))
-                                )
-                            }
-                            </select>
+                                </div>
+                            </div>
                             :
                             (
-                                <div ref={taskRef}  className={styles.noTaskProject}>
+                                <div ref={taskRef} className={styles.expandingMenu}>
                                     <section>
                                         <span>No projects yet... Add one?</span>
                                         <input placeholder="Name of Project"/>
-                                        <button className='editModalTick'>✓</button>
+                                        <button className='editModalTick' onClick={() => {handleSelectAdd("Project")}}>
+                                            ✓
+                                        </button>
+                                    </section>
+                                    <button type='button' onClick={() => 
+                                    {
+                                        if(taskRef)
+                                        {
+                                            let section = taskRef.current.children[0];
+                                            let button = taskRef.current.children[1];
+
+                                            if(section.classList.contains(styles.active))
+                                            {
+                                                section.classList.remove(styles.active)
+                                                button.textContent = "+";
+
+                                            }
+                                            else
+                                            {
+                                                section.classList.add(styles.active);
+                                                button.textContent = "-"
+                                            }
+                                        }
+                                    }}>
+                                        +
+                                    </button>
+                                </div>
+                            )
+                        }
+                    </div>
+                    <div id={styles.editModalTask}>
+                    {
+                        console.log(taskNames)
+                    }
+                        <label>Task</label>
+                        {
+                            taskNames && taskNames.length > 0 ?
+                            <div>
+                                <div ref={taskRef} className={styles.expandingMenu}>
+                                    
+                                    <select name='task'>
+                                    {
+                                        (
+                                            taskNames.map((task, index) => 
+                                            (
+                                                <option key={index}>
+                                                    {task}
+                                                </option>
+                                            ))
+                                        )
+                                    }
+                                    </select>
+
+                                    <div>
+                                        <section>
+                                            <input placeholder="Name of Task"/>
+                                            <button onClick={() => handleSelectAdd("Task")}>✓</button>
+                                        </section>
+
+                                        <button type='button' onClick={() => 
+                                        {
+                                            if(taskRef)
+                                            {
+                                                let select = taskRef.current.children[0];
+                                                let section = taskRef.current.children[1].children[0];
+                                                let button = taskRef.current.children[1].children[1];
+
+                                                if(select.classList.contains(styles.active))
+                                                {
+                                                    select.classList.remove(styles.active)
+                                                    section.classList.remove(styles.active)
+                                                    button.textContent = "+";
+
+                                                }
+                                                else
+                                                {
+                                                    select.classList.add(styles.active);
+                                                    section.classList.add(styles.active)
+                                                    button.textContent = "-"
+                                                }
+                                            }
+                                        }}>
+                                            +
+                                        </button>
+                                        <button onClick={() => handleSelectDelete("Task")}>🗑</button>
+                                    </div>
+                                </div>
+                            </div>
+                            :
+                            (
+                                <div ref={taskRef} className={styles.expandingMenu}>
+                                    <section>
+                                        <span>No projects yet... Add one?</span>
+                                        <input placeholder="Name of Task"/>
+                                        <button className='editModalTick' onClick={() => {handleSelectAdd("Task")}}>
+                                            ✓
+                                        </button>
                                     </section>
                                     <button type='button' onClick={() => 
                                     {
@@ -350,17 +444,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 ref={calRef}
                 localizer = {localizer}
                 defaultView='day'
-                events={
-                    [ 
-                        {
-                            id: 1,
-                            title: "test",
-                            start: new Date(),
-                            end: new Date()
-                        } 
-                    ]
-                    //events
-                    }
+                events={events}
                 
                 onDragStart={() => "dragging"}
                 onSelectEvent={(info) => { handleEventClick(info)} }

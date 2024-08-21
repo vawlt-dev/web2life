@@ -29,7 +29,6 @@ urlpatterns = [
     path("updateEventTimes/", views.update_event_times),
     path("clearEvents/", views.clear_events),
     path("deleteEvent/", views.delete_event),
-    path("deleteEventTime/", views.delete_event_time),
     path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
     path("manifest.json/", views.serve_manifest),
     path("get_event_by_id/", views.get_event_by_id),
