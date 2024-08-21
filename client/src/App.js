@@ -6,6 +6,7 @@ import "./index.css";
 export const App = () =>
 {
     const [events, setEvents] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
 
     const opacityAnimation = (obj, animDuration) =>
@@ -85,6 +86,19 @@ export const App = () =>
            
         })
     }
+    const getProjects = () =>
+    {
+        fetch("/getProjects").then( res =>
+        {
+            if(res.ok)
+            {
+                return res.json()
+            }
+        }).then(data =>
+        {
+            setProjects(data.data);
+        })
+    }
     const handleGet = async (update) =>
     {
 
@@ -117,7 +131,10 @@ export const App = () =>
     }
     const handlePutProject = (project) =>
     {
-        console.log(project)
+        const data = 
+        {
+            project: project
+        }
         fetch("/addProject/",
         {
             method: "POST",
@@ -125,7 +142,7 @@ export const App = () =>
             {
                 "X-CSRFToken": CSRFToken
             },
-            body: JSON.stringify(project)
+            body: JSON.stringify(data)
         }).then(res =>
         {
             if(res.ok)
@@ -179,7 +196,6 @@ export const App = () =>
     const handleDeleteProject = async(update) =>
     {
     }
-    useEffect(() => console.log(events), [events])
     useEffect(() =>
     {
         //set CSRF token for database modification

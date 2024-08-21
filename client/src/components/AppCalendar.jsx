@@ -73,8 +73,6 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
         setProjectNames(Array.from(projects))
         setTaskNames(Array.from(tasks));
 
-        
-        console.log(eventsArray)
     },[eventsArray])
    
     useEffect(() =>
@@ -148,7 +146,6 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
     {
         setEditModalActive(false)
         events.pop();
-        console.log(events)
     }
 
     const createTempEvent = (args) =>
@@ -160,11 +157,9 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
         } 
         const event = createEvent(null, "New Event", args.start, args.end, false, null);
         setTempEvent(event);
-        console.log(event)
         
         //set as event instead of tempEvent cos useState is asynchronous
         setEvents(prevEvents => [...prevEvents, event])
-        console.log(events)
         openModal(args)
     }
 
@@ -187,7 +182,6 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
             end: tempEvent.end,
             allDay: tempEvent.allDay
         }
-        console.log(data)
         putEvent(data)
         setTempEvent(null);
         setEditModalActive(false)
