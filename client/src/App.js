@@ -32,69 +32,7 @@ export const App = () =>
     
   
    
-    /* const deleteEvent = (event) =>
-    {
-        fetch("/deleteEvent/",
-            {
-                method: "POST",
-                headers:
-                {
-                    'X-CSRFToken': CSRFToken
-                },
-                body: JSON.stringify(event)
-            }
-        ).then(res =>
-        {
-            if(res.ok)
-            {
-                console.log("Successfully removed event")
-                getEvents();
-            }
-        })
-    }
-    const updateEventTimes = (info) =>
-    {
-        const eventID = events.find(event => (event.id).toString() === (info.event.id).toString()).id, 
-              newStart = info.event.start, 
-              newEnd = info.event.end, 
-              newAllDay = info.event.allDay
-        let data = 
-        {
-            time:
-            {
-                start: newStart,
-                end: newEnd,
-                allDay: newAllDay
-            },
-            id: eventID
-        };
-        
-        if(info.oldEvent)
-        {
-            data = 
-            {
-                time:
-                {
-                    oldStart: info.oldEvent.start,
-                    oldEnd: info.oldEvent.end,
-                    oldAllDay:info.oldEvent.allDay,
-                    newStart: newStart,
-                    newEnd: newEnd,
-                    newAllDay: newAllDay
-                },
-                id: eventID
-            };
-        }
-        fetch("/updateEventTimes/",
-        {
-            method: "PATCH",
-            headers:
-            {
-                'X-CSRFToken': CSRFToken
-            },
-            body: JSON.stringify(data)
-        })
-    }
+    /*
     const removeEventTime = (info) =>
     {
         let data =
@@ -132,50 +70,7 @@ export const App = () =>
             fetch("/getEvents")
         });
     }
-    const handleHeaderButtonClick = (method, date) =>
-    {
-        const api = calRef.current.getApi();
-
-        opacityAnimation(calRef.current.elRef.current, 750);
-
-        setTimeout(() => 
-        {
-            if(method === "Day")
-            {
-                if(date)
-                {
-                    api.changeView("timeGridDay", date)
-                }
-                else
-                {
-                    api.changeView("timeGridDay")
-                }
-            }
-            else if(method === "Today")
-            {
-                api.today();
-            }
-            else
-            {
-                api.changeView("timeGridWeek")
-            }
-        }, 375);            
-        // half duration time so switch triggers on centre keyframe
-    }
-    
-    const submitCustomEvent = (e) =>
-    {
-        e.preventDefault();
-        const formData = new FormData(e.target);
         
-        const event =
-        {
-            task: formData.get("task"), 
-            times: [],
-            project: formData.get("proj"),
-            description: formData.get("desc")
-        }
-        putEvent(event);
     } */
 
 

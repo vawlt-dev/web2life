@@ -169,10 +169,11 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
             project: formData.get("project"),
             task: formData.get("task"),
             description: formData.get("description"),
-            start: tempEvent.start,
-            end: tempEvent.end,
+            start: new Date(tempEvent.start).toUTCString(),
+            end: new Date(tempEvent.end).toUTCString(),
             allDay: tempEvent.allDay
         }
+        console.log(data)
         putEvent(data)
         setTempEvent(null);
         setEditModalActive(false)
@@ -205,6 +206,11 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
         }) 
         
         patchEvent(event, data);
+    }
+
+    const handleEventClick = (info) =>
+    {
+        console.log(info)
     }
 
     return (
@@ -344,9 +350,20 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 ref={calRef}
                 localizer = {localizer}
                 defaultView='day'
-                events={events}
+                events={
+                    [ 
+                        {
+                            id: 1,
+                            title: "test",
+                            start: new Date(),
+                            end: new Date()
+                        } 
+                    ]
+                    //events
+                    }
                 
                 onDragStart={() => "dragging"}
+                onSelectEvent={(info) => { handleEventClick(info)} }
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onSelectSlot={info => createTempEvent(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
