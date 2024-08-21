@@ -12,7 +12,11 @@ import { Toolbar } from './Toolbar'
 const localizer = momentLocalizer(moment)
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
-
+/*
+    TODO:
+    
+    1) Split Projects
+*/
 
 const createEvent = (id, title, start, end, allDay, resource) =>
 {
@@ -38,7 +42,7 @@ const customColumnWrapper = () =>
     )
 }
 
-export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, deleteEvent}) => 
+export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchEvent, deleteEvent, deleteProject}) => 
 {    
     const [tempEvent, setTempEvent] = useState(null);
     const [projectNames, setProjectNames] = useState(null);
@@ -73,6 +77,13 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
         console.log(eventsArray)
     },[eventsArray])
    
+    useEffect(() =>
+    {
+        if(!editModalActive && modalInputRef)
+        {
+            modalInputRef.current.reset();
+        }
+    }, [editModalActive])
     useEffect(() =>
     {
         if(view === Views.DAY)
@@ -213,16 +224,30 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
 
     const handleEventClick = (info) =>
     {
-        console.log(info)
+        setTempEvent(events.find(event => event.id === info.id))
+        openModal(info)
     }
-    const handleSelectAdd = (method) =>
-    {
     
+    const handleSelectAdd = (e, method) =>
+    {
+        e.preventDefault();
+        const project = projectRef.current.children[1].children[0].children[0].value;
+        if(project.length < 1)
+        {
+            alert("Project name cannot be empty")
+            return;
+        }
+
+        if(method === "Project")
+        {
+            putProject(project)
+        }
     }
     const handleSelectDelete = (method) =>
     {
-    
+        
     }
+
     return (
         <main>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
@@ -232,10 +257,12 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                 </button>
 
                 <form id={styles.editModalForm} ref={modalInputRef} onSubmit={handleSubmit}>
-                    <input placeholder='Add a title' name='title' required={true} maxLength={50}/>
+                    
+                    <input placeholder='Add a title' name='title' required={true} maxLength={50} defaultValue={tempEvent? tempEvent.title : null}/>
+
                     <div id={styles.editModalProject}>
                         <label>Project</label>
-                            {
+                        {
                             projectNames && projectNames.length > 0 ?
                             <div>
                                 <div ref={projectRef} className={styles.expandingMenu}>
@@ -256,7 +283,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                                     <div>
                                         <section>
                                             <input placeholder="Name of Project"/>
-                                            <button onClick={() => {handleSelectAdd("Project")}}>✓</button>
+                                            <button onClick={(e) => {handleSelectAdd(e, "Project")}}>✓</button>
                                         </section>
 
                                         <button type='button' onClick={() => 
@@ -284,7 +311,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                                         }}>
                                             +
                                         </button>
-                                        <button onClick={() => handleSelectDelete("Project")}>🗑</button>
+                                        <button onClick={(e) => handleSelectDelete(e, "Project")}>🗑</button>
                                     </div>
                                 </div>
                             </div>
@@ -294,7 +321,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                                     <section>
                                         <span>No projects yet... Add one?</span>
                                         <input placeholder="Name of Project"/>
-                                        <button className='editModalTick' onClick={() => {handleSelectAdd("Project")}}>
+                                        <button className='editModalTick' onClick={(e) => {handleSelectAdd(e, "Project")}}>
                                             ✓
                                         </button>
                                     </section>
@@ -324,6 +351,10 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                             )
                         }
                     </div>
+                    {/* 
+                    
+                    commenting out bc task is basically same as title - might not be needed
+
                     <div id={styles.editModalTask}>
                     {
                         console.log(taskNames)
@@ -417,14 +448,45 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, patchEvent, delete
                                 </div>
                             )
                         }
-                    </div>
+                    </div> */}
                     <div>
                         <label>Start Time</label>
-                        <input type='datetime-local'></input>
+                        <input type='datetime-local'
+                            defaultValue=
+                            {
+                                tempEvent ?
+                                (
+                                    () =>
+                                    {
+                                        const start = new Date(tempEvent.start);
+                                        start.setHours(start.getHours() + 12);
+                                        return start.toISOString().slice(0,16)
+                                    }
+                                )()
+                                :
+                                null
+                            }
+                        />
                     </div>
                     <div>
                         <label>End Time</label>
-                        <input type='datetime-local'></input>
+                        <input type='datetime-local' 
+                            defaultValue=
+                            {
+                                tempEvent ?
+                                (
+                                    () =>
+                                    {
+                                        const end = new Date(tempEvent.end);
+                                        end.setHours(end.getHours() + 12);
+                                        return end.toISOString().slice(0,16)
+                                    }
+                                )()
+                                :
+                                null
+                            }
+                        />
+
                     </div>
                     <div>
                         <label>All Day Event</label>

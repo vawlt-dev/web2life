@@ -8,9 +8,6 @@ export const App = () =>
     const [events, setEvents] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
 
-    
-
-    
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -30,8 +27,6 @@ export const App = () =>
         }
     }
     
-  
-   
     /*
     const removeEventTime = (info) =>
     {
@@ -115,11 +110,38 @@ export const App = () =>
             {
                 console.log("Error with submitting custom event")
             }
-        }).then(()=>
+        }).then(() =>
         {
             getEvents()
         })
     }
+    const handlePutProject = (project) =>
+    {
+        console.log(project)
+        fetch("/addProject/",
+        {
+            method: "POST",
+            headers:
+            {
+                "X-CSRFToken": CSRFToken
+            },
+            body: JSON.stringify(project)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully added project")
+            }
+            else
+            {
+                console.log("Error adding project")
+            }
+        }).then(() =>
+        {
+            getEvents();
+        })
+    }
+
     const handlePatch = async (originalEvent, newEvent) =>
     {
         const data = 
@@ -153,6 +175,9 @@ export const App = () =>
     const handleDelete = async (update) =>
     {
 
+    }
+    const handleDeleteProject = async(update) =>
+    {
     }
     useEffect(() => console.log(events), [events])
     useEffect(() =>
@@ -200,8 +225,10 @@ export const App = () =>
                 eventsArray={events} 
                 getEvent={handleGet}
                 putEvent={handlePut}
+                putProject={handlePutProject}
                 patchEvent={handlePatch}
                 deleteEvent={handleDelete}
+                deleteProject={handleDeleteProject}
             />
         </div>
     );
