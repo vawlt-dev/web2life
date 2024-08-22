@@ -13,6 +13,7 @@ import json
 import django.middleware.csrf
 from django.conf import settings
 from .models import Events
+from .models import Project
 
 
 def index(request):
@@ -65,29 +66,31 @@ def get_event_by_id(request):
     finally:
         return JsonResponse({"data": event.task})
 
+def get_projects(request):
+    projects = list(Project.objects.all().values())
+    print(f"get_projects: {request}")
+    return JsonResponse({"data": projects})
 
-def get_project_by_id(request):
-    print(request)
+def add_project(request):
+    print(f"add_project: {request}")
     try:
         data = json.loads(request.body)
-        project = Projects.objects.get(id=data["project"])
-    except Exception as e:
-        print(e)
+        project = Project(title = data['title'], description = data['description'])
+        project.save()
         return HttpResponse()
-    finally:
-        return JsonResponse({"data": project})
+    except:
+        return HttpResponse()
 
-
-def get_projects_by_name(request):
-    print(request)
+def delete_project(request):
+    print(f"delete_project: {request}")
     try:
         data = json.loads(request.body)
-        projects = Projects.objects.filter(name__icontains=data["name"])
-    except Exception as e:
-        print(e)
+        print(f"Delete project: {data['title']}")
+        project = Project.objects.get(title = data['title'])
+        project.delete()
         return HttpResponse()
-    finally:
-        return JsonResponse({"data": projects})
+    except:
+        return HttpResponse()
 
 # FIXME: Naive timezone warnings?
 # Needs min and max parameters in url in format Y-M-D
