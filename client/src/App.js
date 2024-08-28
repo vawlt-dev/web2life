@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AppCalendar } from "./components/AppCalendar";
 import styles from "./App.module.css";
+import "./calendarStyles.css"
 import "./index.css";
 
 export const App = () =>

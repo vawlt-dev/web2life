@@ -1,9 +1,25 @@
-.fc button
+.rbc-header > button > span
 {
-    /* bad practise to use !important but don't want to delete styles in the fullcalendar.css file */
-    background-color: var(--primaryColor) !important;
-    color: var(--textColor) !important;
-    transition: all ease 500ms;    
+    font-size: 20px;
+    font-family: "Inter";    
+
+}
+.rbc-header > button
+{
+    height: 40px;
+    width: 100%;
+    padding: 0;
+    
+}
+.rbc-allday-cell
+{
+    height: unset !important;
+}
+
+.rbc-label.rbc-time-header-gutter,
+.rbc-time-gutter.rbc-time-column
+{
+    background-color: var(--primaryColor);
 }
 .fc thead
 {

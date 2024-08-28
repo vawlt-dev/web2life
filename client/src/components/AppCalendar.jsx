@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Calendar, Views, momentLocalizer } from 'react-big-calendar'
+import { Calendar, Views, momentLocalizer} from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
@@ -7,7 +7,6 @@ import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
 import moment from 'moment'
 import { Toolbar } from './Toolbar'
-
 
 const localizer = momentLocalizer(moment)
 const DragAndDropCalendar = withDragAndDrop(Calendar)
@@ -27,20 +26,12 @@ const createEvent = (id, title, start, end, allDay, resource) =>
         start: start,
         end: end,
         allDay: allDay,
-        resource: resource
+        resourceId: "localEvents"
     }
     return createdEvent;
 }
 
-const customColumnWrapper = () =>
-{
-    return(
-        <div className="height600"> 
-            <div></div>
-            <div></div>
-        </div>
-    )
-}
+
 
 export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchEvent, deleteEvent, deleteProject}) => 
 {    
@@ -155,7 +146,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
             events.pop();
             console.log("Event popped")
         } 
-        const event = createEvent(null, "New Event", args.start, args.end, false, null);
+        const event = createEvent(null, "New Event", args.start, args.end, false, null, 'temp');
         setTempEvent(event);
         
         //set as event instead of tempEvent cos useState is asynchronous
@@ -499,7 +490,7 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
             <DragAndDropCalendar 
                 ref={calRef}
                 localizer = {localizer}
-                defaultView='day'
+                defaultView='week'
                 events={events}
                 
                 onDragStart={() => "dragging"}
@@ -513,24 +504,32 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
                 
                 resizable
                 selectable
-                
                 min={new Date(new Date().setHours(6, 0, 0, 0))}
                 max={new Date(new Date().setHours(18, 0, 0, 0))}
-                
                 allDayAccessor={(event) =>  event.allDay}
                 startAccessor={(event) => { return new Date(event.start) }}
                 endAccessor={(event) => { return new Date(event.end) }}
                 resizableAccessor={() => true}
                 draggableAccessor={() =>true}
+                onView={(v) => setView(v)}
+                {...(view === Views.DAY) &&
+                {
+                    resources: 
+                    [
+                        { id: "localEvents", title: "Your Events" },
+                        { id: "importedEvents", title: "Imported Events" },
+
+                    ]
+                    
+                }}
+                
                 
                 components =
                 {
                     {
-                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd}/>
+                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd}/>,
                         //timeSlotWrapper: customColumnWrapper
-                        //dayColumnWrapper: customColumnWrapper
                     }
-
                 }
             />
         </main>
