@@ -8,8 +8,8 @@ export const App = () =>
 {
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
+    
     const [CSRFToken, setCSRFToken] = useState(null)
-
     const opacityAnimation = (obj, animDuration) =>
     {
         if(obj instanceof HTMLElement)
@@ -197,6 +197,10 @@ export const App = () =>
     const handleDeleteProject = async(update) =>
     {
     }
+    const connectOAuthGoogle = () =>
+    {
+        window.location.href  = "http://127.0.0.1:8000/oauth/googleConnect"
+    }
     useEffect(() =>
     {
         //set CSRF token for database modification
@@ -234,10 +238,12 @@ export const App = () =>
         })
 
     }, [])
+    return (        
 
-    return (
         <div id={styles.mainWrap}>
-
+            <div>
+                <button onClick={connectOAuthGoogle}>Connect with Google</button>
+            </div>
             <AppCalendar 
                 eventsArray={events} 
                 getEvent={handleGet}
@@ -248,5 +254,6 @@ export const App = () =>
                 deleteProject={handleDeleteProject}
             />
         </div>
+    
     );
 }

@@ -8,6 +8,9 @@ import styles from "./AppCalendar.module.css"
 import moment from 'moment'
 import { Toolbar } from './Toolbar'
 
+
+
+
 const localizer = momentLocalizer(moment)
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
@@ -499,6 +502,16 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
                 onSelectSlot={info => createTempEvent(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
+                onView={(v) => setView(v)}
+                {...(view === Views.DAY) &&
+                {
+                    resources: 
+                    [
+                        { id: "localEvents", title: "Your Events" },
+                        { id: "importedEvents", title: "Imported Events" },
+                    ]
+                    
+                }}
                 
                 dayLayoutAlgorithm={'overlap'}
                 
@@ -511,24 +524,11 @@ export const AppCalendar = ({eventsArray, getEvent, putEvent, putProject, patchE
                 endAccessor={(event) => { return new Date(event.end) }}
                 resizableAccessor={() => true}
                 draggableAccessor={() =>true}
-                onView={(v) => setView(v)}
-                {...(view === Views.DAY) &&
-                {
-                    resources: 
-                    [
-                        { id: "localEvents", title: "Your Events" },
-                        { id: "importedEvents", title: "Imported Events" },
-
-                    ]
-                    
-                }}
-                
                 
                 components =
                 {
                     {
                         toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd}/>,
-                        //timeSlotWrapper: customColumnWrapper
                     }
                 }
             />

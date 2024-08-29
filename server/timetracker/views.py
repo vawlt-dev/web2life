@@ -14,6 +14,8 @@ import django.middleware.csrf
 from django.conf import settings
 from .models import Events
 from .models import Project
+from google_auth_oauthlib.flow import Flow
+from django.shortcuts import redirect
 
 
 def index(request):
@@ -66,31 +68,70 @@ def get_event_by_id(request):
     finally:
         return JsonResponse({"data": event.task})
 
+
 def get_projects(request):
     projects = list(Project.objects.all().values())
     print(f"get_projects: {request}")
     return JsonResponse({"data": projects})
 
+
 def add_project(request):
     print(f"add_project: {request}")
     try:
         data = json.loads(request.body)
-        project = Project(title = data['title'], description = data['description'])
+        project = Project(title=data["title"], description=data["description"])
         project.save()
         return HttpResponse()
     except:
         return HttpResponse()
+
 
 def delete_project(request):
     print(f"delete_project: {request}")
     try:
         data = json.loads(request.body)
         print(f"Delete project: {data['title']}")
-        project = Project.objects.get(title = data['title'])
+        project = Project.objects.get(title=data["title"])
         project.delete()
         return HttpResponse()
     except:
         return HttpResponse()
+
+
+def google_connect_oauth(request):
+    print(request)
+    try:
+        flow = Flow.from_client_config(
+            {
+                "web": {
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_SECRET,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+            },
+            scopes=[
+                "https://www.googleapis.com/auth/gmail.readonly",
+                "https://www.googleapis.com/auth/calendar.readonly",
+            ],
+            redirect_uri=settings.GOOGLE_CALLBACK,
+        )
+        authorization_url, state = flow.authorization_url(
+            access_type="offline", include_granted_scopes="true"
+        )
+
+        request.session["state"] = state
+        return redirect(authorization_url)
+    except Exception as e:
+        print(e)
+
+
+def google_callback(request):
+    # TODO: handle callback fn, this just redirects back for now
+    # needa actually access the data from here
+
+    return redirect("/")
+
 
 # FIXME: Naive timezone warnings?
 # Needs min and max parameters in url in format Y-M-D
@@ -101,8 +142,16 @@ def get_events_by_date(request):
     today = datetime.datetime.now()
     min_arg = request.GET.get("min", "?")
     max_arg = request.GET.get("max", "?")
-    min_ts = datetime.datetime.strptime(request.GET.get("min", "?"), "%Y-%m-%d").date() if (min_arg != '?') else today
-    max_ts = datetime.datetime.strptime(request.GET.get("max", "?"), "%Y-%m-%d").date() if (max_arg != '?') else today
+    min_ts = (
+        datetime.datetime.strptime(request.GET.get("min", "?"), "%Y-%m-%d").date()
+        if (min_arg != "?")
+        else today
+    )
+    max_ts = (
+        datetime.datetime.strptime(request.GET.get("max", "?"), "%Y-%m-%d").date()
+        if (max_arg != "?")
+        else today
+    )
 
     try:
         events = Events.objects.filter(start__gte=min_ts, end__lte=max_ts).all()
@@ -185,16 +234,16 @@ def get_csrf_token(request):
 
 
 def serve_manifest(request):
-    #with open((settings.FRONTEND_BUILD_PATH + "/manifest.json"), "r") as file:
+    # with open((settings.FRONTEND_BUILD_PATH + "/manifest.json"), "r") as file:
     #    data = file.read()
-    #return HttpResponse(data);
+    # return HttpResponse(data);
     return serve(request, "manifest.json", settings.FRONTEND_BUILD_PATH)
 
 
 def serve_ico(request):
-    #with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
+    # with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
     #    data = file.read()
-    #return HttpResponse(data)
+    # return HttpResponse(data)
     return serve(request, "favicon.ico", settings.FRONTEND_BUILD_PATH)
 
 
