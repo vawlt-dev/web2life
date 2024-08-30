@@ -9,6 +9,8 @@ from django import views
 import os
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 import json
 import django.middleware.csrf
 from django.conf import settings
@@ -16,6 +18,7 @@ from .models import Events
 from .models import Project
 from google_auth_oauthlib.flow import Flow
 from django.shortcuts import redirect
+from datetime import datetime, timedelta
 
 
 def index(request):
@@ -99,7 +102,6 @@ def delete_project(request):
 
 
 def google_connect_oauth(request):
-    print(request)
     try:
         flow = Flow.from_client_config(
             {
@@ -127,10 +129,124 @@ def google_connect_oauth(request):
 
 
 def google_callback(request):
-    # TODO: handle callback fn, this just redirects back for now
-    # needa actually access the data from here
+    state = request.session.get("state")
+
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/calendar.readonly",
+        ],
+        redirect_uri=settings.GOOGLE_CALLBACK,
+    )
+    flow.state = state
+
+    authorization_response = request.build_absolute_uri()
+    try:
+        flow.fetch_token(authorization_response=authorization_response)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    credentials = flow.credentials
+
+    request.session["credentials"] = {
+        "token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "token_uri": credentials.token_uri,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+        "scopes": credentials.scopes,
+    }
 
     return redirect("/")
+
+
+def fetch_google_events(request):
+    if "credentials" not in request.session:
+        return redirect("google_connect_oauth")
+
+    credentials_info = request.session["credentials"]
+    credentials = Credentials(
+        token=credentials_info["token"],
+        refresh_token=credentials_info["refresh_token"],
+        token_uri=credentials_info["token_uri"],
+        client_id=credentials_info["client_id"],
+        client_secret=credentials_info["client_secret"],
+        scopes=credentials_info["scopes"],
+    )
+
+    gmail = build("gmail", "v1", credentials=credentials)
+
+    try:
+        user = gmail.users().getProfile(userId="me").execute()
+
+        # default is from one month ago
+        one_month_ago = (datetime.now() - timedelta(days=30)).strftime("%Y/%m/%d")
+        query = f"from:me after:{one_month_ago}"
+        messages_result = (
+            gmail.users()
+            .messages()
+            .list(userId="me", q=query, maxResults=100)
+            .execute()
+        )
+        message_ids = messages_result.get("messages", [])
+
+        messageList = []
+        for message_id in message_ids:
+            message = (
+                gmail.users()
+                .messages()
+                .get(
+                    userId="me",
+                    id=message_id["id"],
+                    format="metadata",
+                    metadataHeaders=["Date", "Subject", "To"],
+                )
+                .execute()
+            )
+            headers = message["payload"]["headers"]
+
+            info = {
+                "date": next(
+                    header["value"] for header in headers if header["name"] == "Date"
+                ),
+                "subject": next(
+                    header["value"] for header in headers if header["name"] == "Subject"
+                ),
+                "recipient": next(
+                    header["value"] for header in headers if header["name"] == "To"
+                ),
+            }
+            messageList.append(info)
+
+        calendar = build("calendar", "v3", credentials=credentials)
+
+        event_res = (
+            calendar.events()
+            .list(calendarId="primary", q=query, maxResults=100)
+            .execute()
+        )
+        events_list = event_res.get("items", [])
+        events = []
+        for event in events_list:
+            info = {
+                "title": event.get("summary", "No title"),
+                "start": event["start"].get("dateTime", event["start"].get("date")),
+                "end": event["end"].get("dateTime", event["end"].get("date")),
+            }
+            events.append(info)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"info": user, "events": events, "messages": messageList})
 
 
 # FIXME: Naive timezone warnings?

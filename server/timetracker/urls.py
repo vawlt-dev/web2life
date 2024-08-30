@@ -39,8 +39,10 @@ urlpatterns = [
     path("set_user/", views.set_user),
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
-    path("oauth/googleConnect", views.google_connect_oauth),
-    path("oauth/googleCallback", views.google_callback),
+    # Google OAuth paths
+    path("oauth/googleConnect/", views.google_connect_oauth),
+    path("oauth/googleCallback/", views.google_callback),
+    path("fetchGoogleEvents/", views.fetch_google_events),
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),

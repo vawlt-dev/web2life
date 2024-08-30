@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppCalendar } from "./components/AppCalendar";
+import { useNavigate } from 'react-router-dom';
 import styles from "./App.module.css";
 import "./calendarStyles.css"
 import "./index.css";
@@ -8,7 +9,7 @@ export const App = () =>
 {
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
-    
+    const navigate = useNavigate();
     const [CSRFToken, setCSRFToken] = useState(null)
     const opacityAnimation = (obj, animDuration) =>
     {
@@ -199,7 +200,7 @@ export const App = () =>
     }
     const connectOAuthGoogle = () =>
     {
-        window.location.href  = "http://127.0.0.1:8000/oauth/googleConnect"
+        window.location.href  = "https://127.0.0.1:8000/oauth/googleConnect"
     }
     useEffect(() =>
     {
