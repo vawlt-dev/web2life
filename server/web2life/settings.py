@@ -30,7 +30,13 @@ GOOGLE_CALLBACK = os.getenv("GOOGLE_CALLBACK_URI")
 # Github OAuth2.0 configs
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_SECRET = os.getenv("GITHUB_SECRET")
-GITHUB_CALLBACK_URI = os.getenv("GITHUB_CALLBACK")
+GITHUB_CALLBACK_URI = os.getenv("GITHUB_CALLBACK_URI")
+
+# Slack OAuth2.0 configs
+SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
+SLACK_SECRET = os.getenv("SLACK_SECRET")
+SLACK_CALLBACK_URI = os.getenv("SLACK_CALLBACK_URI")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

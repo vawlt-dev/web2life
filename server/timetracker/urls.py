@@ -40,13 +40,16 @@ urlpatterns = [
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
     # Google OAuth paths
-    path("oauth/googleConnect/", views.google_connect_oauth),
-    path("oauth/googleCallback/", views.google_callback),
+    path("oauth/connect/google/", views.google_connect_oauth),
+    path("oauth/callback/google", views.google_callback),
     path("oauth/fetchGoogleEvents/", views.fetch_google_events),
     # Github OAuth paths
-    path("oauth/githubConnect/", views.github_connect_oauth),
-    path("oauth/githubCallback/", views.github_callback),
-    path("oauth/fetchGithubEvents/", views.fetch_github_events),
+    path("oauth/connect/github", views.github_connect_oauth),
+    path("oauth/callback/github", views.github_callback),
+    # Slack OAuth paths
+    path("oauth/connect/slack", views.slack_connect_oauth),
+    path("oauth/callback/slack", views.slack_callback),
+    path("oauth/fetchSlackEvents/", views.fetch_slack_events),
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),

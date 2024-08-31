@@ -1,18 +1,16 @@
 import datetime
+import json
+import requests
+import django.middleware.csrf
 
-from django.utils import timezone
 from django.utils._os import safe_join
-import posixpath
 from pathlib import Path
 from django.views.static import serve
 from django import views
-import os
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-import json
-import django.middleware.csrf
 from django.conf import settings
 from .models import Events
 from .models import Project
@@ -319,7 +317,89 @@ def github_callback(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 
-def fetch_github_events(request):
+def slack_connect_oauth(request):
+    slack_session = OAuth2Session(
+        client_id=settings.SLACK_CLIENT_ID,
+        redirect_uri=settings.SLACK_CALLBACK_URI,
+        scope=[
+            "channels:history",
+            "im:history",
+            "channels:read",
+            "im:read",
+            "mpim:history",
+            "groups:history",
+        ],
+    )
+    authorization_url, state = slack_session.authorization_url(
+        "https://slack.com/oauth/v2/authorize"
+    )
+    request.session["oauth_state"] = state
+    return redirect(authorization_url)
+
+
+def slack_callback(request):
+    slack_session = OAuth2Session(
+        client_id=settings.SLACK_CLIENT_ID,
+        state=request.session["oauth_state"],
+        redirect_uri=settings.SLACK_CALLBACK_URI,
+    )
+
+    try:
+        token = slack_session.fetch_token(
+            "https://slack.com/api/oauth.v2.access",
+            client_secret=settings.SLACK_SECRET,
+            authorization_response=request.build_absolute_uri(),
+        )
+        request.session["oauth_token"] = token
+
+        headers = {"Authorization": f"Bearer {token['access_token']}"}
+
+        response = requests.get(
+            "https://slack.com/api/conversations.list",
+            headers=headers,
+        )
+        channel_info = response.json().get("channels", [])
+        channels = {}
+        for channel in channel_info:
+            channel_id = channel.get("id")
+            channel_name = channel.get("name")
+            channels[channel_id] = channel_name
+
+        print(channels)
+        print(
+            requests.get(
+                "https://slack.com/api/conversations.history",
+                headers=headers,
+                params={"channel": channel_id},
+            ).json()
+        )
+        messages = []
+        for channel_id, channel_name in channels.items():
+            response = requests.get(
+                "https://slack.com/api/conversations.history",
+                headers=headers,
+                params={"channel": channel_id},
+            )
+            messageList = response.json().get("messages", [])
+
+            for message in messageList:
+                messages.append(
+                    {
+                        "user": message.get("user"),
+                        "time": message.get("ts"),
+                        "text": message.get("text"),
+                        "channel": channel_name,
+                    }
+                )
+        print(messages)
+        return JsonResponse(messages, safe=False)
+
+    except Exception as e:
+        print(f"Error fetching token or messages: {e}")
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def fetch_slack_events(request):
     pass
 
 

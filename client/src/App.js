@@ -200,11 +200,15 @@ export const App = () =>
     }
     const connectOAuthGoogle = () =>
     {
-        window.location.href = "https://127.0.0.1:8000/oauth/googleConnect"
+        window.location.href = "https://127.0.0.1:8000/oauth/connect/google"
     }
     const connectOAuthGithub = () =>
     {
-        window.location.href = "https://127.0.0.1:8000/oauth/githubConnect"
+        window.location.href = "https://127.0.0.1:8000/oauth/connect/github"
+    }
+    const connectOAuthSlack = () =>
+    {
+        window.location.href = "https://127.0.0.1:8000/oauth/connect/slack"
     }
     useEffect(() =>
     {
@@ -249,6 +253,7 @@ export const App = () =>
             <div>
                 <button onClick={connectOAuthGoogle}>Connect with Google</button>
                 <button onClick={connectOAuthGithub}>Connect with GitHub</button>
+                <button onClick={connectOAuthSlack}>Connect with Slack</button>
             </div>
             <AppCalendar 
                 eventsArray={events} 
