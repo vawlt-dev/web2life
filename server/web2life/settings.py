@@ -27,11 +27,18 @@ GOOGLE_SECRET = os.getenv("GOOGLE_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "googleClientID")
 GOOGLE_CALLBACK = os.getenv("GOOGLE_CALLBACK_URI")
 
+# Github OAuth2.0 configs
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_SECRET = os.getenv("GITHUB_SECRET")
+GITHUB_CALLBACK_URI = os.getenv("GITHUB_CALLBACK")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-3n0vpnp8gxqz=gg3l(_mv6cd&rt^0olyzbk*cte$9szi(^y96*"
+
+# Don't change this, otherwise github oauth fails
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

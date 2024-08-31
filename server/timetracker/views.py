@@ -18,6 +18,7 @@ from .models import Events
 from .models import Project
 from google_auth_oauthlib.flow import Flow
 from django.shortcuts import redirect
+from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
 
 
@@ -247,6 +248,79 @@ def fetch_google_events(request):
         return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"info": user, "events": events, "messages": messageList})
+
+
+def github_connect_oauth(request):
+    github_session = OAuth2Session(
+        client_id=settings.GITHUB_CLIENT_ID,
+        redirect_uri=settings.GITHUB_CALLBACK_URI,
+        scope="repo,read:user",
+    )
+    auth_url, state = github_session.authorization_url(
+        "https://github.com/login/oauth/authorize"
+    )
+    request.session["oauth_state"] = state
+    return redirect(auth_url)
+
+
+def github_callback(request):
+    github_session = OAuth2Session(
+        client_id=settings.GITHUB_CLIENT_ID,
+        redirect_uri=settings.GITHUB_CALLBACK_URI,
+        scope="repo,read:user",
+    )
+    try:
+        token = github_session.fetch_token(
+            "https://github.com/login/oauth/access_token",
+            client_secret=settings.GITHUB_SECRET,
+            authorization_response=request.build_absolute_uri(),
+        )
+
+        request.session["oauth_token"] = token
+
+        username = github_session.get("https://api.github.com/user").json().get("login")
+
+        response = github_session.get(
+            f"https://api.github.com/users/{username}/events/public"
+        )
+        events_json = response.json()
+
+        events = []
+        for event in events_json:
+            if event["type"] == "PushEvent":
+                branch_name = event["payload"]["ref"].split("/")[-1]
+                repo_name = event["repo"]["name"]
+                for commit in event["payload"]["commits"]:
+                    events.append(
+                        {
+                            "type": "PushEvent",
+                            "time": event["created_at"],
+                            "branch": branch_name,
+                            "repo": repo_name,
+                            "commit_sha": commit["sha"],
+                        }
+                    )
+            elif (
+                event["type"] == "CreateEvent"
+                and event["payload"]["ref_type"] == "branch"
+            ):
+                events.append(
+                    {
+                        "type": "CreateEvent",
+                        "time": event["created_at"],
+                        "branch": branch_name,
+                        "repo": repo_name,
+                    }
+                )
+
+        return JsonResponse(events, safe=False)
+    except Exception as e:
+        print(f"Error fetching token or events: {e}")
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def fetch_github_events(request):
+    pass
 
 
 # FIXME: Naive timezone warnings?
