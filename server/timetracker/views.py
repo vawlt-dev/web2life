@@ -385,6 +385,7 @@ def slack_callback(request):
             for message in messageList:
                 messages.append(
                     {
+                        "type": "message",
                         "user": message.get("user"),
                         "time": message.get("ts"),
                         "text": message.get("text"),
