@@ -1,38 +1,51 @@
 from .models import Events
-from .models import Projects
+from .models import Project
 from .models import ProjectSlackChannelMapEntry
-import models
+from . import models
 from datetime import datetime
+import calendar
+from collections import defaultdict
 import logging
 
 def generate_project_name_from_github_repo(repo):
     return repo
 
-# Translate event fetched from GitHub into
-# Events model. Returns the Events object on success, otherwise None
-#
-# This looks for a project that has the same name as the repo, and if that doesn't exist, it creates the project
-def translate_github_event(data):
-    # Example PushEvent:
-    # {"type": "PushEvent", "time": "2024-06-03T05:40:32Z", "branch": "main", 
-    # "repo": "feijoatears/examplerepo", "commit_sha": "d0b6691e88e487bb32462d19329cec1c5cc7239b"}
-    try: 
-        if data["type"] == "PushEvent":
-            time = datetime.strptime(data["time"], "%Y-%m-%dT%H:%M:%SZ")
-            return Events(
-                title = f"Pushed a commit to {data['repo']} {data['branch']}",
-                projId = models.get_or_add_project_from_name(data['repo']),
-                start = time,
-                end = time,
+# @NOTE(Jamie D)
+# Returns an array of Event objects. Commits that happen within the same 1-hour
+# time frame are grouped into one event. Data should be an array of events that came from
+# Github. @TODO: Only works on PushEvent for now
+def translate_github_events(data) -> list:
+    # repository name -> (hour -> commit count) >:(
+    event_map = defaultdict(lambda:defaultdict(int))
+
+    for e in data:
+        time = datetime.strptime(e["time"], "%Y-%m-%dT%H:%M:%SZ")
+        ts = calendar.timegm(time.timetuple())
+        hour = int(ts / 3600)
+        event_map[e["repo"]][hour] += 1
+
+    events = []
+
+    for repo in event_map.keys():
+        for hour in event_map[repo].keys():
+            count = event_map[repo][hour]
+            print(f"{hour} {repo}: {event_map[repo][hour]}")
+            e = Events(
+                title = f"Pushed {count} commits to {repo}",
+                projId = models.get_or_add_project_from_name(repo),
+                start = datetime.fromtimestamp(hour),
+                end = datetime.fromtimestamp(hour + 1),
                 allDay = False,
-                task = "Push",
-                #@TODO: Commit message should go here
-                description = ""
+                task = "GitHub commit",
+                description = "",
             )
-        logging.debug("Unknown GitHub event type {}", data["type"])
-        return None
-    except:
-        return None
+
+            events.append(e)
+
+    return events
+
+
+    
 
 #@TODO: Set up a POST to use this
 def map_slack_channel_to_project(channel_name, project_name):

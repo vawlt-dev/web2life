@@ -14,7 +14,7 @@ class Events(models.Model):
     task = models.CharField(max_length=30)
     project = models.CharField(max_length=64)
     description = models.CharField(max_length=500)
-    projId = models.ForeignKey(Project, on_delete=models.CASCADE)
+    projId = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = "Events"
@@ -25,12 +25,12 @@ class ProjectSlackChannelMapEntry(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 def get_or_add_project_from_name(name):
-    project = Project.objects.get(title=name)
-    if project == None:
+    try:
+        project = Project.objects.get(title=name)
+        
+    except:
         #@TODO: Descriptions
-        Project.objects.create(title=name, description="")
-    else:
-        return project
+        return Project.objects.create(title=name, description="")
 
 
 

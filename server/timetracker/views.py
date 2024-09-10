@@ -18,7 +18,7 @@ from google_auth_oauthlib.flow import Flow
 from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
-
+from . import event_translation
 
 def index(request):
     print("Serve index")
@@ -310,6 +310,8 @@ def github_callback(request):
                         "repo": repo_name,
                     }
                 )
+
+        test = event_translation.translate_github_events(events)
 
         return JsonResponse(events, safe=False)
     except Exception as e:
