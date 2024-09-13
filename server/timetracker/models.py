@@ -5,6 +5,9 @@ class Project(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=64, unique=True)
 
+    class Meta:
+        db_table = 'Project'
+
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
