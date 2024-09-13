@@ -37,6 +37,10 @@ SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
 SLACK_SECRET = os.getenv("SLACK_SECRET")
 SLACK_CALLBACK_URI = os.getenv("SLACK_CALLBACK_URI")
 
+# Gitlab OAuth2.0 configs
+GITLAB_CLIENT_ID = os.getenv("GITLAB_CLIENT_ID")
+GITLAB_SECRET = os.getenv("GITLAB_SECRET")
+GITLAB_CALLBACK_URI = os.getenv("GITLAB_CALLBACK_URI")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

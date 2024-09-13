@@ -8,16 +8,14 @@ import styles from "./AppCalendar.module.css"
 import moment from 'moment'
 import { Toolbar } from './Toolbar'
 
-
-
-
 const localizer = momentLocalizer(moment)
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
 /*
     TODO:
-    
-    1) Split Projects
+        1) Split Projects
+        2) Add delete method for the projects list
+        3) Add delete method for (local) events
 */
 
 const createEvent = (id, title, start, end, allDay, resource) =>
@@ -33,8 +31,6 @@ const createEvent = (id, title, start, end, allDay, resource) =>
     }
     return createdEvent;
 }
-
-
 
 export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, putProject, patchEvent, deleteEvent, deleteProject}) => 
 {    
@@ -224,7 +220,7 @@ export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, put
             projectInputRef.current.value = ""
         }
     }
-    const handleSelectDelete = (method) =>
+    const handleSelectDelete = (e) =>
     {
         
     }

@@ -19,6 +19,24 @@ from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
 from . import event_translation
+import os
+import base64
+import hashlib
+import random
+import string
+
+
+def generate_state():
+    return "".join(random.choices(string.ascii_letters + string.digits, k=32))
+
+
+def generate_code_verifier():
+    return base64.urlsafe_b64encode(os.urandom(32)).rstrip(b"=").decode("utf-8")
+
+
+def generate_code_challenge(verifier):
+    digest = hashlib.sha256(verifier.encode("utf-8")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("utf-8")
 
 
 def index(request):
@@ -253,32 +271,45 @@ def fetch_google_events(request):
 
 
 def gitlab_connect_oauth(request):
-    gitlab_session = OAuth2Session(
-        client_id=settings.GITLAB_CLIENT_ID,
-        redirect_uri=settings.GITLAB_CALLBACK_URI,
-        scope=["read_user", "api"],
-    )
-    authorization_url, state = gitlab_session.authorization_url(
-        "https://gitlab.com/oauth/authorize"
-    )
+    # for some horrid reason, gitlab REALLY doesn't like to work with the oauth2 library
+    # so i had to manually make the requests and authorize it
+    state = generate_state()
+    verifier = generate_code_verifier()
+    challenge = generate_code_challenge(verifier)
 
     request.session["oauth_state"] = state
+    request.session["code_verifier"] = verifier
+
+    authorization_url = (
+        "https://gitlab.com/oauth/authorize"
+        + f"?client_id={settings.GITLAB_CLIENT_ID}"
+        + f"&redirect_uri={settings.GITLAB_CALLBACK_URI}"
+        + "&response_type=code"
+        + f"&state={state}"
+        + "&scope=read_user+api"
+        + f"&code_challenge={challenge}"
+        + "&code_challenge_method=S256"
+    )
     return redirect(authorization_url)
 
 
 def gitlab_callback(request):
-    gitlab_session = OAuth2Session(
-        client_id=settings.GITLAB_CLIENT_ID,
-        state=request.session["oauth_state"],
-        redirect_uri=settings.GITLAB_CALLBACK_URI,
-    )
+    # i know this is a bit busted, will fix later
+    code = request.GET.get("code")
+    state = request.GET.get("state")
+    verifier = request.session["code_verifier"]
 
     try:
-        token = gitlab_session.fetch_token(
-            "https://gitlab.com/oauth/token",
-            client_secret=settings.GITLAB_CLIENT_SECRET,
-            authorization_response=request.build_absolute_uri(),
-        )
+        token_url = "https://gitlab.com/oauth/token"
+        params = {
+            "client_id": settings.GITLAB_CLIENT_ID,
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": settings.GITLAB_CALLBACK_URI,
+            "code_verifier": verifier,
+        }
+        token = requests.post(token_url, data=params).json()
+        print(token)
         request.session["oauth_token"] = token
         headers = {"Authorization": f"Bearer {token['access_token']}"}
 
@@ -286,7 +317,7 @@ def gitlab_callback(request):
             "https://gitlab.com/api/v4/user", headers=headers
         ).json()["username"]
         projects = requests.get(
-            "https://gitlab.com/api/va/projects", headers=headers
+            "https://gitlab.com/api/v4/projects", headers=headers
         ).json()
 
         if len(projects) > 0:
@@ -312,7 +343,10 @@ def gitlab_callback(request):
                     }
                 )
             for branch in branchEvents:
-                if branch["commit"]["parent_id"] == []:
+                if (
+                    "parent_ids" in branch["commit"]
+                    and not branch["commit"]["parent_ids"]
+                ):
                     events.append(
                         {
                             "branch": branch["name"],
@@ -485,7 +519,7 @@ def fetch_slack_events(request):
     pass
 
 
-# FIXME: Naive timezone warnings?
+# FIXME: Native timezone warnings?
 # Needs min and max parameters in url in format Y-M-D
 # To get all events on a certain date just use that date
 # as both the min and max arguments
