@@ -100,6 +100,7 @@ export const App = () =>
         {
             setProjects(data.data);
         })
+    
     }
     const handleGet = async (update) =>
     {
@@ -223,6 +224,7 @@ export const App = () =>
         }))
 
         getEvents();
+        getProjects();
         window.addEventListener('themeChange', (e) =>
         {
             if (localStorage.getItem('theme') === "true")
@@ -248,7 +250,7 @@ export const App = () =>
 
     }, [])
     return (        
-
+        
         <div id={styles.mainWrap}>
             <div>
                 <button onClick={connectOAuthGoogle}>Connect with Google</button>
@@ -257,6 +259,7 @@ export const App = () =>
             </div>
             <AppCalendar 
                 eventsArray={events} 
+                projectsArray={projects}
                 getEvent={handleGet}
                 putEvent={handlePut}
                 putProject={handlePutProject}
