@@ -20,6 +20,7 @@ from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
 from . import event_translation
 
+
 def index(request):
     print("Serve index")
     print(safe_join(settings.FRONTEND_BUILD_PATH, "index.html"))
@@ -43,14 +44,18 @@ def get_events(request):
 def set_event(request):
     try:
         data = json.loads(request.body)
+
+        try:
+            pID = Project.objects.get(title=data["project"])
+        except:
+            pID = None
         event = Events(
             title=data["title"],
-            project=data["project"],
-            task=data["task"],
             description=data["description"],
             start=data["start"],
             end=data["end"],
             allDay=data["allDay"],
+            projectID=pID,
         )
         event.save()
     except Exception as e:
@@ -78,10 +83,9 @@ def get_projects(request):
 
 
 def add_project(request):
-    print(f"add_project: {request}")
     try:
         data = json.loads(request.body)
-        project = Project(title=data["title"], description=data["description"])
+        project = Project(title=data["project"])
         project.save()
         return HttpResponse()
     except:
@@ -246,6 +250,81 @@ def fetch_google_events(request):
         return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"info": user, "events": events, "messages": messageList})
+
+
+def gitlab_connect_oauth(request):
+    gitlab_session = OAuth2Session(
+        client_id=settings.GITLAB_CLIENT_ID,
+        redirect_uri=settings.GITLAB_CALLBACK_URI,
+        scope=["read_user", "api"],
+    )
+    authorization_url, state = gitlab_session.authorization_url(
+        "https://gitlab.com/oauth/authorize"
+    )
+
+    request.session["oauth_state"] = state
+    return redirect(authorization_url)
+
+
+def gitlab_callback(request):
+    gitlab_session = OAuth2Session(
+        client_id=settings.GITLAB_CLIENT_ID,
+        state=request.session["oauth_state"],
+        redirect_uri=settings.GITLAB_CALLBACK_URI,
+    )
+
+    try:
+        token = gitlab_session.fetch_token(
+            "https://gitlab.com/oauth/token",
+            client_secret=settings.GITLAB_CLIENT_SECRET,
+            authorization_response=request.build_absolute_uri(),
+        )
+        request.session["oauth_token"] = token
+        headers = {"Authorization": f"Bearer {token['access_token']}"}
+
+        username = requests.get(
+            "https://gitlab.com/api/v4/user", headers=headers
+        ).json()["username"]
+        projects = requests.get(
+            "https://gitlab.com/api/va/projects", headers=headers
+        ).json()
+
+        if len(projects) > 0:
+            repoID = projects[0]["id"]
+            repoName = projects[0]["name"]
+
+            pushEvents = requests.get(
+                f"https://gitlab.com/api/v4/projects/{repoID}/events?action=pushed",
+                headers=headers,
+            ).json()
+            branchEvents = requests.get(
+                f"https://gitlab.com/api/v4/projects/{repoID}/repository/branches",
+                headers=headers,
+            ).json()
+
+            events = []
+            for event in pushEvents:
+                events.append(
+                    {
+                        "branch": event["push_data"]["ref"],
+                        "time": event["created_at"],
+                        "commit_sha": event["push_data"]["commit_to"],
+                    }
+                )
+            for branch in branchEvents:
+                if branch["commit"]["parent_id"] == []:
+                    events.append(
+                        {
+                            "branch": branch["name"],
+                            "time": branch["commit"]["committed_date"],
+                            "commit_sha": branch["commit"]["id"],
+                        }
+                    )
+            return JsonResponse(events, safe=False)
+        else:
+            return JsonResponse({"error:": "No projects found"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 
 def github_connect_oauth(request):

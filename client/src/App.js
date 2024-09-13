@@ -211,6 +211,14 @@ export const App = () =>
     {
         window.location.href = "https://127.0.0.1:8000/oauth/connect/slack"
     }
+    const connectOAuthGitlab = () =>
+    {
+        window.location.href = "https://127.0.0.1:8000/oauth/connect/gitlab"
+    }
+    const connectOAuthMicrosoft = () =>
+    {
+        window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft"
+    }
     useEffect(() =>
     {
         //set CSRF token for database modification
@@ -256,6 +264,8 @@ export const App = () =>
                 <button onClick={connectOAuthGoogle}>Connect with Google</button>
                 <button onClick={connectOAuthGithub}>Connect with GitHub</button>
                 <button onClick={connectOAuthSlack}>Connect with Slack</button>
+                <button onClick={connectOAuthGitlab}>Connect with Gitlab</button>
+                <button onClick={connectOAuthMicrosoft}>Connect with Microsoft</button>
             </div>
             <AppCalendar 
                 eventsArray={events} 

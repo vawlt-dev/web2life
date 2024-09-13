@@ -50,6 +50,12 @@ urlpatterns = [
     path("oauth/connect/slack", views.slack_connect_oauth),
     path("oauth/callback/slack", views.slack_callback),
     path("oauth/fetchSlackEvents/", views.fetch_slack_events),
+    # Gitlab OAuth paths
+    path("oauth/connect/gitlab", views.gitlab_connect_oauth),
+    path("oauth/callback/gitlab", views.gitlab_callback),
+    # Microsoft OAuth paths
+    # path("oauth/connect/microsoft", views.microsoft_connect_oauth),
+    # path("oauth/callback/microsoft", views.microsoft_callback),
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),
