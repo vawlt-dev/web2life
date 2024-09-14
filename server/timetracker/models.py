@@ -33,7 +33,8 @@ class ProjectSlackChannelMapEntry(models.Model):
 def get_or_add_project_from_name(name):
     try:
         project = Project.objects.get(title=name)
+        return project
 
     except:
         # @TODO: Descriptions
-        return Project.objects.create(title=name, description="")
+        return Project.objects.create(title=name)

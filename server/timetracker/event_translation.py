@@ -33,14 +33,13 @@ def translate_github_events(data) -> list:
             print(f"{hour} {repo}: {event_map[repo][hour]}")
             e = Events(
                 title = f"Pushed {count} commits to {repo}",
-                projId = models.get_or_add_project_from_name(repo),
+                projectID = models.get_or_add_project_from_name(repo),
                 start = datetime.fromtimestamp(hour * 3600),
                 end = datetime.fromtimestamp((hour + 1) * 3600),
                 allDay = False,
-                task = "GitHub commit",
                 description = "",
             )
-
+            e.save()
             print("From ", e.start)
             print("To ", e.end)
 
