@@ -296,7 +296,6 @@ def gitlab_connect_oauth(request):
 def gitlab_callback(request):
     # i know this is a bit busted, will fix later
     code = request.GET.get("code")
-    state = request.GET.get("state")
     verifier = request.session["code_verifier"]
 
     try:
@@ -313,16 +312,12 @@ def gitlab_callback(request):
         request.session["oauth_token"] = token
         headers = {"Authorization": f"Bearer {token['access_token']}"}
 
-        username = requests.get(
-            "https://gitlab.com/api/v4/user", headers=headers
-        ).json()["username"]
         projects = requests.get(
             "https://gitlab.com/api/v4/projects", headers=headers
         ).json()
 
         if len(projects) > 0:
             repoID = projects[0]["id"]
-            repoName = projects[0]["name"]
 
             pushEvents = requests.get(
                 f"https://gitlab.com/api/v4/projects/{repoID}/events?action=pushed",
@@ -357,6 +352,82 @@ def gitlab_callback(request):
             return JsonResponse(events, safe=False)
         else:
             return JsonResponse({"error:": "No projects found"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def microsoft_connect_oauth(request):
+
+    state = generate_state()
+    request.session["oauth_state"] = state
+
+    authorization_url = (
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+        + f"?client_id={settings.MICROSOFT_CLIENT_ID}"
+        + "&response_type=code"
+        + f"&redirect_uri={settings.MICROSOFT_CALLBACK_URI}"
+        + "&response_mode=query"
+        + "&scope=Mail.Read Calendars.Read offline_access"
+        + f"&state={state}"
+    )
+    return redirect(authorization_url)
+
+
+def microsoft_callback(request):
+    code = request.GET.get("code")
+    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+
+    data = {
+        "client_id": settings.MICROSOFT_CLIENT_ID,
+        "client_secret": settings.MICROSOFT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": settings.MICROSOFT_CALLBACK_URI,
+        "scope": "Mail.Read Calendars.Read offline_access",
+    }
+    try:
+        response = requests.post(token_url, data=data)
+        token = response.json()
+        access_token = token.get("access_token")
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        email_data = (
+            requests.get(
+                "https://graph.microsoft.com/v1.0/me/messages", headers=headers
+            )
+            .json()
+            .get("value", [])
+        )
+        emails = []
+        for email in email_data:
+            emails.append(
+                {
+                    "time_sent": email.get("sentDateTime"),
+                    "recipient": email.get("toRecipients", [{}])[0]
+                    .get("emailAddress", {})
+                    .get("address"),
+                    "subject": email.get("subject"),
+                },
+            )
+
+        calendar_data = (
+            requests.get("https://graph.microsoft.com/v1.0/me/events", headers=headers)
+            .json()
+            .get("value", [])
+        )
+
+        calendar_events = []
+
+        for event in calendar_data:
+            calendar_events.append(
+                {
+                    "title": event.get("subject"),
+                    "start_time": event.get("start", {}).get("dateTime"),
+                    "end_time": event.get("end", {}).get("dateTime"),
+                }
+            )
+        return JsonResponse({"emails": emails, "calendar_events": calendar_events})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
