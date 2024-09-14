@@ -17,20 +17,25 @@ def generate_project_name_from_github_repo(repo):
 # Github. @TODO: Only works on PushEvent for now
 def translate_github_events(data) -> list:
     # repository name -> (hour -> commit count) >:(
-    event_map = defaultdict(lambda:defaultdict(int))
+    commit_count_map = defaultdict(lambda:defaultdict(int))
+    description_map = defaultdict(lambda:defaultdict(str))
 
     for e in data:
         time = datetime.strptime(e["time"], "%Y-%m-%dT%H:%M:%SZ")
         ts = time.timestamp()
         hour = int(ts / 3600)
-        event_map[e["repo"]][hour] += 1
+        commit_count_map[e["repo"]][hour] += 1
+        message = e["message"]
+        if len(message) + len(description_map[e["repo"]][hour]) <= models.Events._meta.get_field("description").max_length:
+            description_map[e["repo"]][hour] += "\n- " + e["message"]
 
     events = []
 
-    for repo in event_map.keys():
-        for hour in event_map[repo].keys():
-            count = event_map[repo][hour]
-            print(f"{hour} {repo}: {event_map[repo][hour]}")
+    for repo in commit_count_map.keys():
+        for hour in commit_count_map[repo].keys():
+            count = commit_count_map[repo][hour]
+            print(description_map[repo][hour])
+            #print(f"{hour} {repo}: {commit_count_map[repo][hour]}")
             e = Events(
                 title = f"Pushed {count} commits to {repo}",
                 projectID = models.get_or_add_project_from_name(repo),
@@ -39,9 +44,6 @@ def translate_github_events(data) -> list:
                 allDay = False,
                 description = "",
             )
-            e.save()
-            print("From ", e.start)
-            print("To ", e.end)
 
             events.append(e)
 
