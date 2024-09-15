@@ -316,15 +316,16 @@ def gitlab_callback(request):
             "https://gitlab.com/api/v4/projects", headers=headers
         ).json()
 
-        if len(projects) > 0:
-            repoID = projects[0]["id"]
+        for project in projects:
+            repo_ID = projects[project]["id"]
+            repo_name = projects[project]["name"]
 
             pushEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repoID}/events?action=pushed",
+                f"https://gitlab.com/api/v4/projects/{repo_ID}/events?action=pushed",
                 headers=headers,
             ).json()
             branchEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repoID}/repository/branches",
+                f"https://gitlab.com/api/v4/projects/{repo_ID}/repository/branches",
                 headers=headers,
             ).json()
 
@@ -332,6 +333,7 @@ def gitlab_callback(request):
             for event in pushEvents:
                 events.append(
                     {
+                        "repo_name": repo_name,
                         "branch": event["push_data"]["ref"],
                         "time": event["created_at"],
                         "commit_sha": event["push_data"]["commit_to"],
@@ -344,6 +346,7 @@ def gitlab_callback(request):
                 ):
                     events.append(
                         {
+                            "repo_name": repo_name,
                             "branch": branch["name"],
                             "time": branch["commit"]["committed_date"],
                             "commit_sha": branch["commit"]["id"],
