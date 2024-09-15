@@ -12,7 +12,7 @@ const DropDownButton = (props) =>
     );
 };
 
-export const Toolbar = ({toolbarEventAdd, ...toolbar}) => {
+export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
     const sliderRef = useRef(null);
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
     const [dropDownActive, setDropDownActive] = useState(false);
@@ -121,6 +121,26 @@ export const Toolbar = ({toolbarEventAdd, ...toolbar}) => {
                 <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
                     {lightMode ? "🔆" : "🌙"}
                 </div>
+            </div>
+            <div id={styles.hamburgerMenu} onClick={() =>
+            {
+                let menu = document.getElementById(`${styles.hamburgerMenuDropdown}`);
+                menu.classList.contains(`${styles.active}`) ? menu.classList.remove(`${styles.active}`) : menu.classList.add(`${styles.active}`)
+                
+            }}>
+                <svg viewBox="0 0 32 32" height={32} width={32}>
+                    <rect x={1} y={1} width={30} height={30} fill="transparent" stroke="white" strokeWidth={2}rx={5.5} ></rect>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={10} y2={10} strokeLinecap="round"></line>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={16} y2={16} strokeLinecap="round"></line>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={22} y2={22} strokeLinecap="round"></line>
+                </svg>
+            </div>
+            <div id={styles.hamburgerMenuDropdown}>
+                <button onClick={OAuthFunctions.connectOAuthGoogle}>Connect with Google</button>
+                <button onClick={OAuthFunctions.connectOAuthGithub}>Connect with GitHub</button>
+                <button onClick={OAuthFunctions.connectOAuthSlack}>Connect with Slack</button>
+                <button onClick={OAuthFunctions.connectOAuthGitlab}>Connect with Gitlab</button>
+                <button onClick={OAuthFunctions.connectOAuthMicrosoft}>Connect with Microsoft</button>
             </div>
         </header>
     );

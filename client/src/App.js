@@ -9,69 +9,8 @@ export const App = () =>
 {
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
-    const navigate = useNavigate();
     const [CSRFToken, setCSRFToken] = useState(null)
-    const opacityAnimation = (obj, animDuration) =>
-    {
-        if(obj instanceof HTMLElement)
-        {
-            obj.animate(
-                [
-                    {opacity: 1},
-                    {opacity: 0},
-                    {opacity: 1},
-                ],
-                {
-                    duration: animDuration,
-                    easing: "ease-in-out"
-                    // half duration time so switch triggers on centre keyframe
-                }
-            )
-        }
-    }
     
-    /*
-    const removeEventTime = (info) =>
-    {
-        let data =
-        {
-            id: info.event.id,
-            start: info.event.start,
-            end: info.event.end,
-            allDay: info.event.allDay
-        }
-        fetch("/deleteEventTime/", 
-        {
-            method: "POST",
-            headers:
-            {
-                'X-CSRFToken': CSRFToken
-            },
-            body: JSON.stringify(data)
-        }).then(res =>
-        {
-            if(res.ok)
-            {
-                console.log("Event time successfully removed")
-                getEvents()
-            }
-        })
-    }
-
-    const clearEvents = () =>
-    {
-        fetch("/clearEvents").then(res =>
-        {
-            setEvents([])
-        }).then( () =>
-        {
-            fetch("/getEvents")
-        });
-    }
-        
-    } */
-
-
     const getEvents = () =>
     {
         //gets all user events
@@ -102,11 +41,7 @@ export const App = () =>
         })
     
     }
-    const handleGet = async (update) =>
-    {
-
-    }
-    const handlePut = async (event) =>
+    const putEvent = async (event) =>
     {
         //append '/' to posts otherwise will reset to a GET request
         fetch("/setEvent/",
@@ -132,7 +67,7 @@ export const App = () =>
             getEvents()
         })
     }
-    const handlePutProject = (project) =>
+    const putProject = (project) =>
     {
         const data = 
         {
@@ -162,7 +97,7 @@ export const App = () =>
         })
     }
 
-    const handlePatch = async (originalEvent, newEvent) =>
+    const patchEvent = async (originalEvent, newEvent) =>
     {
         const data = 
         {
@@ -192,12 +127,17 @@ export const App = () =>
             getEvents()
         })
     }
-    const handleDelete = async (update) =>
+    const patchProject = async (originalProject, newProject) =>
     {
 
     }
-    const handleDeleteProject = async(update) =>
+    const deleteEvent = async (update) =>
     {
+
+    }
+    const deleteProject = async(update) =>
+    {
+
     }
     const connectOAuthGoogle = () =>
     {
@@ -219,6 +159,28 @@ export const App = () =>
     {
         window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft"
     }
+
+    //wrappers for web and oauth functions so we don't pass down 20 different props
+    const webFunctions = 
+    {
+        getEvents,
+        getProjects,
+        putEvent,
+        putProject,
+        patchEvent,
+        patchProject,
+        deleteEvent,
+        deleteProject
+    }
+    const OAuthFunctions = 
+    {
+        connectOAuthGoogle,
+        connectOAuthGithub,
+        connectOAuthSlack,
+        connectOAuthGitlab,
+        connectOAuthMicrosoft
+    }
+
     useEffect(() =>
     {
         //set CSRF token for database modification
@@ -260,22 +222,12 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
-            <div>
-                <button onClick={connectOAuthGoogle}>Connect with Google</button>
-                <button onClick={connectOAuthGithub}>Connect with GitHub</button>
-                <button onClick={connectOAuthSlack}>Connect with Slack</button>
-                <button onClick={connectOAuthGitlab}>Connect with Gitlab</button>
-                <button onClick={connectOAuthMicrosoft}>Connect with Microsoft</button>
-            </div>
+            
             <AppCalendar 
                 eventsArray={events} 
                 projectsArray={projects}
-                getEvent={handleGet}
-                putEvent={handlePut}
-                putProject={handlePutProject}
-                patchEvent={handlePatch}
-                deleteEvent={handleDelete}
-                deleteProject={handleDeleteProject}
+                webFunctions = {webFunctions}
+                OAuthFunctions={OAuthFunctions}
             />
         </div>
     

@@ -32,7 +32,7 @@ const createEvent = (id, title, start, end, allDay, resource) =>
     return createdEvent;
 }
 
-export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, putProject, patchEvent, deleteEvent, deleteProject}) => 
+export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunctions}) => 
 {    
     const [tempEvent, setTempEvent] = useState(null);
 
@@ -163,8 +163,8 @@ export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, put
             start: tempEvent.start,
             end: tempEvent.end,
             allDay: tempEvent.allDay
-        }
-        putEvent(data)
+        }        
+        webFunctions.putEvent(data)
         setTempEvent(null);
         setEditModalActive(false)
     }
@@ -194,7 +194,7 @@ export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, put
             return [...updatedEvents, tempEvent]
         }) 
         
-        patchEvent(event, data);
+        webFunctions.patchEvent(event, data);
     }
 
     const handleEventClick = (info) =>
@@ -216,7 +216,7 @@ export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, put
         else
         {
             projectInputRef.current.setCustomValidity("")
-            putProject(project)
+            webFunctions.putProject(project)
             projectInputRef.current.value = ""
         }
     }
@@ -404,7 +404,7 @@ export const AppCalendar = ({eventsArray, projectsArray, getEvent, putEvent, put
                 components =
                 {
                     {
-                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd}/>,
+                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd} OAuthFunctions={OAuthFunctions}/>,
                     }
                 }
             />

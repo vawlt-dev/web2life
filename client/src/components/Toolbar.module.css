@@ -14,6 +14,7 @@ img
 {
     filter: var(--logoInvert);
     max-width: 200px;
+    margin-left: 10px;
 }
 #themeSlider
 {
@@ -206,4 +207,64 @@ z-index: 222;
 {
     transform: translateX(76px);
     background-color: rgb(50, 50, 50);
+}
+#hamburgerMenu
+{
+    margin-right: 10px;
+    cursor: pointer;
+}
+#hamburgerMenuDropdown
+{
+    opacity: 0;
+    width: 0;
+    height: 0;
+    flex-direction: column;
+    display: none;
+}
+#hamburgerMenuDropdown.active::before
+{
+    background-color: white;
+    transform: rotate(45deg);
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: 15px;
+    height: 10px;
+    width: 10px;
+    opacity: 1;
+}
+#hamburgerMenuDropdown.active
+{
+    opacity: 1;
+    width: unset;
+    height: unset;
+    display: flex;
+    position: absolute;
+    right: 5px;
+    top: 5%;
+    background-color: white;
+    width: 225px;
+    height: 250px;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: space-evenly;
+    z-index: 999999999;
+}
+#hamburgerMenuDropdown > button
+{
+    width: 200px;
+    height: 35px;
+    background-color:  rgb(68, 114, 201);
+    font-family: "Quicksand Regular";
+    color: white;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 16px;
+    border: 2px solid rgb(90, 90, 90);
+    transition: scale ease-in-out 75ms;
+}
+#hamburgerMenuDropdown > button:hover
+{
+    scale: 1.05;
+    cursor: pointer;
 }
