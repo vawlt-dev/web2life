@@ -483,6 +483,7 @@ def github_callback(request):
                             "branch": branch_name,
                             "repo": repo_name,
                             "commit_sha": commit["sha"],
+                            "message": commit["message"],
                         }
                     )
             elif (
