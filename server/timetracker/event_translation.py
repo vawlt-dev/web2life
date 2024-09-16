@@ -2,7 +2,7 @@ from .models import Events
 from .models import Project
 from .models import ProjectSlackChannelMapEntry
 from . import models
-from datetime import datetime
+import datetime
 import calendar
 from collections import defaultdict
 import logging
@@ -19,10 +19,11 @@ def translate_github_events(data) -> list:
     # repository name -> (hour -> commit count) >:(
     commit_count_map = defaultdict(lambda:defaultdict(int))
     description_map = defaultdict(lambda:defaultdict(str))
+    timezone = datetime.timezone(datetime.timedelta(hours=13, minutes=0))
 
     for e in data:
-        time = datetime.strptime(e["time"], "%Y-%m-%dT%H:%M:%SZ")
-        ts = time.timestamp()
+        time = datetime.datetime.strptime(e["time"], "%Y-%m-%dT%H:%M:%SZ")
+        ts = time.astimezone(timezone).timestamp()
         hour = int(ts / 3600)
         commit_count_map[e["repo"]][hour] += 1
         try:
@@ -36,13 +37,11 @@ def translate_github_events(data) -> list:
     for repo in commit_count_map.keys():
         for hour in commit_count_map[repo].keys():
             count = commit_count_map[repo][hour]
-            print(description_map[repo][hour])
-            #print(f"{hour} {repo}: {commit_count_map[repo][hour]}")
             e = Events(
                 title = f"Pushed {count} commits to {repo}",
                 projectID = models.get_or_add_project_from_name(repo),
-                start = datetime.fromtimestamp(hour * 3600),
-                end = datetime.fromtimestamp((hour + 1) * 3600),
+                start = datetime.datetime.fromtimestamp(hour * 3600),
+                end = datetime.datetime.fromtimestamp((hour + 1) * 3600),
                 allDay = False,
                 description = "",
             )
@@ -63,8 +62,8 @@ def translate_slack_event(data):
             return Events(
                 title = f"Message from {data['user']} in {data['channel']}",
                 #@TODO: What format is 'ts' in ?
-                start = datetime.now(),
-                end = datetime.now(),
+                start = datetime.datetime.now(),
+                end = datetime.datetime.now(),
                 description=data["text"],
                 projId = project.project,
                 task = "Messaging",
