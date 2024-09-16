@@ -25,10 +25,12 @@ def translate_github_events(data) -> list:
         ts = time.timestamp()
         hour = int(ts / 3600)
         commit_count_map[e["repo"]][hour] += 1
-        message = e["message"]
-        if len(message) + len(description_map[e["repo"]][hour]) <= models.Events._meta.get_field("description").max_length:
-            description_map[e["repo"]][hour] += "\n- " + e["message"]
-
+        try:
+            message = e["message"]
+            if len(message) + len(description_map[e["repo"]][hour]) <= models.Events._meta.get_field("description").max_length:
+                description_map[e["repo"]][hour] += "\n- " + e["message"]
+        except: pass
+        
     events = []
 
     for repo in commit_count_map.keys():
