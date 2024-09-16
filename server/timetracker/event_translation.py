@@ -35,8 +35,6 @@ def translate_github_events(data) -> list:
         
     events = []
 
-    print(commit_count_map)
-
     for repo in commit_count_map.keys():
         for hour in commit_count_map[repo].keys():
             count = commit_count_map[repo][hour]
@@ -46,7 +44,7 @@ def translate_github_events(data) -> list:
                 start = datetime.datetime.fromtimestamp(hour * 3600),
                 end = datetime.datetime.fromtimestamp((hour + 1) * 3600),
                 allDay = False,
-                description = "",
+                description = description_map[repo][hour],
             )
 
             events.append(e)

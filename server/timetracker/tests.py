@@ -41,6 +41,7 @@ class EventTranslationTest(TestCase):
 			},
 		]
 		events = event_translation.translate_github_events(data)
+		print(events)
 
 		self.assertEqual(events[0].title, "Pushed 3 commits to my/repo")
 		self.assertEqual(events[1].title, "Pushed 2 commits to my/repo")

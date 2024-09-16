@@ -20,6 +20,9 @@ class Events(models.Model):
         Project, on_delete=models.CASCADE, default=None, null=True
     )
 
+    def __str__(self):
+        return f"{{ID: {self.id}, Title: \"{self.title}\", Description: \"{self.description}\"}}"
+
     class Meta:
         db_table = "Events"
 
