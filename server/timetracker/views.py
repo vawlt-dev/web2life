@@ -333,7 +333,7 @@ def gitlab_callback(request):
             for event in pushEvents:
                 events.append(
                     {
-                        "repo_name": repo_name,
+                        "repo": repo_name,
                         "branch": event["push_data"]["ref"],
                         "time": event["created_at"],
                         "commit_sha": event["push_data"]["commit_to"],
@@ -346,7 +346,7 @@ def gitlab_callback(request):
                 ):
                     events.append(
                         {
-                            "repo_name": repo_name,
+                            "repo": repo_name,
                             "branch": branch["name"],
                             "time": branch["commit"]["committed_date"],
                             "commit_sha": branch["commit"]["id"],
