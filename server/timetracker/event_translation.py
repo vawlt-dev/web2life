@@ -6,6 +6,7 @@ import datetime
 import calendar
 from collections import defaultdict
 import logging
+import dateutil
 
 def generate_project_name_from_github_repo(repo):
     return repo
@@ -22,7 +23,7 @@ def translate_github_events(data) -> list:
     timezone = datetime.timezone(datetime.timedelta(hours=13, minutes=0))
 
     for e in data:
-        time = datetime.datetime.strptime(e["time"], "%Y-%m-%dT%H:%M:%SZ")
+        time = dateutil.parser.isoparse(e["time"])
         ts = time.astimezone(timezone).timestamp()
         hour = int(ts / 3600)
         commit_count_map[e["repo"]][hour] += 1
@@ -33,6 +34,8 @@ def translate_github_events(data) -> list:
         except: pass
         
     events = []
+
+    print(commit_count_map)
 
     for repo in commit_count_map.keys():
         for hour in commit_count_map[repo].keys():
