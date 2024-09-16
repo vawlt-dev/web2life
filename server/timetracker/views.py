@@ -263,7 +263,7 @@ def fetch_google_events(request):
                 "end": event["end"].get("dateTime", event["end"].get("date")),
             }
             events.append(info)
-
+        event_translation.google_email_create_events(messageList)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
@@ -639,7 +639,7 @@ def update_event_times(request):
         event.start = newStart
         event.end = newEnd
         event.allDay = newAllDay
-
+        print(newStart)
         event.save()
     except Exception as e:
         print(e)

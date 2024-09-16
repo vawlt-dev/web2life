@@ -74,3 +74,14 @@ def translate_slack_event(data):
         return None
     except:
         return None
+
+
+def google_email_create_events(data):
+    for email in data:
+        e = Events.objects.create()
+        print(email["date"])
+        e.start = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z")
+        e.end = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z") + datetime.timedelta(hours=0.5)
+        e.title = email["subject"]
+        e.save()
+    return
