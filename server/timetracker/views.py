@@ -19,6 +19,7 @@ from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
 from . import event_translation
+from . import filter
 import os
 import base64
 import hashlib
@@ -624,6 +625,10 @@ def get_events_by_date(request):
     except Exception as e:
         print(e)
         return HttpResponse()
+
+def filter_events(request):
+    events = filter.filter_events(request)
+    return JsonResponse({"data": events})
 
 
 def update_event_times(request):
