@@ -2,6 +2,11 @@ import { Views } from "react-big-calendar";
 import styles from "./Toolbar.module.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import logo from "../resources/images/logo.png";
+import googleLogo from "../resources/images/google.png"
+import microsoftLogo from "../resources/images/microsoft.png"
+import githubLogo from "../resources/images/github.png"
+import slackLogo from "../resources/images/slack.png"
+import gitlabLogo from "../resources/images/gitlab.png"
 
 const DropDownButton = (props) => 
 {
@@ -69,8 +74,18 @@ export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
 
     return (
         <header>
-            <div>
-                <img src={logo} alt="" />
+           <div id={styles.hamburgerMenu} onClick={() =>
+            {
+                let menu = document.getElementById(`${styles.hamburgerMenuDropdown}`);
+                menu.classList.contains(`${styles.active}`) ? menu.classList.remove(`${styles.active}`) : menu.classList.add(`${styles.active}`)
+                
+            }}>
+                <svg viewBox="0 0 32 32" height={32} width={32}>
+                    <rect x={1} y={1} width={30} height={30} fill="transparent" stroke="white" strokeWidth={1.25}rx={5.5} ></rect>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={10} y2={10} strokeLinecap="round"></line>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={16} y2={16} strokeLinecap="round"></line>
+                    <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={22} y2={22} strokeLinecap="round"></line>
+                </svg>
             </div>
 
             <div id={styles.toolbarLeftButtonWrap}>
@@ -118,30 +133,34 @@ export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
 
             {/*  */}
 
-            <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
-                <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
-                    {lightMode ? "🔆" : "🌙"}
+            
+            
+            <div id={styles.hamburgerMenuDropdown}>
+                <span id={styles.OAuthGrid}>
+                    <button onClick={OAuthFunctions.connectOAuthGoogle}>
+                        <img src={googleLogo} alt=""/>
+                    </button>
+                    <button onClick={OAuthFunctions.connectOAuthMicrosoft}>
+                        <img src={microsoftLogo} alt=""/> 
+                    </button>
+                    <button onClick={OAuthFunctions.connectOAuthGithub}>
+                        <img src={githubLogo} alt=""/>
+                    </button>
+                    <button onClick={OAuthFunctions.connectOAuthSlack}>
+                        <img src={slackLogo} alt="" />
+                    </button>
+                    <button onClick={OAuthFunctions.connectOAuthGitlab}>
+                        <img src={gitlabLogo} alt="" />
+                    </button>
+                </span>
+                <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
+                    <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
+                        {lightMode ? "🔆" : "🌙"}
+                    </div>
                 </div>
             </div>
-            <div id={styles.hamburgerMenu} onClick={() =>
-            {
-                let menu = document.getElementById(`${styles.hamburgerMenuDropdown}`);
-                menu.classList.contains(`${styles.active}`) ? menu.classList.remove(`${styles.active}`) : menu.classList.add(`${styles.active}`)
-                
-            }}>
-                <svg viewBox="0 0 32 32" height={32} width={32}>
-                    <rect x={1} y={1} width={30} height={30} fill="transparent" stroke="white" strokeWidth={2}rx={5.5} ></rect>
-                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={10} y2={10} strokeLinecap="round"></line>
-                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={16} y2={16} strokeLinecap="round"></line>
-                    <line x1={6} x2={26} stroke="white" strokeWidth={2} y1={22} y2={22} strokeLinecap="round"></line>
-                </svg>
-            </div>
-            <div id={styles.hamburgerMenuDropdown}>
-                <button onClick={OAuthFunctions.connectOAuthGoogle}>Connect with Google</button>
-                <button onClick={OAuthFunctions.connectOAuthGithub}>Connect with GitHub</button>
-                <button onClick={OAuthFunctions.connectOAuthSlack}>Connect with Slack</button>
-                <button onClick={OAuthFunctions.connectOAuthGitlab}>Connect with Gitlab</button>
-                <button onClick={OAuthFunctions.connectOAuthMicrosoft}>Connect with Microsoft</button>
+            <div>
+                <img src={logo} alt="" />
             </div>
         </header>
     );
