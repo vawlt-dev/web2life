@@ -16,21 +16,7 @@ img
     max-width: 200px;
     padding-right: 10px;
 }
-#themeSlider
-{
-    display: flex;
-    align-items: center;
-    background-color: rgb(133, 133, 133);
-    width: 100px;
-    height: 25px;
-    border-radius: 20px;
-    align-self: flex-end;
-    margin-bottom: 20px;
-    margin-right: 20px;
-    cursor: pointer;
-    transition: all ease 250ms;
-    user-select: none;
-}
+
 
 #toolbarLeftButtonWrap
 {
@@ -56,9 +42,11 @@ img
 }
 
 
-#date > span
+#date
 {
+    min-width: 300px;
     font-size: 24px;
+    text-align: center;
 }
 
 #dropDownWrapper
@@ -158,6 +146,21 @@ z-index: 222;
     cursor: pointer;
 }
 
+#themeSlider
+{
+    display: flex;
+    align-items: center;
+    background-color: rgb(133, 133, 133);
+    width: 190px;
+    height: 25px;
+    border-radius: 20px;
+    align-self: flex-end;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    cursor: pointer;
+    transition: all ease 250ms;
+    user-select: none;
+}
 #slider
 {
     position: relative;
@@ -172,14 +175,13 @@ z-index: 222;
     background-color: aliceblue;
 
 }
-
 #themeSlider:has(#slider.active)
 {
     background-color: rgb(56, 79, 103);
 }
 #slider.active
 {
-    transform: translateX(76px);
+    transform: translateX(165px);
     background-color: rgb(50, 50, 50);
 }
 #hamburgerMenu
@@ -196,11 +198,15 @@ z-index: 222;
 #hamburgerMenuDropdown
 {
     opacity: 0;
-    width: 0;
     height: 0;
+    display: flex;
     flex-direction: column;
-    display: none;
+    visibility: hidden;
     pointer-events: none;
+    position: absolute;
+    left: 5px;
+    top: 5%;
+    border: 2px solid gray;
 }
 #hamburgerMenuDropdown.active::before
 {
@@ -216,13 +222,11 @@ z-index: 222;
 }
 #hamburgerMenuDropdown.active
 {
+    visibility:visible;
     opacity: 1;
     width: unset;
-    height: unset;
-    display: flex;
-    position: absolute;
-    left: 5px;
-    top: 5%;
+    height: 300px;
+    
     background-color: white;
     width: 225px;
     height: 250px;
@@ -231,6 +235,8 @@ z-index: 222;
     justify-content: space-evenly;
     z-index: 999999999;
     pointer-events: all;
+
+    transition: opacity ease-in-out 350ms 55ms, width 350ms 0ms, height 350ms 0ms, display 1ms 0ms;
 }
 #hamburgerMenuDropdown > #OAuthGrid 
 {
@@ -252,13 +258,22 @@ z-index: 222;
     border-radius: 6px;
     transition: all ease 350ms;
 }
-#hamburgerMenuDropdown > #OAuthGrid button:hover
+
+
+#hamburgerMenuDropdown > #OAuthGrid button:hover,
+#settingsWrap > button:hover
 {
     background-color: gray;
     
-    transform: perspective(20px) translateZ(2px);
+    transform: perspective(40px) translateZ(2px);
 }
-
+#hamburgerMenuDropdown > #OAuthGrid label
+{
+    color: black;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 6px;
+}
 #hamburgerMenuDropdown > #OAuthGrid button > img
 {
     width: 100%;
@@ -269,8 +284,28 @@ z-index: 222;
     width: 40px;
 }
 
-#hamburgerMenuDropdown > button:hover
+
+#settingsWrap
 {
-    scale: 1.05;
+    width: 90%;
+}
+#settingsWrap > button
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 5px;
+    font-family: 'Inter';
+    font-size: 16px;
+    
+    border: 2px solid rgb(161, 161, 161);
+    border-radius: 6px;
+    width: 100%;
+    transition: all ease 350ms;
+    z-index: 9999;
     cursor: pointer;
+}
+#settingsSVG
+{
+    fill: black;
 }
