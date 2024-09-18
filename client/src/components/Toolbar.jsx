@@ -12,7 +12,7 @@ const DropDownButton = (props) =>
     );
 };
 
-export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
+export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
     const sliderRef = useRef(null);
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
     const [dropDownActive, setDropDownActive] = useState(false);
@@ -49,19 +49,22 @@ export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
         window.dispatchEvent(new CustomEvent("themeChange", { detail: lightMode }));
     }, [lightMode]);
 
-    const back = () => {
-        toolbar.onNavigate('PREV');
+    const back = () => 
+    {
+        console.log(calendarFunctions.view)
+        calendarFunctions.handleNavigate('back')
     };
-    const next = () => {
-        toolbar.onNavigate("NEXT");
+    const next = () => 
+    {
+        calendarFunctions.handleNavigate("next");
     };
     const goToToday = () => 
     {
-        toolbar.onNavigate("TODAY");
+        calendarFunctions.handleNavigate("today");
     };
     const changeView = (view) => 
     {
-        toolbar.onView(view);
+       calendarFunctions.setView(view);
     };
 
     return (
@@ -77,7 +80,7 @@ export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
             </div>
 
             <div id={styles.date}>
-                <span>{toolbar.label}</span>
+                <span>{calendarFunctions.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})}</span>
             </div>
 
             <div
@@ -87,8 +90,8 @@ export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
             >
                 <button id={styles.dropDownButton}>
                     <div>
-                        {toolbar.view.toString().charAt(0).toUpperCase() +
-                        toolbar.view.toString().substr(1).toLowerCase()}
+                        {calendarFunctions.view.toString().charAt(0).toUpperCase() +
+                        calendarFunctions.view.toString().substr(1).toLowerCase()} 
                     </div>
                     <div>
                         <svg width={20} height={10} className={dropDownActive ? styles.active : ""}>
@@ -113,9 +116,7 @@ export const Toolbar = ({toolbarEventAdd, OAuthFunctions, ...toolbar}) => {
                 </div>
             </div>
 
-            <div id={styles.addEventButtonWrap} onClick={() => toolbarEventAdd()}>
-                <button>+</button>
-            </div>
+            {/*  */}
 
             <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
                 <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>

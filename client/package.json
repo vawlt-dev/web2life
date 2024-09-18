@@ -46,6 +46,7 @@
     ]
   },
   "devDependencies": {
-    "@types/react-big-calendar": "^1.8.9"
+    "@types/react-big-calendar": "^1.8.9",
+    "jest": "^27.5.1"
   }
 }

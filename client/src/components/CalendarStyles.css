@@ -5,7 +5,7 @@
 .rbc-today
 {
     background-color: transparent;
-    transition: all ease-in-out 500ms;
+    transition: all ease 500ms;
 }
 .rbc-header
 {
@@ -14,4 +14,8 @@
 .rbc-row-content
 {
     z-index: 0;
+}
+.rbc-time-gutter, .rbc-time-column, .rbc-label, .rbc-time-header-gutter
+{
+    transition: background-color ease 500ms;
 }

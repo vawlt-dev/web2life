@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
+import { act, forwardRef, useEffect, useRef, useState } from "react";
 import { AppCalendar } from "./components/AppCalendar";
 import { useNavigate } from 'react-router-dom';
 import styles from "./App.module.css";
 import "./calendarStyles.css"
 import "./index.css";
+import { SecondaryMenu } from "./components/SecondaryMenu";
+import { Footer } from "./components/Footer";
+import { Toolbar } from "./components/Toolbar";
+
+import { momentLocalizer, Views } from 'react-big-calendar'
+import moment from 'moment'
 
 export const App = () =>
 {
+    const localizer = momentLocalizer(moment)
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
     const [CSRFToken, setCSRFToken] = useState(null)
-    
+    const [view, setView] = useState(Views.WEEK);
+    const [date, setDate] = useState(new Date());
+    const calRef = useRef(null);
     const getEvents = () =>
     {
         //gets all user events
@@ -181,6 +190,73 @@ export const App = () =>
         connectOAuthMicrosoft
     }
 
+    const handleNavigate = (action) =>
+    {
+        let tempDate = new Date(date);
+        console.log(date)
+        switch(action)
+        {
+            case 'back':
+            {
+                switch(view)
+                {
+                    case 'month':
+                        tempDate.setMonth(date.getMonth() - 1);
+                        break;
+                    case 'week':
+                        tempDate.setDate(date.getDate() - 7);
+                        break;
+                    case 'day':
+                        tempDate.setDate(date.getDate() - 1);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            }
+            case 'next':
+            {
+                switch(view)
+                {
+                    case 'month':
+                        tempDate.setMonth(date.getMonth() + 1);
+                        break;
+                    case 'week':
+                        tempDate.setDate(date.getDate() + 7);
+                        break;
+                    case 'day':
+                        tempDate.setDate(date.getDate() + 1);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            }
+            case 'today':
+            {
+                tempDate = new Date();
+                break;
+            }
+            default:
+            {
+                break;
+            }
+        }
+        setDate(tempDate)
+    }
+
+    let addEventFromSecondaryMenu;
+
+    const CalendarFunctions = 
+    {
+        handleNavigate,
+        setDate,
+        date,
+        view,
+        setView,
+        addEventFromSecondaryMenu
+    }
+
     useEffect(() =>
     {
         //set CSRF token for database modification
@@ -222,13 +298,20 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
-            
-            <AppCalendar 
-                eventsArray={events} 
-                projectsArray={projects}
-                webFunctions = {webFunctions}
-                OAuthFunctions={OAuthFunctions}
-            />
+            <Toolbar OAuthFunctions={OAuthFunctions} calendarFunctions={CalendarFunctions}/>
+            <div id={styles.calendarWrap}>
+                <SecondaryMenu localizer={localizer} calendarFunctions={CalendarFunctions}/>
+                <AppCalendar 
+                    calRef={calRef}
+                    eventsArray={events} 
+                    projectsArray={projects}
+                    webFunctions = {webFunctions}
+                    calendarFunctions={CalendarFunctions}
+                    localizer={localizer}
+
+                />
+            </div>
+            <Footer/>
         </div>
     
     );

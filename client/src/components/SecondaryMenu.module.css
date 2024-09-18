@@ -1,0 +1,193 @@
+#menuWrap
+{
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    width: 25%;
+    align-items: center;
+    background-color: var(--primaryColour);
+}
+#secondaryCalendarWrap
+{
+    margin-top: 40px;
+}
+#secondaryCalendarToolbar
+{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 6px 6px 12px 6px;
+    font-size: 14px;
+    font-weight: 400;
+}
+#secondaryCalendarToolbar > div > button
+{
+    background-color: transparent;
+    color: var(--textColor);
+    border: 0;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+#secondaryCalendarToolbar > div 
+{
+    display: inline-flex;
+    gap: 10px;
+}
+
+.secondaryCalendar [role="table"],
+.secondaryCalendar [role="row"],
+.secondaryCalendar [class="rbc-header"],
+.secondaryCalendar [class="rbc-month-row"]
+{
+    border: none;
+}
+.secondaryCalendar [class="rbc-row-content"] > div
+{
+    height: 23px;
+}
+.secondaryCalendar [class="rbc-date-cell rbc-now rbc-current"] > button,
+.secondaryCalendar [class="rbc-date-cell rbc-now"] > button
+{
+    background-color: rgb(59, 87, 146);
+    color: white;
+}
+.secondaryCalendar [class="rbc-date-cell rbc-current"] > button
+{
+    background-color: rgba(109, 139, 204, 0.301);
+}
+
+.secondaryCalendar [class="rbc-month-row"]
+{
+    width: 100%;
+}
+
+.secondaryCalendar [class="rbc-row-bg"]
+{
+    display: block;
+}
+.secondaryCalendar
+{
+    height: 200px;
+    width: 200px;
+}
+.secondaryCalendar div[class="rbc-row rbc-month-header"]
+{
+    display: flex;
+}
+.secondaryCalendar [class="rbc-header"]
+{
+    font-weight: 500;
+    margin-left: 3px;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.secondaryCalendar button[class="rbc-button-link"]
+{
+    font-size: 10px;
+    font-family: "Inter";
+    font-weight: 300;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+
+    transition: background-color ease-in-out 250ms;
+    
+}
+.secondaryCalendar [class="rbc-button-link"]:hover
+{
+    background-color: rgb(59, 87, 146);
+    color: white;
+    transition: color ease-in-out 50ms, background-color ease-in-out 250ms;
+}
+
+#filterWrap
+{
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+}
+#filterDropdownToggle
+{
+    user-select: none;
+    cursor: pointer;
+    border-bottom: 2px solid var(--textColor);
+    transition: all ease 350ms;
+}
+#filterDropdownToggle:hover
+{
+    color: rgb(74, 118, 214);
+    border-color: rgb(74, 118, 214);
+}
+
+#filterDropdown
+{
+    padding: 6px;
+    opacity: 0;
+    display:flex;
+    flex-direction: column; 
+    user-select: none;
+    pointer-events: none;
+    height: 0px;
+    overflow: hidden;
+    transition: opacity ease 250ms, height ease 150ms;
+    gap: 6px;
+}
+#filterDropdown > span,
+#filterDropdown > #importedEventsOptions > span 
+{
+    display: flex;
+    justify-content: space-between;
+    
+}
+#filterDropdown > #importedEventsOptions 
+{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+#filterDropdown.active
+{
+    opacity: 1;
+    height: 200px;
+    pointer-events: all;
+}
+
+#addEventWrap
+{
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 18px;
+}
+#addEventButton > button
+{
+    font-family: "Inter";
+    border: 1px solid var(--borderColor);
+    color: var(--textColor);
+    border-radius: 6px;
+    font-size: 12px;
+
+    padding: 10px;
+    background-color: transparent;
+    transition: all ease 250ms;
+
+    display: inline-flex;
+    justify-content: center;
+    display: inline-flex;
+    font-size: 30px;
+    padding: 0;
+    height: 40px;
+    border-radius: 20px;
+    width: 40px;
+    cursor: pointer;
+}
+   
+#addEventWrap > #addEventButton >button:hover
+{
+    border-color: var(--textColor);
+}

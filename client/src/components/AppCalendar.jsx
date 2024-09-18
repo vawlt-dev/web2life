@@ -1,21 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Calendar, Views, momentLocalizer} from 'react-big-calendar'
+import { Calendar, Views} from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
-import moment from 'moment'
-import { Toolbar } from './Toolbar'
 
-const localizer = momentLocalizer(moment)
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
 /*
     TODO:
-        1) Split Projects
-        2) Add delete method for the projects list
-        3) Add delete method for (local) events
+        1) Add delete method for the projects list
+        2) Add delete method for (local) events
 */
 
 const createEvent = (id, title, start, end, allDay, resource) =>
@@ -32,16 +28,22 @@ const createEvent = (id, title, start, end, allDay, resource) =>
     return createdEvent;
 }
 
-export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunctions}) => 
+export const AppCalendar = 
+    ({
+        calRef,
+        eventsArray, 
+        projectsArray, 
+        webFunctions, 
+        calendarFunctions,
+        localizer, 
+        setCurrentView
+    }) => 
 {    
-    const [tempEvent, setTempEvent] = useState(null);
 
+    const [tempEvent, setTempEvent] = useState(null);
     const [events, setEvents] = useState(eventsArray);
     const [projects, setProjects] = useState(null);
     const [editModalActive, setEditModalActive] = useState(false);
-    const [view, setView] = useState(Views.MONTH)
-
-    const calRef = useRef(null);
     const modalInputRef = useRef(null);
     const projectRef = useRef(null);
     const projectInputRef = useRef(null);
@@ -97,6 +99,7 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
             }
             
     } 
+    
     const handleToolbarEventAdd = () =>
     {
         const data = 
@@ -114,6 +117,8 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
         }
         createTempEvent(data)
     }
+    calendarFunctions.addEventFromSecondaryMenu = handleToolbarEventAdd;
+
     const handleCancel = () =>
     {
         setEditModalActive(false)
@@ -226,7 +231,7 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
     }
 
     return (
-        <main>
+        <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
                 
                 <button type='button' id={styles.editModalExit} onClick={() => handleCancel()}>
@@ -312,7 +317,6 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
                         </div>
                     </div>
 
-                    
                     <div>
                         <label>Start Time</label>
                         <input type='datetime-local'
@@ -364,22 +368,21 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
                     <button type="submit" id={styles.editModalSubmit}>Save</button>
                 </form>
             </div>
-                
-
+            
             <DragAndDropCalendar 
                 ref={calRef}
                 localizer = {localizer}
                 defaultView='week'
                 events={events}
-                
+                date={calendarFunctions.date}
+                view={calendarFunctions.view}
                 onDragStart={() => "dragging"}
                 onSelectEvent={(info) => { handleEventClick(info)} }
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onSelectSlot={info => createTempEvent(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
-                onView={(v) => setView(v)}
-                {...(view === Views.DAY) &&
+                {...(calendarFunctions.view === Views.DAY) &&
                 {
                     resources: 
                     [
@@ -388,9 +391,8 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
                     ]
                     
                 }}
-                
+                onNavigate={(date) => calendarFunctions.setDate(date)}
                 dayLayoutAlgorithm={'overlap'}
-                
                 resizable
                 selectable
                 min={new Date(new Date().setHours(6, 0, 0, 0))}
@@ -400,15 +402,8 @@ export const AppCalendar = ({eventsArray, projectsArray, webFunctions, OAuthFunc
                 endAccessor={(event) => { return new Date(event.end) }}
                 resizableAccessor={() => true}
                 draggableAccessor={() =>true}
-                
-                components =
-                {
-                    {
-                        toolbar: (props) => <Toolbar {...props} toolbarEventAdd={handleToolbarEventAdd} OAuthFunctions={OAuthFunctions}/>,
-                    }
-                }
+                toolbar={null}
             />
         </main>
-
     )
-}
+};
