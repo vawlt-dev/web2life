@@ -27,7 +27,7 @@ class Events(models.Model):
     projectID = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
-    origin = models.IntegerField()
+    origin = models.IntegerField(default=EventOrigin.USER)
 
     def __str__(self):
         return f"{{ID: {self.id}, Title: \"{self.title}\", Description: \"{self.description}\"}}"
