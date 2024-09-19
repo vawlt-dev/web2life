@@ -15,6 +15,7 @@ class EventOrigin(Enum):
     GITHUB = 2
     GITLAB = 3
     MICROSOFT = 4
+    SLACK = 5
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)

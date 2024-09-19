@@ -1,6 +1,7 @@
 from .models import Events
 from .models import Project
 from .models import ProjectSlackChannelMapEntry
+from .models import EventOrigin
 from . import models
 import datetime
 import calendar
@@ -45,6 +46,7 @@ def translate_github_events(data) -> list:
                 end = datetime.datetime.fromtimestamp((hour + 1) * 3600),
                 allDay = False,
                 description = description_map[repo][hour],
+                origin = EventOrigin.GITHUB,
             )
 
             events.append(e)
@@ -69,6 +71,7 @@ def translate_slack_event(data):
                 projId = project.project,
                 task = "Messaging",
                 allDay = False,
+                origin = EventOrigin.SLACK,
             )
         logging.debug("Unknown Slack event type {}", data["type"])
         return None
@@ -83,5 +86,6 @@ def google_email_create_events(data):
         e.start = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z")
         e.end = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z") + datetime.timedelta(hours=0.5)
         e.title = email["subject"]
+        e.origin = EventOrigin.SLACK
         e.save()
     return
