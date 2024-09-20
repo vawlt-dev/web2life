@@ -2,6 +2,13 @@
     font-family: "Inter";
     src: url("../../public/resources/fonts/Inter-VariableFont.ttf");
 }
+
+*
+{
+    user-select: none;
+    -webkit-user-drag: none;
+
+}
 header
 {
     display: flex;
@@ -9,7 +16,9 @@ header
     align-items: center;
     border-bottom: 2px solid rgba(128, 128, 128, 0.175);
     min-height: 75px;
+    
 }
+
 img
 {
     filter: var(--logoInvert);
@@ -187,6 +196,7 @@ z-index: 222;
 #hamburgerMenu
 {
     padding-left: 20px;
+    margin-right: 20px;
     cursor: pointer;
 }
 #hamburgerMenu > svg > rect, 

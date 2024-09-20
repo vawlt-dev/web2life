@@ -6,7 +6,7 @@ class Project(models.Model):
     title = models.CharField(max_length=64, unique=True)
 
     class Meta:
-        db_table = 'Project'
+        db_table = "Project"
 
 
 class Events(models.Model):
@@ -15,13 +15,14 @@ class Events(models.Model):
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
     allDay = models.BooleanField(default=False)
+    resourceId = models.CharField(max_length=20, default="localEvents")
     description = models.CharField(max_length=500)
-    projectID = models.ForeignKey(
+    projectId = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
 
     def __str__(self):
-        return f"{{ID: {self.id}, Title: \"{self.title}\", Description: \"{self.description}\"}}"
+        return f'{{ID: {self.id}, Title: "{self.title}", Description: "{self.description}"}}'
 
     class Meta:
         db_table = "Events"

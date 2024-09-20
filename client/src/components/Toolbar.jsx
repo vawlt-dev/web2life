@@ -56,7 +56,6 @@ export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
 
     const back = () => 
     {
-        console.log(calendarFunctions.view)
         calendarFunctions.handleNavigate('back')
     };
     const next = () => 
@@ -183,14 +182,14 @@ export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
                         </svg>
                     </button>
                 </div>
-               {/*  <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
+                <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
                     <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
                         {lightMode ? "🔆" : "🌙"}
                     </div>
-                </div> */}
+                </div> 
             </div>
             <div>
-                <img src={logo} alt="" />
+                <img src={logo} alt="" draggabl/>
             </div>
         </header>
     );

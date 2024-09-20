@@ -108,6 +108,7 @@
     display: flex;
     flex-direction: column;
     margin-top: 40px;
+    width: 75%;
 }
 #filterDropdownToggle
 {
@@ -124,16 +125,18 @@
 
 #filterDropdown
 {
-    padding: 6px;
+    margin-top: 12px;
     opacity: 0;
     display:flex;
     flex-direction: column; 
     user-select: none;
     pointer-events: none;
-    height: 0px;
+    height: 200px;
     overflow: hidden;
-    transition: opacity ease 250ms, height ease 150ms;
-    gap: 6px;
+    transition: opacity ease 250ms;
+    width: 100%;
+    font-size: 12px;
+    gap: 2px;
 }
 #filterDropdown > span,
 #filterDropdown > #importedEventsOptions > span 
@@ -151,7 +154,6 @@
 #filterDropdown.active
 {
     opacity: 1;
-    height: 200px;
     pointer-events: all;
 }
 
@@ -185,7 +187,16 @@
     width: 40px;
     cursor: pointer;
 }
-   
+text
+{
+    color: gray;
+    transition: color ease 250ms;
+}
+text.active
+{
+    color: var(--textColor);
+}
+
 #addEventWrap > #addEventButton >button:hover
 {
     border-color: var(--textColor);

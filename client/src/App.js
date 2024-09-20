@@ -200,13 +200,13 @@ export const App = () =>
             {
                 switch(view)
                 {
-                    case 'month':
+                    case Views.MONTH:
                         tempDate.setMonth(date.getMonth() - 1);
                         break;
-                    case 'week':
+                    case Views.WEEK:
                         tempDate.setDate(date.getDate() - 7);
                         break;
-                    case 'day':
+                    case Views.DAY:
                         tempDate.setDate(date.getDate() - 1);
                         break;
                     default:
@@ -218,13 +218,13 @@ export const App = () =>
             {
                 switch(view)
                 {
-                    case 'month':
+                    case Views.MONTH:
                         tempDate.setMonth(date.getMonth() + 1);
                         break;
-                    case 'week':
+                    case Views.WEEK:
                         tempDate.setDate(date.getDate() + 7);
                         break;
-                    case 'day':
+                    case Views.DAY:
                         tempDate.setDate(date.getDate() + 1);
                         break;
                     default:

@@ -14,7 +14,7 @@ const DragAndDropCalendar = withDragAndDrop(Calendar)
         2) Add delete method for (local) events
 */
 
-const createEvent = (id, title, start, end, allDay, resource) =>
+const createEvent = (id, title, start, end, allDay, resourceId) =>
 {
     const createdEvent = 
     {
@@ -23,7 +23,7 @@ const createEvent = (id, title, start, end, allDay, resource) =>
         start: start,
         end: end,
         allDay: allDay,
-        resourceId: resource
+        resourceId: resourceId
     }
     return createdEvent;
 }
@@ -52,6 +52,7 @@ export const AppCalendar =
     {
         setEvents(eventsArray);
         setProjects([{id: 0, title: "Test 1"}])
+        console.log(eventsArray)
     },[eventsArray, projectsArray])
    
     useEffect(() =>
@@ -137,11 +138,11 @@ export const AppCalendar =
         if(!args.allDay)
         {
             let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
-            event = createEvent(null, "New Event", args.start, args.end, timeDiff >= 24, 'temp');
+            event = createEvent(null, "New Event", args.start, args.end, timeDiff >= 24, 'localEvents');
         }
         else
         {
-            event = createEvent(null, "New Event", args.start, args.end, false, 'temp');
+            event = createEvent(null, "New Event", args.start, args.end, false, 'localEvents');
         }
         
         setTempEvent(event);
@@ -230,6 +231,20 @@ export const AppCalendar =
         
     }
 
+
+    const testevents = [
+        {
+            allDay: false,
+            description: "",
+            end: "2024-09-20T23:00:00Z",
+            id: 53,
+            projectId_id: 2,
+            resourceId: "localEvents",
+            start: "2024-09-20T19:00:00Z",
+            title: "New Event",
+        },
+        
+    ];
     return (
         <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
@@ -372,9 +387,8 @@ export const AppCalendar =
             <DragAndDropCalendar 
                 ref={calRef}
                 localizer = {localizer}
-                defaultView='week'
                 events={events}
-                date={calendarFunctions.date}
+                date={new Date(calendarFunctions.date)}
                 view={calendarFunctions.view}
                 onDragStart={() => "dragging"}
                 onSelectEvent={(info) => { handleEventClick(info)} }
@@ -382,17 +396,21 @@ export const AppCalendar =
                 onSelectSlot={info => createTempEvent(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
-                {...(calendarFunctions.view === Views.DAY) &&
+                resources=
                 {
-                    resources: 
-                    [
-                        { id: "localEvents", title: "Your Events" },
-                        { id: "importedEvents", title: "Imported Events" },
-                    ]
                     
-                }}
-                onNavigate={(date) => calendarFunctions.setDate(date)}
-                dayLayoutAlgorithm={'overlap'}
+                    calendarFunctions.view === Views.DAY ?
+                    [
+                        {id: "localEvents", title:"Your Events"},
+                        {id: "importedEvents", title:"Imported Events"}
+                    ]
+                    :
+                    null
+                    
+                }
+                //onNavigate={(date) => calendarFunctions.setDate(date)}
+                //onView={(view) => calendarFunctions.setView(view)}
+                //dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
                 min={new Date(new Date().setHours(6, 0, 0, 0))}
