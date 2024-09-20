@@ -1,6 +1,5 @@
-import { act, forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppCalendar } from "./components/AppCalendar";
-import { useNavigate } from 'react-router-dom';
 import styles from "./App.module.css";
 import "./calendarStyles.css"
 import "./index.css";
@@ -19,6 +18,46 @@ export const App = () =>
     const [CSRFToken, setCSRFToken] = useState(null)
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
+
+   const [OAuthData, setOAuthData] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => 
+    {
+        const fetchGoogleData = async () => 
+        {
+            try 
+            {
+                const response = await fetch("https://127.0.0.1:8000/oauth/getGoogleEvents");
+                if (!response.ok) throw new Error("Failed to fetch Google data.");
+                const data = await response.json();
+                setOAuthData(prevState => (
+                    {
+                    ...prevState,
+                    google: data
+                    })
+                );
+            } 
+            catch (error) 
+            {
+                console.error("Error fetching Google data:", error);
+            } 
+            finally 
+            {
+                setLoading(false);
+            }
+        };
+        fetchGoogleData();
+    }, []);
+
+    useEffect(() => 
+    {
+        if (!loading) 
+        {
+            console.log(OAuthData);
+        }
+    }, [OAuthData, loading]);
+    
     const calRef = useRef(null);
     const getEvents = () =>
     {
@@ -148,27 +187,6 @@ export const App = () =>
     {
 
     }
-    const connectOAuthGoogle = () =>
-    {
-        window.location.href = "https://127.0.0.1:8000/oauth/connect/google"
-    }
-    const connectOAuthGithub = () =>
-    {
-        window.location.href = "https://127.0.0.1:8000/oauth/connect/github"
-    }
-    const connectOAuthSlack = () =>
-    {
-        window.location.href = "https://127.0.0.1:8000/oauth/connect/slack"
-    }
-    const connectOAuthGitlab = () =>
-    {
-        window.location.href = "https://127.0.0.1:8000/oauth/connect/gitlab"
-    }
-    const connectOAuthMicrosoft = () =>
-    {
-        window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft"
-    }
-
     //wrappers for web and oauth functions so we don't pass down 20 different props
     const webFunctions = 
     {
@@ -180,14 +198,6 @@ export const App = () =>
         patchProject,
         deleteEvent,
         deleteProject
-    }
-    const OAuthFunctions = 
-    {
-        connectOAuthGoogle,
-        connectOAuthGithub,
-        connectOAuthSlack,
-        connectOAuthGitlab,
-        connectOAuthMicrosoft
     }
 
     const handleNavigate = (action) =>
@@ -298,13 +308,14 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
-            <Toolbar OAuthFunctions={OAuthFunctions} calendarFunctions={CalendarFunctions}/>
+            <Toolbar calendarFunctions={CalendarFunctions}/>
             <div id={styles.calendarWrap}>
                 <SecondaryMenu localizer={localizer} calendarFunctions={CalendarFunctions}/>
                 <AppCalendar 
                     calRef={calRef}
                     eventsArray={events} 
                     projectsArray={projects}
+                    OAuthData = {OAuthData}
                     webFunctions = {webFunctions}
                     calendarFunctions={CalendarFunctions}
                     localizer={localizer}

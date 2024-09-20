@@ -33,6 +33,7 @@ export const AppCalendar =
         calRef,
         eventsArray, 
         projectsArray, 
+        OAuthData,
         webFunctions, 
         calendarFunctions,
         localizer, 
@@ -47,7 +48,10 @@ export const AppCalendar =
     const modalInputRef = useRef(null);
     const projectRef = useRef(null);
     const projectInputRef = useRef(null);
-
+    useEffect(() =>
+    {
+        console.log(OAuthData.google)
+    }, [OAuthData])
     useEffect(() =>
     {
         setEvents(eventsArray);

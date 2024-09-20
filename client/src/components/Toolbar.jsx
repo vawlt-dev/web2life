@@ -17,7 +17,7 @@ const DropDownButton = (props) =>
     );
 };
 
-export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
+export const Toolbar = ({ calendarFunctions }) => {
     const sliderRef = useRef(null);
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
     const [dropDownActive, setDropDownActive] = useState(false);
@@ -133,19 +133,19 @@ export const Toolbar = ({OAuthFunctions, calendarFunctions}) => {
             <div id={styles.hamburgerMenuDropdown}>
                 <span id={styles.OAuthGrid}>
                     <label>Connect with OAuth</label>
-                    <button onClick={OAuthFunctions.connectOAuthGoogle}>
+                    <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/google"}>
                         <img src={googleLogo} alt="Google"/>
                     </button>
-                    <button onClick={OAuthFunctions.connectOAuthMicrosoft}>
+                    <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft"}>
                         <img src={microsoftLogo} alt="Microsoft"/> 
                     </button>
-                    <button onClick={OAuthFunctions.connectOAuthGithub}>
+                    <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/github"}>
                         <img src={githubLogo} alt="GitHub"/>
                     </button>
-                    <button onClick={OAuthFunctions.connectOAuthSlack}>
+                    <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/slack"}>
                         <img src={slackLogo} alt="Slack"/>
                     </button>
-                    <button onClick={OAuthFunctions.connectOAuthGitlab}>
+                    <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/gitlab"}>
                         <img src={gitlabLogo} alt="Gitlab"/>
                     </button>
                 </span>

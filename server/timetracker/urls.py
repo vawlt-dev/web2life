@@ -36,14 +36,14 @@ urlpatterns = [
     path("manifest.json/", views.serve_manifest),
     path("get_event_by_id/", views.get_event_by_id),
     path("get_events_by_date/", views.get_events_by_date),
-	path("filter-events/", views.filter_events),
+    path("filter-events/", views.filter_events),
     path("set_user/", views.set_user),
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
     # Google OAuth paths
     path("oauth/connect/google/", views.google_connect_oauth),
     path("oauth/callback/google", views.google_callback),
-    path("oauth/fetchGoogleEvents/", views.fetch_google_events),
+    path("oauth/getGoogleEvents/", views.get_google_events),
     # Github OAuth paths
     path("oauth/connect/github", views.github_connect_oauth),
     path("oauth/callback/github", views.github_callback),

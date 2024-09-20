@@ -124,30 +124,28 @@ def delete_project(request):
 
 
 def google_connect_oauth(request):
-    try:
-        flow = Flow.from_client_config(
-            {
-                "web": {
-                    "client_id": settings.GOOGLE_CLIENT_ID,
-                    "client_secret": settings.GOOGLE_SECRET,
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                }
-            },
-            scopes=[
-                "https://www.googleapis.com/auth/gmail.readonly",
-                "https://www.googleapis.com/auth/calendar.readonly",
-            ],
-            redirect_uri=settings.GOOGLE_CALLBACK,
-        )
-        authorization_url, state = flow.authorization_url(
-            access_type="offline", include_granted_scopes="true"
-        )
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/calendar.readonly",
+        ],
+        redirect_uri=settings.GOOGLE_CALLBACK,
+    )
+    authorization_url, state = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true"
+    )
 
-        request.session["state"] = state
-        return redirect(authorization_url)
-    except Exception as e:
-        print(e)
+    request.session["state"] = state
+
+    return redirect(authorization_url)
 
 
 def google_callback(request):
@@ -190,9 +188,9 @@ def google_callback(request):
     return redirect("/")
 
 
-def fetch_google_events(request):
+def get_google_events(request):
     if "credentials" not in request.session:
-        return redirect("google_connect_oauth")
+        return redirect(google_connect_oauth)
 
     credentials_info = request.session["credentials"]
     credentials = Credentials(
@@ -207,7 +205,6 @@ def fetch_google_events(request):
     gmail = build("gmail", "v1", credentials=credentials)
 
     try:
-        user = gmail.users().getProfile(userId="me").execute()
 
         # default is from one month ago
         one_month_ago = (datetime.now() - timedelta(days=30)).strftime("%Y/%m/%d")
@@ -264,11 +261,10 @@ def fetch_google_events(request):
                 "end": event["end"].get("dateTime", event["end"].get("date")),
             }
             events.append(info)
-        event_translation.google_email_create_events(messageList)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({"info": user, "events": events, "messages": messageList})
+    return JsonResponse({"messages": messageList})
 
 
 def gitlab_connect_oauth(request):
@@ -625,6 +621,7 @@ def get_events_by_date(request):
     except Exception as e:
         print(e)
         return HttpResponse()
+
 
 def filter_events(request):
     events = filter.filter_events(request)
