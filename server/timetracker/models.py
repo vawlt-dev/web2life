@@ -1,5 +1,5 @@
 from django.db import models
-
+from enum import Enum
 
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
@@ -8,6 +8,14 @@ class Project(models.Model):
     class Meta:
         db_table = "Project"
 
+#@NOTE(Jamie D): These codes are what is stored in the DB so don't change them
+class EventOrigin(Enum):
+    USER = 0
+    GOOGLE_GMAIL = 1
+    GITHUB = 2
+    GITLAB = 3
+    MICROSOFT = 4
+    SLACK = 5
 
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
@@ -20,6 +28,7 @@ class Events(models.Model):
     projectId = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
+    origin = models.IntegerField(default=EventOrigin.USER)
 
     def __str__(self):
         return f'{{ID: {self.id}, Title: "{self.title}", Description: "{self.description}"}}'

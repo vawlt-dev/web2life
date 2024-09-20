@@ -1,6 +1,7 @@
 from .models import Events
 from .models import Project
 from .models import ProjectSlackChannelMapEntry
+from .models import EventOrigin
 from . import models
 import datetime
 import calendar
