@@ -14,7 +14,7 @@ const DragAndDropCalendar = withDragAndDrop(Calendar)
         2) Add delete method for (local) events
 */
 
-const createEvent = (id, title, start, end, allDay, resourceId) =>
+const createEvent = (id, title, start, end, allDay, resourceId, isTemporary = true) =>
 {
     const createdEvent = 
     {
@@ -23,7 +23,9 @@ const createEvent = (id, title, start, end, allDay, resourceId) =>
         start: start,
         end: end,
         allDay: allDay,
-        resourceId: resourceId
+        resourceId: resourceId,
+        isTemporary: isTemporary
+        
     }
     return createdEvent;
 }
@@ -143,12 +145,6 @@ export const AppCalendar =
     }
     calendarFunctions.addEventFromSecondaryMenu = handleToolbarEventAdd;
 
-    const handleCancel = () =>
-    {
-        setEditModalActive(false)
-        events.pop();
-    }
-
     const createTempEvent = (args) =>
     {
         console.log(args)
@@ -228,10 +224,24 @@ export const AppCalendar =
 
     const handleEventClick = (info) =>
     {
-        setTempEvent(events.find(event => event.id === info.id))
+        let event = events.find(event => event.id === info.id);
+        setTempEvent({...event, isTemporary: false})
         openModal(info)
     }
     
+    const handleCancel = () =>
+    {
+        setEditModalActive(false)
+        if(tempEvent.isTemporary)
+        {
+            events.pop();
+        }
+        setTimeout(() =>
+        {
+            //so the event is wiped AFTER the animation is done
+            setTempEvent(null);
+        }, 200)
+    }
     const handleSelectAdd = (e) =>
     {
         e.preventDefault();
@@ -351,7 +361,21 @@ export const AppCalendar =
                     </div>
                     <div>
                         <label>All Day Event</label>
-                        <input type='checkbox' checked={tempEvent ? tempEvent.allDay ? true: false :false}/>
+                        <input 
+                            type='checkbox' 
+                            checked={tempEvent ? tempEvent.allDay ? true : false : false} 
+                            onChange={(e) => 
+                            {
+                                setTempEvent(prevEvent => 
+                                    (
+                                        {
+                                            ...prevEvent,
+                                            allDay: e.target.checked
+                                        }
+                                    )
+                                )
+                            }}
+                        />
                     </div>
                     <div>
                         <label>Description</label>
