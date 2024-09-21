@@ -125,11 +125,17 @@
     height: 20px;
 }
 
-
-#editModalSubmit
+#editModalButtonWrap
+{
+    display: flex;
+    height: 30px;
+    width: 100%;
+}
+#editModalSubmit,
+#editModalDelete
 {
     align-self: flex-end;
-    height: 30px;
+    height: 100%;
     width: 75px;
     border: 0;
     background-color: rgb(47, 91, 172);
@@ -138,6 +144,11 @@
     font-family: "Inter";
     cursor: pointer;
     transition: background-color ease 250ms;
+}
+
+#editModalDelete
+{
+    background-color: rgb(200,0,0);
 }
 
 #editModal input[type="datetime-local"]

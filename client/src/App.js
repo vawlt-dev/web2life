@@ -188,14 +188,31 @@ export const App = () =>
     }
     const deleteEvent = async (update) =>
     {
-
+        const data = { id: update }
+        fetch("deleteEvent/",
+        {
+            method: "POST",
+            headers:
+            {
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully deleted event")
+            }
+            else
+            {
+                console.log("Error with deleting event")
+            }
+            getEvents();
+        })
     }
     const deleteProject = async(update) =>
     {
-        const data =
-        {
-            title: update
-        }
+        const data = { title: update }
         fetch("deleteProject/",
         {
             method: "POST",

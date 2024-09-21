@@ -79,7 +79,7 @@ export const AppCalendar =
             }
         }
     }
-
+    
     useEffect(() =>
     {
         if(!editModalActive && modalInputRef)
@@ -189,7 +189,16 @@ export const AppCalendar =
             end: tempEvent.end,
             allDay: tempEvent.allDay
         }        
-        webFunctions.putEvent(data)
+
+        if(tempEvent.isTemporary)
+        {
+            webFunctions.putEvent(data)
+        }
+        else
+        {
+            let event = events.find(e => e.id === tempEvent.id);
+            webFunctions.patchEvent(event, data)
+        }
         setTempEvent(null);
         setEditModalActive(false)
     }
@@ -298,6 +307,7 @@ export const AppCalendar =
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
                                         <select name="project" ref={selectRef}>
+                                            <option>No Project</option>
                                             {
                                                 projects.map((project) => 
                                                 (
@@ -381,8 +391,24 @@ export const AppCalendar =
                         <label>Description</label>
                         <textarea name='description' maxLength={500}/>
                     </div>
-                    
-                    <button type="submit" id={styles.editModalSubmit}>Save</button>
+
+                    <div id={styles.editModalButtonWrap}>
+                        {
+                            tempEvent ? tempEvent.isTemporary ? null 
+                            : 
+                            <button id={styles.editModalDelete} onClick={(e) => 
+                            {
+                                e.preventDefault()
+                                webFunctions.deleteEvent(tempEvent.id)
+                                setEditModalActive(false)
+                            }}>
+                            Delete
+                            </button> 
+                            : 
+                            null
+                        }
+                        <button type="submit" id={styles.editModalSubmit}>Save</button>
+                    </div>
                 </form>
             </div>
             
