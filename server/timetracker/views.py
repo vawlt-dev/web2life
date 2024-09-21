@@ -65,18 +65,19 @@ def set_event(request):
         data = json.loads(request.body)
 
         try:
-            pID = Project.objects.get(title=data["project"])
+            pId = Project.objects.get(title=data["project"])
         except:
-            pID = None
+            pId = None
         event = Events(
             title=data["title"],
             description=data["description"],
             start=data["start"],
             end=data["end"],
             allDay=data["allDay"],
-            projectID=pID,
+            projectId=pId,
         )
         event.save()
+        print(Events)
     except Exception as e:
         print(e)
     finally:
@@ -202,19 +203,20 @@ def get_google_events(request):
         scopes=credentials_info["scopes"],
     )
 
-    gmail = build("gmail", "v1", credentials=credentials)
-
     try:
 
+        gmail = build("gmail", "v1", credentials=credentials)
         # default is from one month ago
-        one_month_ago = (datetime.now() - timedelta(days=30)).strftime("%Y/%m/%d")
-        query = f"from:me after:{one_month_ago}"
+        one_month_ago = datetime.now() - timedelta(days=30)
+        query = f"from:me after:{one_month_ago.strftime("%Y/%m/%d") }"
+
         messages_result = (
             gmail.users()
             .messages()
             .list(userId="me", q=query, maxResults=100)
             .execute()
         )
+        print(messages_result)
         message_ids = messages_result.get("messages", [])
 
         messageList = []
@@ -245,11 +247,17 @@ def get_google_events(request):
             }
             messageList.append(info)
 
+        #google calendar only likes ISO time formatting
         calendar = build("calendar", "v3", credentials=credentials)
-
         event_res = (
             calendar.events()
-            .list(calendarId="primary", q=query, maxResults=100)
+            .list(
+                calendarId="primary",
+                timeMin=one_month_ago.isoformat() + 'Z',
+                maxResults=100,
+                singleEvents=True,
+                orderBy="startTime",
+            )
             .execute()
         )
         events_list = event_res.get("items", [])
@@ -261,10 +269,11 @@ def get_google_events(request):
                 "end": event["end"].get("dateTime", event["end"].get("date")),
             }
             events.append(info)
+        print(events)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({"messages": messageList})
+    return JsonResponse({"messages": messageList, "events": events_list})
 
 
 def gitlab_connect_oauth(request):

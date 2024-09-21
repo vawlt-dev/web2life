@@ -13,14 +13,15 @@ import moment from 'moment'
 export const App = () =>
 {
     const localizer = momentLocalizer(moment)
+    const [CSRFToken, setCSRFToken] = useState(null)
+    const [loading, setLoading] = useState(true);
     const [events, setEvents] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [CSRFToken, setCSRFToken] = useState(null)
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
+    const [OAuthData, setOAuthData] = useState({});
+    const calRef = useRef(null);
 
-   const [OAuthData, setOAuthData] = useState({});
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => 
     {
@@ -33,8 +34,8 @@ export const App = () =>
                 const data = await response.json();
                 setOAuthData(prevState => (
                     {
-                    ...prevState,
-                    google: data
+                        ...prevState,
+                        google: data
                     })
                 );
             } 
@@ -58,7 +59,6 @@ export const App = () =>
         }
     }, [OAuthData, loading]);
     
-    const calRef = useRef(null);
     const getEvents = () =>
     {
         //gets all user events
@@ -72,7 +72,7 @@ export const App = () =>
         .then(data =>
         {
             setEvents(data.data);
-           
+            console.log(events)
         })
     }
     const getProjects = () =>
@@ -87,33 +87,40 @@ export const App = () =>
         {
             setProjects(data.data);
         })
-    
     }
     const putEvent = async (event) =>
     {
         //append '/' to posts otherwise will reset to a GET request
-        fetch("/setEvent/",
+        console.log(JSON.stringify(event))
+        try 
         {
-            method: "POST", 
-            headers: 
+            fetch("/setEvent/",
             {
-                'X-CSRFToken': CSRFToken
-            },
-            body: JSON.stringify(event)
-        }).then(res =>
+                method: "POST", 
+                headers: 
+                {
+                    'X-CSRFToken': CSRFToken
+                },
+                body: JSON.stringify(event)
+            }).then(res =>
+            {
+                if(res.ok)
+                {
+                    console.log("Successfully posted data")
+                }
+                else
+                {
+                    console.log("Error with submitting custom event")
+                }
+            }).then(() =>
+            {
+                getEvents()
+            })
+        } 
+        catch (err) 
         {
-            if(res.ok)
-            {
-                console.log("Successfully posted data")
-            }
-            else
-            {
-                console.log("Error with submitting custom event")
-            }
-        }).then(() =>
-        {
-            getEvents()
-        })
+            console.log(err)            
+        }
     }
     const putProject = (project) =>
     {
@@ -141,7 +148,7 @@ export const App = () =>
             }
         }).then(() =>
         {
-            getEvents();
+            getProjects();
         })
     }
 
@@ -185,7 +192,30 @@ export const App = () =>
     }
     const deleteProject = async(update) =>
     {
-
+        const data =
+        {
+            title: update
+        }
+        fetch("deleteProject/",
+        {
+            method: "POST",
+            headers:
+            {
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully removed project")
+            }
+            else
+            {
+                console.log("Error with removing project")
+            }
+            getProjects();
+        })
     }
     //wrappers for web and oauth functions so we don't pass down 20 different props
     const webFunctions = 
@@ -256,7 +286,6 @@ export const App = () =>
     }
 
     let addEventFromSecondaryMenu;
-
     const CalendarFunctions = 
     {
         handleNavigate,
@@ -264,7 +293,7 @@ export const App = () =>
         date,
         view,
         setView,
-        addEventFromSecondaryMenu
+        addEventFromSecondaryMenu,
     }
 
     useEffect(() =>
@@ -313,13 +342,13 @@ export const App = () =>
                 <SecondaryMenu localizer={localizer} calendarFunctions={CalendarFunctions}/>
                 <AppCalendar 
                     calRef={calRef}
-                    eventsArray={events} 
-                    projectsArray={projects}
-                    OAuthData = {OAuthData}
+                    events={events} 
+                    setEvents = {setEvents}
+                    projects={projects}
+                    setProjects={setProjects}
                     webFunctions = {webFunctions}
                     calendarFunctions={CalendarFunctions}
                     localizer={localizer}
-
                 />
             </div>
             <Footer/>

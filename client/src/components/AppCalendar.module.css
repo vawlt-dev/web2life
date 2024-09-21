@@ -125,28 +125,6 @@
     height: 20px;
 }
 
-#projectSection > div
-{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-#projectSection > div > button
-{
-    border: 0;
-    background-color: rgb(47, 91, 172);
-    color: white;
-    font-family: "Inter";
-    font-size: 16px;
-    text-align: center;
-    padding: 0;
-    width: 25px;
-    height: 25px;
-    line-height: 0;
-    font-weight: 400;
-    border-radius: 20px;
-    cursor: pointer;    
-}
 
 #editModalSubmit
 {
@@ -169,51 +147,71 @@
     border: 2px solid gray;
     border-radius: 6px;
 }
-#noProjects.active
+
+#expandingMenu > div
 {
-    opacity: 1;
-    height: 20px;
-    pointer-events: all;
-    transition: opacity ease-in-out 350ms;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+#expandingMenu > div > button
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    background-color: rgb(47, 91, 172);
+    color: white;
+    font-family: "Inter";
+    font-size: 18px;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;    
+     
 }
 #noProjects
 {
     opacity: 0;
-    pointer-events: none;
     height: 0;
-    transition: opacity ease-in-out 350ms height 0ms 350ms;
-    
+    width: 0;
+}
+#noProjects.active
+{
+    display: flex;
+    opacity: 1;
+    width: unset;
+    height: unset;
+    pointer-events: all;
+    gap: 12px !important;
+    transition: opacity ease-in-out 350ms, height 0ms 350ms;
 }
 #projectAdd
 {
-    pointer-events: all;
-    display: flex;
     opacity: 0;
     height: 0;
     width: 0;
     pointer-events: none;
-    transition: opacity ease-in-out 350ms height 0ms 350ms;
 }
 #projectAdd.active
 {
-    height: 20px;
-    width: unset;
+    display: flex;
     opacity: 1;
-    pointer-events: all;
+    height: fit-content;
+    width: fit-content;
     transition: opacity ease-in-out 350ms ;
+    pointer-events: all;
 }
-
 #projectAdd.active > input
 {
     font-family: "Inter";
     font-size: 14px;
     border: 2px solid gray;
     padding: 2px 5px 2px 8px;
-    height: 20px;
     border-top-left-radius: 16px;
     border-bottom-left-radius: 16px;
     transition: border-color 350ms;
-
 }
 #projectAdd.active > input:focus-visible
 {
@@ -232,14 +230,14 @@
 {
     opacity: 1;
     width: 200px;
-    height: 20px;
+    height: 25px;
     transition: opacity ease-in-out 350ms;
 }
 #projectDropDown > select
 {
     width: 140px;
+    height: 25px;
     border-radius: 6px;
-    padding: 4px 2px 4px 2px;
     outline: 0;
     border: 2px solid gray;
     font-family: "Inter";

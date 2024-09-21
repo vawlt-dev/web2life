@@ -31,34 +31,53 @@ const createEvent = (id, title, start, end, allDay, resourceId) =>
 export const AppCalendar = 
     ({
         calRef,
-        eventsArray, 
-        projectsArray, 
-        OAuthData,
+        events, 
+        setEvents,
+        projects, 
+
         webFunctions, 
         calendarFunctions,
         localizer, 
-        setCurrentView
     }) => 
 {    
-
     const [tempEvent, setTempEvent] = useState(null);
-    const [events, setEvents] = useState(eventsArray);
-    const [projects, setProjects] = useState(null);
     const [editModalActive, setEditModalActive] = useState(false);
+
     const modalInputRef = useRef(null);
-    const projectRef = useRef(null);
+    const modalRef = useRef(null)
+    const selectRef = useRef(null);
     const projectInputRef = useRef(null);
-    useEffect(() =>
+    const projectAddRef = useRef(null);
+    const projectsRef = useRef(null);
+    const noProjectsRef = useRef(null);
+    
+
+    const handleAddProject = (projects) =>
     {
-        console.log(OAuthData.google)
-    }, [OAuthData])
-    useEffect(() =>
-    {
-        setEvents(eventsArray);
-        setProjects([{id: 0, title: "Test 1"}])
-        console.log(eventsArray)
-    },[eventsArray, projectsArray])
-   
+        if(projects === true)
+        {
+            projectAddRef.current.classList.add(styles.active)
+            projectsRef.current.classList.remove(styles.active)
+        }
+        else if(projects === false)
+        {
+            projectAddRef.current.classList.add(styles.active)
+            noProjectsRef.current.classList.remove(styles.active)
+        }
+        else if(projects === "close")
+        {
+            projectAddRef.current.classList.remove(styles.active)
+            if(noProjectsRef.current)
+            {
+                noProjectsRef.current.classList.add(styles.active)
+            }
+            else
+            {
+                projectsRef.current.classList.add(styles.active)
+            }
+        }
+    }
+
     useEffect(() =>
     {
         if(!editModalActive && modalInputRef)
@@ -71,7 +90,7 @@ export const AppCalendar =
     {
         setEditModalActive(false)
             setEditModalActive(true);
-            let modal = document.getElementById(styles.editModal),
+            let modal = modalInputRef.current,
                 main = document.querySelector('main');
 
             if(args.box)
@@ -217,8 +236,7 @@ export const AppCalendar =
     {
         e.preventDefault();
         const project = projectInputRef.current.value;
-        console.log(document.getElementById(`${styles.projectAdd}`).classList.contains(`${styles.active}`))
-        if(project.length === 0 && document.getElementById(`${styles.projectAdd}`).classList.contains(`${styles.active}`))
+        if(project.length === 0 && projectAddRef.current.classList.contains(`${styles.active}`))
         {
             projectInputRef.current.setCustomValidity("Project Name cannot be empty")
             projectInputRef.current.reportValidity()
@@ -228,30 +246,25 @@ export const AppCalendar =
             projectInputRef.current.setCustomValidity("")
             webFunctions.putProject(project)
             projectInputRef.current.value = ""
+            handleAddProject("close")
         }
     }
-    const handleSelectDelete = (e) =>
+    const handleSelectDelete = () =>
     {
-        
+        try
+        {
+            const project = selectRef.current.value;
+            webFunctions.deleteProject(project)
+        }
+        catch(e)
+        {
+            console.log(e)
+        }
     }
 
-
-    const testevents = [
-        {
-            allDay: false,
-            description: "",
-            end: "2024-09-20T23:00:00Z",
-            id: 53,
-            projectId_id: 2,
-            resourceId: "localEvents",
-            start: "2024-09-20T19:00:00Z",
-            title: "New Event",
-        },
-        
-    ];
     return (
         <main id={styles.appCalendarWrap}>
-            <div id={styles.editModal} className={editModalActive ? styles.active : ""}>
+            <div id={styles.editModal} className={editModalActive ? styles.active : ""} ref={modalRef}>
                 
                 <button type='button' id={styles.editModalExit} onClick={() => handleCancel()}>
                     &#10006;
@@ -261,76 +274,37 @@ export const AppCalendar =
                     
                     <input placeholder='Add a title' name='title' required={true} maxLength={50} defaultValue={tempEvent? tempEvent.title : null}/>
 
-                        <div id={styles.editModalProject}>
+                    <div id={styles.editModalProject}>
                         <label>Project</label>
-
-                        <div ref={projectRef} className={styles.expandingMenu}>
+                        <div id={styles.expandingMenu}>
+                            <div id={styles.projectAdd} ref={projectAddRef}>
+                                <input ref={projectInputRef} placeholder="Name of Project" />
+                                <button type="button" onClick={handleSelectAdd}>✓</button>
+                                <button type="button" onClick={() => {handleAddProject("close")}}> - </button>
+                            </div>
                             {
-                                projects && projects.length > 0 ? 
+                                projects.length > 0 
+                                ? 
                                 (
-                                    <section id={styles.projectSection}>
-                                        <div id={styles.projectDropDown} className={styles.active}>
-                                            <select name="project">
-                                                {   
-                                                    projects.map((project) => 
-                                                    (
-                                                        <option key={project.id}>
-                                                            {project.title}
-                                                        </option>
-                                                    ))
-                                                }
-                                            </select>
-                                            <button type='button' onClick={() =>
+                                    <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
+                                        <select name="project" ref={selectRef}>
                                             {
-                                                console.log(document.getElementById(`${styles.projectDropDown}`))
-                                                console.log(document.getElementById(`${styles.projectAdd}`))
-                                                document.getElementById(`${styles.projectDropDown}`).classList.remove(`${styles.active}`)
-                                                document.getElementById(`${styles.projectAdd}`).classList.add(`${styles.active}`)
-                                            }}>+</button>
-                                            <button type='button'>
-                                                🗑
-                                            </button>
-                                        </div>
-
-                                        <div id={styles.projectAdd}>
-                                            <input ref={projectInputRef} placeholder="Name of Project"/>
-                                            <button type='button' onClick={(e) => handleSelectAdd(e)}>✓</button>
-                                            <button type='button' onClick={() =>
-                                            {
-                                                projectInputRef.current.value = "";
-                                                document.getElementById(`${styles.projectDropDown}`).classList.add(`${styles.active}`);
-                                                document.getElementById(`${styles.projectAdd}`).classList.remove(`${styles.active}`);
-                                                projectInputRef.current.setCustomValidity("");
-                                            }}> - </button>
-                                        </div>
-                                    </section>
-                                ) : 
+                                                projects.map((project) => 
+                                                (
+                                                    <option key={project.id}>{project.title}</option>
+                                                ))
+                                            }
+                                        </select>
+                                        <button type="button" onClick={() => handleAddProject(true)}>+</button>
+                                        <button type="button" onClick={handleSelectDelete}>🗑</button>
+                                    </div>
+                                ) 
+                                : 
                                 (
-                                    <section id={styles.projectSection}>
-                                        <div id={styles.noProjects} className={styles.active}>
-                                            <span>No projects yet... Add one?</span>
-                                            <button type='button' onClick={() => 
-                                            {
-                                                document.getElementById(`${styles.projectAdd}`).classList.add(`${styles.active}`);
-                                                document.getElementById(`${styles.noProjects}`).classList.remove(`${styles.active}`);
-                                            }}>+</button>
-                                        </div>
-                                        
-                                        <div id={styles.projectAdd}>
-                                            <input ref={projectInputRef} placeholder="Name of Project"/>
-                                            <button onClick={(e) => handleSelectAdd(e)}>
-                                                ✓
-                                            </button>
-                                            <button type='button' onClick={() =>
-                                            {
-                                                projectInputRef.current.value = "";
-                                                document.getElementById(`${styles.noProjects}`).classList.add(`${styles.active}`);
-                                                document.getElementById(`${styles.projectAdd}`).classList.remove(`${styles.active}`);
-                                                projectInputRef.current.setCustomValidity("");
-                                            }}> - </button>
-                                        </div>
-
-                                    </section>
+                                    <div id={styles.noProjects} className={styles.active} ref={noProjectsRef}>
+                                        <span>No projects yet</span>
+                                        <button type="button" onClick={() => handleAddProject(false)}>+</button>
+                                    </div>
                                 )
                             }
                         </div>
