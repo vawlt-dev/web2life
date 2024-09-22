@@ -57,22 +57,22 @@ def serve_static(request, path):
 
 def get_events(request):
     events = []
-    for event in Events.objects.select_related('projectId').all():
+    for event in Events.objects.select_related("projectId").all():
         events.append(
             {
-                'id': event.id,
-                'title': event.title,
-                'start': event.start,
-                'end': event.end,
-                'allDay': event.allDay,
-                'resourceId': event.resourceId,
-                'description': event.description,
-                'project_title': event.projectId.title if event.projectId else None,
-                'origin': event.origin
+                "id": event.id,
+                "title": event.title,
+                "start": event.start,
+                "end": event.end,
+                "allDay": event.allDay,
+                "resourceId": event.resourceId,
+                "description": event.description,
+                "project_title": event.projectId.title if event.projectId else None,
+                "origin": event.origin,
             }
         )
     print(events)
-    return JsonResponse({'data': events})
+    return JsonResponse({"data": events})
 
 
 @require_POST
@@ -84,7 +84,7 @@ def set_event(request):
             pId = Project.objects.get(title=data["project"])
         except:
             pId = None
-        
+
         event = Events(
             title=data["title"],
             description=data["description"],
@@ -225,7 +225,7 @@ def get_google_events(request):
         gmail = build("gmail", "v1", credentials=credentials)
         # default is from one month ago
         one_month_ago = datetime.now() - timedelta(days=30)
-        query = f"from:me after:{one_month_ago.strftime("%Y/%m/%d") }"
+        query = f"from:me after:{one_month_ago.strftime('%Y/%m/%d') }"
 
         messages_result = (
             gmail.users()
@@ -264,13 +264,13 @@ def get_google_events(request):
             }
             messageList.append(info)
 
-        #google calendar only likes ISO time formatting
+        # google calendar only likes ISO time formatting
         calendar = build("calendar", "v3", credentials=credentials)
         event_res = (
             calendar.events()
             .list(
                 calendarId="primary",
-                timeMin=one_month_ago.isoformat() + 'Z',
+                timeMin=one_month_ago.isoformat() + "Z",
                 maxResults=100,
                 singleEvents=True,
                 orderBy="startTime",
