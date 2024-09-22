@@ -56,18 +56,35 @@ def serve_static(request, path):
 
 
 def get_events(request):
-    return JsonResponse({"data": list(Events.objects.all().values())})
+    events = []
+    for event in Events.objects.select_related('projectId').all():
+        events.append(
+            {
+                'id': event.id,
+                'title': event.title,
+                'start': event.start,
+                'end': event.end,
+                'allDay': event.allDay,
+                'resourceId': event.resourceId,
+                'description': event.description,
+                'project_title': event.projectId.title if event.projectId else None,
+                'origin': event.origin
+            }
+        )
+    print(events)
+    return JsonResponse({'data': events})
 
 
 @require_POST
 def set_event(request):
     try:
         data = json.loads(request.body)
-
+        print(data)
         try:
             pId = Project.objects.get(title=data["project"])
         except:
             pId = None
+        
         event = Events(
             title=data["title"],
             description=data["description"],

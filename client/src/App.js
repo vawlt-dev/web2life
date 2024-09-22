@@ -58,7 +58,14 @@ export const App = () =>
             console.log(OAuthData);
         }
     }, [OAuthData, loading]);
-    
+
+
+    useEffect(() =>
+    {
+        console.log(events)
+    },[events]);    
+
+
     const getEvents = () =>
     {
         //gets all user events
@@ -72,7 +79,6 @@ export const App = () =>
         .then(data =>
         {
             setEvents(data.data);
-            console.log(events)
         })
     }
     const getProjects = () =>
@@ -234,18 +240,6 @@ export const App = () =>
             getProjects();
         })
     }
-    //wrappers for web and oauth functions so we don't pass down 20 different props
-    const webFunctions = 
-    {
-        getEvents,
-        getProjects,
-        putEvent,
-        putProject,
-        patchEvent,
-        patchProject,
-        deleteEvent,
-        deleteProject
-    }
 
     const handleNavigate = (action) =>
     {
@@ -302,6 +296,18 @@ export const App = () =>
         setDate(tempDate)
     }
 
+    //wrappers for web and calendar functions so we don't pass down 20 different props
+    const webFunctions = 
+    {
+        getEvents,
+        getProjects,
+        putEvent,
+        putProject,
+        patchEvent,
+        patchProject,
+        deleteEvent,
+        deleteProject
+    }
     let addEventFromSecondaryMenu;
     const CalendarFunctions = 
     {
@@ -312,6 +318,8 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
     }
+
+   
 
     useEffect(() =>
     {

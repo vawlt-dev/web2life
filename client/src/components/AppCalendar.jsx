@@ -14,7 +14,7 @@ const DragAndDropCalendar = withDragAndDrop(Calendar)
         2) Add delete method for (local) events
 */
 
-const createEvent = (id, title, start, end, allDay, resourceId, isTemporary = true) =>
+const createEvent = (id, title, start, end, project = null, allDay, resourceId, isTemporary = true) =>
 {
     const createdEvent = 
     {
@@ -22,6 +22,7 @@ const createEvent = (id, title, start, end, allDay, resourceId, isTemporary = tr
         title: title,
         start: start,
         end: end,
+        project: project,
         allDay: allDay,
         resourceId: resourceId,
         isTemporary: isTemporary
@@ -88,42 +89,46 @@ export const AppCalendar =
         }
     }, [editModalActive])
     
+    useEffect(() =>
+    {
+        console.log(tempEvent)
+    },[tempEvent])
+    
     const openModal = (args) =>
     {
         setEditModalActive(false)
-            setEditModalActive(true);
-            let modal = modalInputRef.current,
-                main = document.querySelector('main');
+        setEditModalActive(true);
+        let modal = modalInputRef.current,
+            main = document.querySelector('main');
 
-            if(args.box)
+        if(args.box)
+        {
+            //click 
+            if(args.box.x > (main.getBoundingClientRect().width) / 2 )
             {
-                //click 
-                if(args.box.x > (main.getBoundingClientRect().width) / 2 )
-                {
-                    args.box.x -= 400;
-                }
-                if(args.box.y > (main.getBoundingClientRect().height) / 2)
-                {
-                    args.box.y -= 350;
-                }
-                modal.style.top = `${args.box.y}px`
-                modal.style.left = `${args.box.x}px`
+                args.box.x -= 400;
             }
-            else if (args.bounds)
+            if(args.box.y > (main.getBoundingClientRect().height) / 2)
             {
-                //drag
-                if(args.bounds.top > (main.getBoundingClientRect().height) / 2)
-                {
-                    args.bounds.top -= 350;
-                }
-                if(args.bounds.left > (main.getBoundingClientRect().width) / 2)
-                {
-                    args.bounds.left -= 350;
-                }
-                modal.style.top = `${args.bounds.top}px`
-                modal.style.left = `${args.bounds.left}px`
+                args.box.y -= 350;
             }
-            
+            modal.style.top = `${args.box.y}px`
+            modal.style.left = `${args.box.x}px`
+        }
+        else if (args.bounds)
+        {
+            //drag
+            if(args.bounds.top > (main.getBoundingClientRect().height) / 2)
+            {
+                args.bounds.top -= 350;
+            }
+            if(args.bounds.left > (main.getBoundingClientRect().width) / 2)
+            {
+                args.bounds.left -= 350;
+            }
+            modal.style.top = `${args.bounds.top}px`
+            modal.style.left = `${args.bounds.left}px`
+        }
     } 
     
     const handleToolbarEventAdd = () =>
@@ -157,11 +162,11 @@ export const AppCalendar =
         if(!args.allDay)
         {
             let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
-            event = createEvent(null, "New Event", args.start, args.end, timeDiff >= 24, 'localEvents');
+            event = createEvent(null, "New Event", args.start, args.end, null , timeDiff >= 24, 'localEvents');
         }
         else
         {
-            event = createEvent(null, "New Event", args.start, args.end, false, 'localEvents');
+            event = createEvent(null, "New Event", args.start, args.end, null, false, 'localEvents');
         }
         
         setTempEvent(event);
@@ -169,6 +174,7 @@ export const AppCalendar =
         //set as event instead of tempEvent cos useState is asynchronous
         setEvents(prevEvents => [...prevEvents, event])
         openModal(args)
+        console.log(tempEvent)
     }
 
     const editEvent = (info) =>
@@ -197,6 +203,7 @@ export const AppCalendar =
         else
         {
             let event = events.find(e => e.id === tempEvent.id);
+            console.log(data)
             webFunctions.patchEvent(event, data)
         }
         setTempEvent(null);
@@ -234,7 +241,9 @@ export const AppCalendar =
     const handleEventClick = (info) =>
     {
         let event = events.find(event => event.id === info.id);
-        setTempEvent({...event, isTemporary: false})
+        console.log(events)
+        console.log(event)
+        setTempEvent({...event, isTemporary: false, project: event.project_title})
         openModal(info)
     }
     
@@ -291,7 +300,7 @@ export const AppCalendar =
 
                 <form id={styles.editModalForm} ref={modalInputRef} onSubmit={handleSubmit}>
                     
-                    <input placeholder='Add a title' name='title' required={true} maxLength={50} defaultValue={tempEvent? tempEvent.title : null}/>
+                    <input placeholder='Add a title' name='title' required={true} maxLength={50} defaultValue={tempEvent ? tempEvent.title : null}/>
 
                     <div id={styles.editModalProject}>
                         <label>Project</label>
@@ -306,7 +315,7 @@ export const AppCalendar =
                                 ? 
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
-                                        <select name="project" ref={selectRef}>
+                                        <select defaultValue={tempEvent && tempEvent.project ? tempEvent.project : "No Project"} name="project" ref={selectRef}>
                                             <option>No Project</option>
                                             {
                                                 projects.map((project) => 
