@@ -18,10 +18,13 @@ jobs:
       with:
         node-version: '16'
     - name: Install deps
+      working-directory: ./client
       run: npm install
 
     - name: Run tests
+      working-directory: ./client
       run: npm test
 
     - name: Build
+      working-directory: ./client
       run: npm run build
