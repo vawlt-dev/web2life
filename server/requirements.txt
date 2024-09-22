@@ -1,6 +1,6 @@
 Django
-python-dateutil>=2.9.0
-Python-dotenv>= 1.0.1
+python-dateutil
+Python-dotenv
 WerkZeug
 django-extensions
 django-werkzeug
