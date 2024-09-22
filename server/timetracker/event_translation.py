@@ -47,7 +47,7 @@ def translate_github_events(data) -> list:
             count = commit_count_map[repo][hour]
             e = Events(
                 title=f"Pushed {count} commits to {repo}",
-                projectID=models.get_or_add_project_from_name(repo),
+                projectId=models.get_or_add_project_from_name(repo),
                 start=datetime.datetime.fromtimestamp(hour * 3600),
                 end=datetime.datetime.fromtimestamp((hour + 1) * 3600),
                 allDay=False,
