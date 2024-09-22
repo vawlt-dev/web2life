@@ -147,7 +147,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                 </div>
                 <div id={styles.filterDropdown} className={`${styles.active}`} ref={dropdownRef}>
                     <span>
-                        <text className={checkboxes.localEvents ? `${styles.active}` : ''}>Local Events</text>
+                        <label className={checkboxes.localEvents ? `${styles.active}` : ''}>Local Events</label>
                         <input type='checkbox'
                             name='localEvents'
                             checked={checkboxes.localEvents}
@@ -155,7 +155,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                         />
                     </span>
                     <span>
-                        <text className={checkboxes.importedEvents ? `${styles.active}` : ''}>Imported Events</text>
+                        <label className={checkboxes.importedEvents ? `${styles.active}` : ''}>Imported Events</label>
                         <input type='checkbox'
                             name='importedEvents'
                             checked={checkboxes.importedEvents}
@@ -164,7 +164,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                     </span>
                     <div id={styles.importedEventsOptions}>
                         <span>
-                            <text className={checkboxes.googleEvents ? `${styles.active}` : ''}>- Google Events</text>
+                            <label className={checkboxes.googleEvents ? `${styles.active}` : ''}>- Google Events</label>
                             <input type='checkbox'
                                 name='googleEvents'
                                 checked={checkboxes.googleEvents}
@@ -172,7 +172,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                             />
                         </span>
                         <span>
-                            <text className={checkboxes.microsoftEvents ? `${styles.active}` : ''}>- Microsoft Events</text>
+                            <label className={checkboxes.microsoftEvents ? `${styles.active}` : ''}>- Microsoft Events</label>
                             <input type='checkbox'
                                 name='microsoftEvents'
                                 checked={checkboxes.microsoftEvents}
@@ -180,7 +180,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                             />
                         </span>
                         <span>
-                            <text className={checkboxes.githubEvents ? `${styles.active}` : ''}>- Github Events</text>
+                            <label className={checkboxes.githubEvents ? `${styles.active}` : ''}>- Github Events</label>
                             <input type='checkbox'
                                 name='githubEvents'
                                 checked={checkboxes.githubEvents}
@@ -188,7 +188,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                             />
                         </span>
                         <span>
-                            <text className={checkboxes.slackEvents ? `${styles.active}` : ''}>- Slack Events</text>
+                            <label className={checkboxes.slackEvents ? `${styles.active}` : ''}>- Slack Events</label>
                             <input type='checkbox'
                                 name='slackEvents'
                                 checked={checkboxes.slackEvents}
@@ -196,7 +196,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                             />
                         </span>
                         <span>
-                            <text className={checkboxes.gitlabEvents ? `${styles.active}` : ''}>- GitLab Events</text>
+                            <label className={checkboxes.gitlabEvents ? `${styles.active}` : ''}>- GitLab Events</label>
                             <input type='checkbox'
                                 name='gitlabEvents'
                                 checked={checkboxes.gitlabEvents}

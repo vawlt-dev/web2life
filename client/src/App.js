@@ -51,7 +51,7 @@ export const App = () =>
         fetchGoogleData();
     }, []);
 
-    useEffect(() => 
+  /*   useEffect(() => 
     {
         if (!loading) 
         {
@@ -64,7 +64,7 @@ export const App = () =>
     {
         console.log(events)
     },[events]);    
-
+ */
 
     const getEvents = () =>
     {

@@ -189,7 +189,7 @@ export const Toolbar = ({ calendarFunctions }) => {
                 </div> 
             </div>
             <div>
-                <img src={logo} alt="" draggabl/>
+                <img src={logo} alt=""/>
             </div>
         </header>
     );

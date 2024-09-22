@@ -14,23 +14,39 @@ const DragAndDropCalendar = withDragAndDrop(Calendar)
         2) Add delete method for (local) events
 */
 
-const createEvent = (id, title, start, end, project = null, allDay, resourceId, isTemporary = true) =>
+const createEvent = (id, 
+                     title, 
+                     start, 
+                     end, 
+                     project = null, 
+                     allDay, 
+                     resourceId, 
+                     isTemporary = true
+                    ) =>
 {
-    const createdEvent = 
-    {
-        id: id,
-        title: title,
-        start: start,
-        end: end,
-        project: project,
-        allDay: allDay,
-        resourceId: resourceId,
-        isTemporary: isTemporary
-        
-    }
-    return createdEvent;
+    return (
+        {
+            id: id,
+            title: title,
+            start: start,
+            end: end,
+            project: project,
+            allDay: allDay,
+            resourceId: resourceId,
+            isTemporary: isTemporary
+        }
+    ) 
 }
 
+const GMTToISO = (date) =>
+{
+    if(!(date instanceof Date))
+    {
+        date = new Date(date);
+    }
+    const newDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+    return newDate.toISOString().slice(0, 16)
+}
 export const AppCalendar = 
     ({
         calRef,
@@ -43,9 +59,7 @@ export const AppCalendar =
         localizer, 
     }) => 
 {    
-    const [tempEvent, setTempEvent] = useState(null);
     const [editModalActive, setEditModalActive] = useState(false);
-
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
     const selectRef = useRef(null);
@@ -54,7 +68,6 @@ export const AppCalendar =
     const projectsRef = useRef(null);
     const noProjectsRef = useRef(null);
     
-
     const handleAddProject = (projects) =>
     {
         if(projects === true)
@@ -89,18 +102,38 @@ export const AppCalendar =
         }
     }, [editModalActive])
     
-    useEffect(() =>
-    {
-        console.log(tempEvent)
-    },[tempEvent])
     
+    
+    const handleSelectSlot = (args) =>
+    {
+        let event = null;
+        if(editModalActive)
+        {
+            if(events[events.length - 1].isTemporary)
+            {
+                setEvents(prevEvents => prevEvents.slice(0, -1))
+            }
+        } 
+
+        if(!args.allDay)
+        {
+            let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
+            event = createEvent(null, "New Event", args.start, args.end, null , timeDiff >= 24, 'localEvents');
+        }
+        else
+        {
+            event = createEvent(null, "New Event", args.start, args.end, null, false, 'localEvents');
+        }
+            
+        setEvents(prevEvents => [...prevEvents, event])    
+        openModal(args) 
+    }
+
     const openModal = (args) =>
     {
-        setEditModalActive(false)
         setEditModalActive(true);
-        let modal = modalInputRef.current,
+        let modal = modalRef.current,
             main = document.querySelector('main');
-
         if(args.box)
         {
             //click 
@@ -110,7 +143,7 @@ export const AppCalendar =
             }
             if(args.box.y > (main.getBoundingClientRect().height) / 2)
             {
-                args.box.y -= 350;
+                args.box.y -= 400;
             }
             modal.style.top = `${args.box.y}px`
             modal.style.left = `${args.box.x}px`
@@ -133,84 +166,65 @@ export const AppCalendar =
     
     const handleToolbarEventAdd = () =>
     {
-        const data = 
-        {
+        handleCancel()
+        
+        let event = createEvent
+        (
+            null, 
+            "New Event", 
             //round to nearest 15 min period
-            start: new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0)), 
+            new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0)),
             //round to next nearest 15 min period and account for hour rollover
-            end: new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0) + 15 * 60000), 
-            allDay: true,
-            box:
-            {
-                x: 250,
-                y: 250
-            }
-        }
-        createTempEvent(data)
+            new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0) + 15 * 60000), 
+            null,
+            true,
+        )
+        setEvents(prevEvents => [...prevEvents, event]);
+        openModal({ box: { x: 500, y: 300 } })
     }
     calendarFunctions.addEventFromSecondaryMenu = handleToolbarEventAdd;
-
-    const createTempEvent = (args) =>
-    {
-        console.log(args)
-        let event;
-        if(editModalActive)
-        {
-            events.pop();
-            console.log("Event popped")
-        } 
-        if(!args.allDay)
-        {
-            let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
-            event = createEvent(null, "New Event", args.start, args.end, null , timeDiff >= 24, 'localEvents');
-        }
-        else
-        {
-            event = createEvent(null, "New Event", args.start, args.end, null, false, 'localEvents');
-        }
-        
-        setTempEvent(event);
-        
-        //set as event instead of tempEvent cos useState is asynchronous
-        setEvents(prevEvents => [...prevEvents, event])
-        openModal(args)
-        console.log(tempEvent)
-    }
 
     const editEvent = (info) =>
     {
         console.log(info)
     }
+
     const handleSubmit = (e) =>
     {
         e.preventDefault();
         const formData = new FormData(modalInputRef.current);
-        
+        console.log(formData + " - formData")
+        if(formData)
+        {
+            formData.forEach((key, value) => 
+            {
+                console.log(`${key} - ${value}`)
+            })
+        }
         const data = 
         {
             title: formData.get("title"),
             project: formData.get("project"),
             description: formData.get("description"),
-            start: tempEvent.start,
-            end: tempEvent.end,
-            allDay: tempEvent.allDay
+            start: formData.get('start'),
+            end: formData.get('end'),
+            allDay: formData.get('allDay'),
         }        
 
-        if(tempEvent.isTemporary)
+        if(events[events.length - 1].isTemporary)
         {
             webFunctions.putEvent(data)
         }
         else
         {
-            let event = events.find(e => e.id === tempEvent.id);
-            console.log(data)
-            webFunctions.patchEvent(event, data)
+           /*  let event = events.find(e => e.id === events[events.length - 1].id);
+            webFunctions.patchEvent(event, data) */
         }
-        setTempEvent(null);
         setEditModalActive(false)
     }
     const handleEventTimeChange = (info) =>
     {
+        console.log(info)
         let event = events.find(e => e.id === info.event.id);
         const data = 
         {
@@ -225,14 +239,14 @@ export const AppCalendar =
         //fixes a stutter issue by temporarily loading a new event into the calendar
         //before the state change dispatches and updates - not very clean 
         //way around this might be to go async instead? 
-        let tempEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
+        let newEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
         setEvents( prevEvents =>
         {
             const updatedEvents = prevEvents.filter(e => 
             {   
                 return e.id !== event.id
             });
-            return [...updatedEvents, tempEvent]
+            return [...updatedEvents, newEvent]
         }) 
         
         webFunctions.patchEvent(event, data);
@@ -240,25 +254,31 @@ export const AppCalendar =
 
     const handleEventClick = (info) =>
     {
+        //push the selected event to the back
         let event = events.find(event => event.id === info.id);
-        console.log(events)
-        console.log(event)
-        setTempEvent({...event, isTemporary: false, project: event.project_title})
+        
+        setEvents(prevEvents =>
+        {
+            //remove all the temporary events
+            const notTemporary = prevEvents.filter(e => !('isTemporary' in e));
+            console.log(notTemporary.length)
+            if(notTemporary[notTemporary.length - 1].id !== event.id)
+            {
+                const filtered = notTemporary.filter(e => e.id !== event.id);
+                return [...filtered,  event]
+            }
+            return notTemporary;
+        })
         openModal(info)
     }
     
     const handleCancel = () =>
     {
         setEditModalActive(false)
-        if(tempEvent.isTemporary)
+        /* setTimeout(() =>
         {
-            events.pop();
-        }
-        setTimeout(() =>
-        {
-            //so the event is wiped AFTER the animation is done
-            setTempEvent(null);
-        }, 200)
+        }, 100) */
+        setEvents((prevEvents) => prevEvents.filter(event => !event.isTemporary))
     }
     const handleSelectAdd = (e) =>
     {
@@ -300,9 +320,21 @@ export const AppCalendar =
 
                 <form id={styles.editModalForm} ref={modalInputRef} onSubmit={handleSubmit}>
                     
-                    <input placeholder='Add a title' name='title' required={true} maxLength={50} defaultValue={tempEvent ? tempEvent.title : null}/>
+                    <input placeholder='Add a title' 
+                           name='title' 
+                           required 
+                           maxLength={50} 
+                           defaultValue=
+                           {
+                                events[events.length - 1] ? 
+                                    events[events.length - 1].title === "New Event" ? 
+                                    null : 
+                                    events[events.length - 1].title 
+                                : null
+                            }
+                           />
 
-                    <div id={styles.editModalProject}>
+                    <div id={styles.editModalProject} data-testid={'editModal'}>
                         <label>Project</label>
                         <div id={styles.expandingMenu}>
                             <div id={styles.projectAdd} ref={projectAddRef}>
@@ -315,7 +347,16 @@ export const AppCalendar =
                                 ? 
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
-                                        <select defaultValue={tempEvent && tempEvent.project ? tempEvent.project : "No Project"} name="project" ref={selectRef}>
+                                        <select 
+                                            defaultValue=
+                                            {
+                                                events[events.length - 1] && events[events.length - 1].project ? 
+                                                events[events.length - 1].project : 
+                                                "No Project"
+                                            } 
+                                            name="project" 
+                                            ref={selectRef}
+                                        >
                                             <option>No Project</option>
                                             {
                                                 projects.map((project) => 
@@ -340,80 +381,80 @@ export const AppCalendar =
                     </div>
 
                     <div>
-                        <label>Start Time</label>
-                        <input type='datetime-local'
+                        <label htmlFor='startTime'>Start Time</label>
+                        <input type='datetime-local' id='startTime'
+                            name='start'
                             defaultValue=
-                            {
-                                tempEvent ?
-                                (
-                                    () =>
-                                    {
-                                        const start = new Date(tempEvent.start);
-                                        start.setHours(start.getHours() + 12);
-                                        return start.toISOString().slice(0,16)
-                                    }
-                                )()
-                                :
+                            {   
+                                events.length > 0 && events[events.length - 1].start ? 
+                                GMTToISO(events[events.length - 1].start) : 
                                 null
                             }
                         />
                     </div>
                     <div>
-                        <label>End Time</label>
-                        <input type='datetime-local' 
+                        <label htmlFor='endTime'>End Time</label>
+                        <input type='datetime-local' id='endTime'
+                            name='end'
                             defaultValue=
                             {
-                                tempEvent ?
-                                (
-                                    () =>
-                                    {
-                                        const end = new Date(tempEvent.end);
-                                        end.setHours(end.getHours() + 12);
-                                        return end.toISOString().slice(0,16)
-                                    }
-                                )()
-                                :
+                                events.length > 0 &&events[events.length - 1].end ?
+                                GMTToISO(events[events.length - 1].end) :
                                 null
                             }
                         />
 
                     </div>
                     <div>
-                        <label>All Day Event</label>
+                        <label htmlFor='allDay'>All Day Event</label>
                         <input 
                             type='checkbox' 
-                            checked={tempEvent ? tempEvent.allDay ? true : false : false} 
+                            checked=
+                            {
+                                events[events.length - 1] ? 
+                                    events[events.length - 1].allDay ? 
+                                    true : 
+                                    false 
+                                : false
+                            } 
+                            id='allDay'
+                            name='allDay'
                             onChange={(e) => 
                             {
-                                setTempEvent(prevEvent => 
-                                    (
+                                setEvents(prevEvents => 
+                                {
+                                    const events = [...prevEvents];
+                                    if(events.length > 0)
+                                    {
+                                        events[events.length - 1] = 
                                         {
-                                            ...prevEvent,
+                                            ...events[events.length - 1],
                                             allDay: e.target.checked
                                         }
-                                    )
-                                )
+                                    }
+                                    return events;
+                                }); 
                             }}
                         />
                     </div>
                     <div>
-                        <label>Description</label>
-                        <textarea name='description' maxLength={500}/>
+                        <label htmlFor='description'>Description</label>
+                        <textarea id='description' name='description' maxLength={500}/>
                     </div>
 
                     <div id={styles.editModalButtonWrap}>
                         {
-                            tempEvent ? tempEvent.isTemporary ? null 
+                            events[events.length - 1] ? events[events.length - 1].isTemporary ? null 
                             : 
                             <button id={styles.editModalDelete} onClick={(e) => 
                             {
                                 e.preventDefault()
-                                webFunctions.deleteEvent(tempEvent.id)
+                                webFunctions.deleteEvent(events[events.length - 1].id)
                                 setEditModalActive(false)
                             }}>
                             Delete
                             </button> 
-                            : 
+                            :  
                             null
                         }
                         <button type="submit" id={styles.editModalSubmit}>Save</button>
@@ -428,11 +469,13 @@ export const AppCalendar =
                 date={new Date(calendarFunctions.date)}
                 view={calendarFunctions.view}
                 onDragStart={() => "dragging"}
-                onSelectEvent={(info) => { handleEventClick(info)} }
+                onSelectSlot={info => handleSelectSlot(info)}
+                onSelectEvent={(info) => { handleEventClick(info)}}
+
                 onEventDrop={(info) => handleEventTimeChange(info)}
-                onSelectSlot={info => createTempEvent(info)}
-                onDoubleClickEvent={(info) => editEvent(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
+
+                onDoubleClickEvent={(info) => editEvent(info)}
                 resources=
                 {
                     
@@ -445,9 +488,11 @@ export const AppCalendar =
                     null
                     
                 }
-                //onNavigate={(date) => calendarFunctions.setDate(date)}
-                //onView={(view) => calendarFunctions.setView(view)}
-                //dayLayoutAlgorithm={'overlap'}
+                timeslots={1}
+                slotPropGetter={() => {return {'data-testid': "slot"} }}
+                onNavigate={(date) => calendarFunctions.setDate(date)}
+                onView={(view) => calendarFunctions.setView(view)}
+                dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
                 min={new Date(new Date().setHours(6, 0, 0, 0))}

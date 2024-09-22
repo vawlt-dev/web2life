@@ -52,7 +52,6 @@
 #editModal.active
 {
     opacity: 1;
-    
     visibility: visible;
     transition: opacity ease-in-out 250ms;
     pointer-events: all;
