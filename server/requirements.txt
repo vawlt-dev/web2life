@@ -1,2 +1,11 @@
-Django>=4.2
-python-dateutil==2.9.0
+Django
+python-dateutil>=2.9.0
+Python-dotenv=> 1.0.1
+WerkZeug
+django-extensions
+django-werkzeug
+google-api-core
+google-api-python-client
+google-auth
+google-oauth
+oauthlib
