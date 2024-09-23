@@ -1,0 +1,12 @@
+.eventWrapper
+{
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(40, 170, 109);
+    text-align: center;
+    border-radius: 6px;
+    margin-left: 5px;
+    box-shadow: 2px 4px 4px 1px var(--borderColor);
+}

@@ -5,6 +5,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
+import { EventWrapper } from './EventWrapper'
 
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
@@ -37,10 +38,7 @@ const createEvent = (id,
         }
     ) 
 }
-const CustomEvent = ({event}) =>
-{
-    return <div data-testid={`event`}>{event.title}</div>
-}
+
 const CustomHeader = (info) =>
 {
     let [date, dayOfWeek] = info.label.split(" ");
@@ -506,7 +504,7 @@ export const AppCalendar =
                 {
                     {
                         header: (info) => CustomHeader(info),
-                                            event: CustomEvent
+                        eventWrapper: (info) => EventWrapper(info)
                     }
                 }
                 timeslots={4}
