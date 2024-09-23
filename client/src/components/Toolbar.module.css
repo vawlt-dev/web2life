@@ -24,6 +24,7 @@ img
     filter: var(--logoInvert);
     max-width: 200px;
     padding-right: 10px;
+    transition: filter ease 200ms
 }
 
 
@@ -77,7 +78,7 @@ img
     border-radius: 5px;
     background-color: transparent;
     color: var(--textColor);
-    transition: background-color ease 350ms,
+    transition: color ease 500ms,
                 border-color ease 350ms;
     font-family: "Inter";
     font-weight: 300;
@@ -90,7 +91,11 @@ img
 }
 #dropDownButton > div > svg
 {
-    transition: all ease 350ms;
+    stroke: var(--textColor);
+    transition: transform ease 500ms,
+                background-color ease 500ms,
+                stroke ease 500ms;
+                
 }
 #dropDownButton > div > svg.active
 {
@@ -295,27 +300,11 @@ z-index: 222;
 }
 
 
-#settingsWrap
-{
-    width: 90%;
-}
-#settingsWrap > button
-{
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    padding: 5px;
-    font-family: 'Inter';
-    font-size: 16px;
-    
-    border: 2px solid rgb(161, 161, 161);
-    border-radius: 6px;
-    width: 100%;
-    transition: all ease 350ms;
-    z-index: 9999;
-    cursor: pointer;
-}
+
 #settingsSVG
 {
-    fill: black;
+    cursor: pointer;
+    fill: var(--textColor);
+    stroke: rgb(128, 128, 128, 0.5);
+    stroke-width: 20px;
 }

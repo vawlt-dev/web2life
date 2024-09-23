@@ -5,6 +5,9 @@
     width: 300px;
     align-items: center;
     background-color: var(--primaryColour);
+    border-right: 2px solid rgba(128, 128, 128, 0.175);
+    z-index: 999;
+    
 }
 #secondaryCalendarWrap
 {
@@ -76,7 +79,7 @@
 {
     display: flex;
 }
-.secondaryCalendar [class="rbc-header"]
+.secondaryCalendar div[class="rbc-header"]
 {
     font-weight: 500;
     margin-left: 3px;
@@ -95,6 +98,14 @@
 
     transition: background-color ease-in-out 250ms;
     
+}
+.secondaryCalendar div[class="rbc-header"]
+{
+    min-width: 0;
+}
+.secondaryCalendar div[class="rbc-header"]::before
+{
+    content: none;
 }
 .secondaryCalendar [class="rbc-button-link"]:hover
 {
@@ -115,14 +126,17 @@
     user-select: none;
     cursor: pointer;
     border-bottom: 2px solid var(--textColor);
-    transition: all ease 350ms;
+    transition: border-color ease 350ms;
 }
 #filterDropdownToggle:hover
 {
     color: rgb(74, 118, 214);
     border-color: rgb(74, 118, 214);
 }
-
+input[type="checkbox"]
+{
+    
+}
 #filterDropdown
 {
     margin-top: 12px;

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AppCalendar } from "./components/AppCalendar";
 import styles from "./App.module.css";
-import "./calendarStyles.css"
 import "./index.css";
 import { SecondaryMenu } from "./components/SecondaryMenu";
 import { Footer } from "./components/Footer";
@@ -245,10 +244,13 @@ export const App = () =>
     {
         let tempDate = new Date(date);
         console.log(date)
+        const main = document.querySelector('main');
+        let x = 15;
         switch(action)
         {
             case 'back':
             {
+                x *= -1;
                 switch(view)
                 {
                     case Views.MONTH:
@@ -285,6 +287,7 @@ export const App = () =>
             }
             case 'today':
             {
+                x = 0;
                 tempDate = new Date();
                 break;
             }
@@ -293,6 +296,36 @@ export const App = () =>
                 break;
             }
         }
+        main.animate(
+            [
+                {
+                    transform: `translateX(${x}px)`,
+                },
+                {
+                    transform: "translateX(0px)",
+                }
+            ],
+            {
+                duration: 500,
+                easing: "ease"
+            }
+        )
+        main.animate(
+            [
+                {
+                    opacity: 0.5
+
+                },
+                {
+                    opacity: 1
+
+                }
+            ],
+            {
+                duration: 800,
+                easing: "ease"
+            }
+        )
         setDate(tempDate)
     }
 

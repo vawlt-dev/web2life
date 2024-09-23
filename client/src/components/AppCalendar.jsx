@@ -37,6 +37,21 @@ const createEvent = (id,
         }
     ) 
 }
+const CustomEvent = ({event}) =>
+{
+    return <div data-testid={`event`}>{event.title}</div>
+}
+const CustomHeader = (info) =>
+{
+    let [date, dayOfWeek] = info.label.split(" ");
+    date = date[0] === "0" ? date[1] : date;
+    return (
+        <div className={styles.customHeader}>
+            <span>{dayOfWeek}</span>
+            <span>{date}</span>
+        </div>
+    )
+}
 
 const GMTToISO = (date) =>
 {
@@ -106,10 +121,11 @@ export const AppCalendar =
     
     const handleSelectSlot = (args) =>
     {
+        console.log(args)
         let event = null;
         if(editModalActive)
         {
-            if(events[events.length - 1].isTemporary)
+            if('isTemporary' in events[events.length - 1])
             {
                 setEvents(prevEvents => prevEvents.slice(0, -1))
             }
@@ -211,14 +227,14 @@ export const AppCalendar =
             allDay: formData.get('allDay'),
         }        
 
-        if(events[events.length - 1].isTemporary)
+        if(events.length > 0 && ('isTemporary' in events[events.length - 1]))
         {
             webFunctions.putEvent(data)
         }
         else
         {
-           /*  let event = events.find(e => e.id === events[events.length - 1].id);
-            webFunctions.patchEvent(event, data) */
+            let event = events.find(e => e.id === events[events.length - 1].id);
+            webFunctions.patchEvent(event, data) 
         }
         setEditModalActive(false)
     }
@@ -275,10 +291,11 @@ export const AppCalendar =
     const handleCancel = () =>
     {
         setEditModalActive(false)
-        /* setTimeout(() =>
+        //wait until animation is done before removing
+        setTimeout(() =>
         {
-        }, 100) */
-        setEvents((prevEvents) => prevEvents.filter(event => !event.isTemporary))
+            setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
+        }, 200)
     }
     const handleSelectAdd = (e) =>
     {
@@ -442,10 +459,9 @@ export const AppCalendar =
                         <textarea id='description' name='description' maxLength={500}/>
                     </div>
 
-                    <div id={styles.editModalButtonWrap}>
+                    <div id={styles.editModalButtonWrap} className={events.length > 0 && 'isTemporary' in events[events.length - 1] ? styles.singleButton : ''}>
                         {
-                            events[events.length - 1] ? events[events.length - 1].isTemporary ? null 
-                            : 
+                            events.length > 0 && !('isTemporary' in events[events.length - 1]) ? 
                             <button id={styles.editModalDelete} onClick={(e) => 
                             {
                                 e.preventDefault()
@@ -471,10 +487,8 @@ export const AppCalendar =
                 onDragStart={() => "dragging"}
                 onSelectSlot={info => handleSelectSlot(info)}
                 onSelectEvent={(info) => { handleEventClick(info)}}
-
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
-
                 onDoubleClickEvent={(info) => editEvent(info)}
                 resources=
                 {
@@ -488,15 +502,30 @@ export const AppCalendar =
                     null
                     
                 }
-                timeslots={1}
+                components=
+                {
+                    {
+                        header: (info) => CustomHeader(info),
+                                            event: CustomEvent
+                    }
+                }
+                timeslots={4}
+                
+                formats=
+                {
+                    {
+                        timeGutterFormat: 'HH:mm'
+                    }
+                }
+                step={15}
                 slotPropGetter={() => {return {'data-testid': "slot"} }}
                 onNavigate={(date) => calendarFunctions.setDate(date)}
                 onView={(view) => calendarFunctions.setView(view)}
                 dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
-                min={new Date(new Date().setHours(6, 0, 0, 0))}
-                max={new Date(new Date().setHours(18, 0, 0, 0))}
+                //min={new Date(new Date().setHours(6, 0, 0, 0))}
+                //max={new Date(new Date().setHours(18, 0, 0, 0))}
                 allDayAccessor={(event) =>  event.allDay}
                 startAccessor={(event) => { return new Date(event.start) }}
                 endAccessor={(event) => { return new Date(event.end) }}
