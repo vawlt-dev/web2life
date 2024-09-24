@@ -17,8 +17,7 @@ export const EventWrapper = (props) =>
                 
             }
             >
-                {props.event.start.getHours() + ":" + props.event.start.getMinutes()}
-                {"\n"}
+               
                 {props.event.title}
             </div>
     )
