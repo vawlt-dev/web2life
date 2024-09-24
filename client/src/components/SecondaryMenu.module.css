@@ -176,6 +176,11 @@ text.active
 .secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now"] > button[class="rbc-button-link"],
 .secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now rbc-current"] > button[class="rbc-button-link"]
 {
+    color: white;
+}
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now rbc-current"] > button[class="rbc-button-link"]
+{
     background-color: rgb(59, 87, 146);
 }
 
@@ -194,7 +199,8 @@ text.active
 }
 .secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > [class="rbc-row "] > [class="rbc-date-cell rbc-current"] > button
 {
-    background-color: rgba(109, 139, 204, 0.301);
+    color: white;
+    background-color: rgba(50, 102, 216, 0.705);
 }
 .secondaryCalendar [role="table"],
 .secondaryCalendar [role="row"],
