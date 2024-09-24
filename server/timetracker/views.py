@@ -65,10 +65,8 @@ def get_events(request):
                 "start": event.start,
                 "end": event.end,
                 "allDay": event.allDay,
-                "resourceId": event.resourceId,
                 "description": event.description,
                 "project_title": event.projectId.title if event.projectId else None,
-                "origin": event.origin,
             }
         )
     return JsonResponse({"data": events})

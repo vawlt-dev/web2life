@@ -26,12 +26,10 @@ class Events(models.Model):
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
     allDay = models.BooleanField(default=False, null=True)
-    resourceId = models.CharField(max_length=20, default="localEvents")
     description = models.CharField(max_length=500)
     projectId = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
-    origin = models.IntegerField(default=EventOrigin.USER.value)
 
     def __str__(self):
         return f'{{ID: {self.id}, Title: "{self.title}", Description: "{self.description}"}}'
