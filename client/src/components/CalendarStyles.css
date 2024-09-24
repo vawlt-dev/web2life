@@ -72,12 +72,12 @@ main
 .rbc-day-slot.rbc-time-column
 {
     display: flex;
-    border-right: 2px solid var(--borderColor);
+    border-left: 2px solid var(--borderColor);
     min-width: 100px;
 }
 .rbc-header, .rbc-day-slot.rbc-time-column 
 {
-    width: 2000px !important;
+    width: 100%;
 }
 .rbc-header > button
 {
@@ -104,6 +104,30 @@ main
     border: 0;
     background: linear-gradient(90deg, transparent 50%, var(--borderColor));
     
+}
+.rbc-time-header-content > .rbc-row.rbc-row-resource
+{
+    display: flex;
+    border: 0;
+}
+.rbc-time-header-content > .rbc-row.rbc-row-resource > .rbc-header
+{
+    position: relative;
+    display: flex;
+    width: 100%;
+    border-left: 2px solid var(--borderColor);
+}
+.rbc-time-header-content > .rbc-row.rbc-row-resource > .rbc-header::before
+{
+    width: 0;
+    height: 0;
+}
+.rbc-time-header-content > .rbc-row.rbc-row-resource > .rbc-header
+{
+    padding-bottom: 12px;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 300;
 }
 
 .rbc-day-slot.rbc-time-column > .rbc-timeslot-group
@@ -139,14 +163,70 @@ main
     padding: 0;
 
 }
+.rbc-time-header-content + .rbc-time-header-content
+{
+    margin: 0;
+}
 .rbc-time-gutter.rbc-time-column
 {
-    border-right: 2px solid var(--borderColor);
-    
+    border: 0;
 }
 .rbc-time-view-resources .rbc-time-gutter,
 .rbc-time-view-resources 
 .rbc-time-header-gutter
+{
+    background-color: transparent;
+}
+
+.rbc-time-view-resources .rbc-time-header-content
+{
+    width: unset;
+}
+
+.rbc-time-view-resources .rbc-time-header-gutter
+{
+    
+}
+
+.rbc-month-view
+{
+    border: 0;
+}
+.rbc-month-view .rbc-day-bg + .rbc-day-bg
+{
+    border: 0;
+}
+.rbc-month-view .rbc-month-row + .rbc-month-row
+{
+    border: 0;
+}
+.rbc-month-view > .rbc-month-row > .rbc-row-content > .rbc-row > .rbc-date-cell > .rbc-button-link 
+{
+    font-family: "Inter";
+    font-size: 18px;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.rbc-month-view > .rbc-month-row > .rbc-row-bg > .rbc-day-bg
+{
+    border-left: 2px solid var(--borderColor);
+    border-bottom: 2px solid var(--borderColor);
+}
+.rbc-month-view > .rbc-month-row > .rbc-row-bg > .rbc-day-bg:last-child
+{
+    border-right: 2px solid var(--borderColor);
+}
+.rbc-month-view > .rbc-row.rbc-month-header > .rbc-header::before
+{
+    width: 0;
+    height: 0;
+}
+.rbc-month-view > .rbc-row.rbc-month-header > .rbc-header
+{
+    padding-bottom: 8px;
+}
+.rbc-month-view > .rbc-month-row > .rbc-row-bg > .rbc-day-bg.rbc-off-range-bg
 {
     background-color: transparent;
 }

@@ -58,12 +58,12 @@ export const App = () =>
         }
     }, [OAuthData, loading]);
 
+ */
 
     useEffect(() =>
     {
         console.log(events)
     },[events]);    
- */
 
     const getEvents = () =>
     {

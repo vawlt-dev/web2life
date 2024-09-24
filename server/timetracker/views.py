@@ -94,7 +94,6 @@ def set_event(request):
             projectId=pId,
         )
         event.save()
-        print(Events)
     except Exception as e:
         print(e)
     finally:

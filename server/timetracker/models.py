@@ -25,7 +25,7 @@ class Events(models.Model):
     title = models.CharField(max_length=50, default="")
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
-    allDay = models.BooleanField(default=False)
+    allDay = models.BooleanField(default=False, null=True)
     resourceId = models.CharField(max_length=20, default="localEvents")
     description = models.CharField(max_length=500)
     projectId = models.ForeignKey(

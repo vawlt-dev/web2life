@@ -488,6 +488,18 @@ export const AppCalendar =
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
+                eventPropGetter={(event, start, end, isSelected) => 
+                {
+                    return {
+                        className: "asf",
+                        
+                        style: 
+                        {
+                            backgroundColor: event.color || 'blue', 
+                            borderRadius: '4px',
+                        },
+                    };
+                }}
                 resources=
                 {
                     
@@ -504,7 +516,12 @@ export const AppCalendar =
                 {
                     {
                         header: (info) => CustomHeader(info),
-                        eventWrapper: (info) => EventWrapper(info)
+                        event: (info) => 
+                        {
+                            return(
+                                <div>a</div>
+                            )
+                        }
                     }
                 }
                 timeslots={4}

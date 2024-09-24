@@ -39,80 +39,13 @@
     gap: 10px;
 }
 
-.secondaryCalendar [role="table"],
-.secondaryCalendar [role="row"],
-.secondaryCalendar [class="rbc-header"],
-.secondaryCalendar [class="rbc-month-row"]
-{
-    border: none;
-}
-.secondaryCalendar [class="rbc-row-content"] > div
-{
-    height: 23px;
-}
-.secondaryCalendar [class="rbc-date-cell rbc-now rbc-current"] > button,
-.secondaryCalendar [class="rbc-date-cell rbc-now"] > button
-{
-    background-color: rgb(59, 87, 146);
-    color: white;
-}
-.secondaryCalendar [class="rbc-date-cell rbc-current"] > button
-{
-    background-color: rgba(109, 139, 204, 0.301);
-}
 
-.secondaryCalendar [class="rbc-month-row"]
-{
-    width: 100%;
-}
-
-.secondaryCalendar [class="rbc-row-bg"]
-{
-    display: block;
-}
 .secondaryCalendar
 {
     height: 200px;
     width: 200px;
 }
-.secondaryCalendar div[class="rbc-row rbc-month-header"]
-{
-    display: flex;
-}
-.secondaryCalendar div[class="rbc-header"]
-{
-    font-weight: 500;
-    margin-left: 3px;
-    margin-bottom: 5px;
-    font-size: 12px;
-}
 
-.secondaryCalendar button[class="rbc-button-link"]
-{
-    font-size: 10px;
-    font-family: "Inter";
-    font-weight: 300;
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-
-    transition: background-color ease-in-out 250ms;
-    
-}
-.secondaryCalendar div[class="rbc-header"]
-{
-    min-width: 0;
-}
-.secondaryCalendar div[class="rbc-header"]::before
-{
-    content: none;
-}
-.secondaryCalendar [class="rbc-button-link"]:hover
-{
-    background-color: rgb(59, 87, 146);
-    color: white;
-    transition: color ease-in-out 50ms, background-color ease-in-out 250ms;
-}
 
 #filterWrap
 {
@@ -133,10 +66,7 @@
     color: rgb(74, 118, 214);
     border-color: rgb(74, 118, 214);
 }
-input[type="checkbox"]
-{
-    
-}
+
 #filterDropdown
 {
     margin-top: 12px;
@@ -214,4 +144,108 @@ text.active
 #addEventWrap > #addEventButton >button:hover
 {
     border-color: var(--textColor);
+}
+
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-row rbc-month-header"] > [class="rbc-header"]
+{
+    font-weight: 300;
+    border: 0;
+
+}
+
+.secondaryCalendar button[class="rbc-button-link"]
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    
+}
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now rbc-current"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-current"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-off-range"] > button[class="rbc-button-link"]
+{
+    border: 0;
+    font-size: 10px;
+    text-decoration: none;
+    border-radius: 100%;
+}
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now"] > button[class="rbc-button-link"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > div[class="rbc-row "] > [class="rbc-date-cell rbc-now rbc-current"] > button[class="rbc-button-link"]
+{
+    background-color: rgb(59, 87, 146);
+}
+
+.secondaryCalendar [class="rbc-button-link"]:hover
+{
+    background-color: rgb(59, 87, 146);
+    color: white;
+    transition: color ease-in-out 50ms, background-color ease-in-out 250ms;
+}
+
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-bg"]  > [class="rbc-day-bg rbc-off-range-bg"],
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-bg"]  > [class="rbc-day-bg rbc-today"]
+{
+    background-color: transparent;
+    border: 0;
+}
+.secondaryCalendar > [class="rbc-month-view"] > [class="rbc-month-row"] > [class="rbc-row-content"] > [class="rbc-row "] > [class="rbc-date-cell rbc-current"] > button
+{
+    background-color: rgba(109, 139, 204, 0.301);
+}
+.secondaryCalendar [role="table"],
+.secondaryCalendar [role="row"],
+.secondaryCalendar .rbc-header,
+.secondaryCalendar .rbc-month-row
+{
+    border: none;
+}
+
+
+
+
+.secondaryCalendar [class="rbc-month-row"]
+{
+    width: 100%;
+}
+
+.secondaryCalendar .rbc-month-view > .rbc-month-row > .rbc-row-bg > .rbc-day-bg
+{
+    border: 0;
+}
+.secondaryCalendar [class="rbc-header"]
+{
+    min-width: 0;
+    padding: 0 !important;
+}
+
+.secondaryCalendar [class="rbc-row-bg"] > [class="rbc-day-bg"]
+{
+    border: 0 !important;
+}
+
+
+
+.secondaryCalendar [class="rbc-header"]
+{
+    font-size: 14px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+}
+
+.secondaryCalendar button.rbc-button-link
+{
+    font-size: 10px !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+    font-family: "Inter";
+    font-weight: 300;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    transition: background-color ease-in-out 250ms;
+    
 }
