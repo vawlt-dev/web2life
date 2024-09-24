@@ -164,7 +164,9 @@ export const App = () =>
             originalEvent: originalEvent,
             newEvent: newEvent
         }
-        fetch("updateEventTimes/",
+        console.log(data.originalEvent)
+        console.log(data.newEvent)
+        fetch("patchEvent/",
         {
             method: "PATCH",
             headers:

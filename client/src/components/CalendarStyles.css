@@ -230,3 +230,7 @@ main
 {
     background-color: transparent;
 }
+.rbc-events-container
+{
+    width: 100%;
+}

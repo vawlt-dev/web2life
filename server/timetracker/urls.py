@@ -26,7 +26,7 @@ favicon_view = RedirectView.as_view(url="/static/favicon.ico")
 urlpatterns = [
     path("getEvents/", views.get_events),
     path("setEvent/", views.set_event),
-    path("updateEventTimes/", views.update_event_times),
+    path("patchEvent/", views.patch_event),
     path("clearEvents/", views.clear_events),
     path("deleteEvent/", views.delete_event),
     path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),

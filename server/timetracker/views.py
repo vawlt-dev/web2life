@@ -71,7 +71,6 @@ def get_events(request):
                 "origin": event.origin,
             }
         )
-    print(events)
     return JsonResponse({"data": events})
 
 
@@ -79,19 +78,20 @@ def get_events(request):
 def set_event(request):
     try:
         data = json.loads(request.body)
-        print(data)
+        project = None
         try:
-            pId = Project.objects.get(title=data["project"])
+            project = Project.objects.get(title=data["project"])
         except:
-            pId = None
+            print("No project found, defaulting to null")
 
+        print(data["allDay"])
         event = Events(
             title=data["title"],
             description=data["description"],
             start=data["start"],
             end=data["end"],
-            allDay=data["allDay"],
-            projectId=pId,
+            allDay=True if data["allDay"] == "on" else False,
+            projectId=project,
         )
         event.save()
     except Exception as e:
@@ -126,6 +126,95 @@ def add_project(request):
         return HttpResponse()
     except:
         return HttpResponse()
+
+
+def filter_events(request):
+    events = filter.filter_events(request)
+    return JsonResponse({"data": events})
+
+
+def patch_event(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["originalEvent"]["id"])
+
+        newStart = data["newEvent"]["start"]
+        newEnd = data["newEvent"]["end"]
+        newAllDay = data["newEvent"]["allDay"]
+        newDescription = data["newEvent"]["description"]
+        # newProject = data["newEvent"]["project"]
+
+        event.start = newStart
+        event.end = newEnd
+        event.allDay = newAllDay
+        event.description = newDescription
+        event.save()
+    except Exception as e:
+        print(e)
+    return HttpResponse()
+
+
+def update_event_times(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["originalEvent"]["id"])
+        newEvent = data["newEvent"]
+        newStart = newEvent.get("start")
+        newEnd = newEvent.get("end")
+        newAllDay = newEvent.get("allDay")
+
+        event.start = newStart
+        event.end = newEnd
+        event.allDay = newAllDay
+        print(newStart)
+        event.save()
+    except Exception as e:
+        print(e)
+    finally:
+        return HttpResponse()
+
+
+def delete_event_time(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["id"])
+
+        event.times = [
+            # no idea how this works but it does
+            # can't directly delete the time, so have to
+            # re-create the times array with the time to delete
+            # filtered out
+            time
+            for time in event.times
+            if not (
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
+            )
+        ]
+        event.save()
+    except Exception as e:
+        print(e)
+    finally:
+        return HttpResponse()
+
+
+def delete_event(request):
+    try:
+        data = json.loads(request.body)
+        event = Events.objects.get(id=data["id"])
+        event.delete()
+        print(event)
+    except Exception as e:
+        print(e)
+    finally:
+        return HttpResponse()
+
+
+def clear_events(request):
+    print("In clear_events")
+    Events.objects.all().delete()
+    return HttpResponse()
 
 
 def delete_project(request):
@@ -646,75 +735,6 @@ def get_events_by_date(request):
     except Exception as e:
         print(e)
         return HttpResponse()
-
-
-def filter_events(request):
-    events = filter.filter_events(request)
-    return JsonResponse({"data": events})
-
-
-def update_event_times(request):
-    try:
-        data = json.loads(request.body)
-        event = Events.objects.get(id=data["originalEvent"]["id"])
-        newEvent = data["newEvent"]
-
-        newStart = newEvent.get("start")
-        newEnd = newEvent.get("end")
-        newAllDay = newEvent.get("allDay")
-
-        event.start = newStart
-        event.end = newEnd
-        event.allDay = newAllDay
-        print(newStart)
-        event.save()
-    except Exception as e:
-        print(e)
-    finally:
-        return HttpResponse()
-
-
-def delete_event_time(request):
-    try:
-        data = json.loads(request.body)
-        event = Events.objects.get(id=data["id"])
-
-        event.times = [
-            # no idea how this works but it does
-            # can't directly delete the time, so have to
-            # re-create the times array with the time to delete
-            # filtered out
-            time
-            for time in event.times
-            if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
-            )
-        ]
-        event.save()
-    except Exception as e:
-        print(e)
-    finally:
-        return HttpResponse()
-
-
-def delete_event(request):
-    try:
-        data = json.loads(request.body)
-        event = Events.objects.get(id=data["id"])
-        event.delete()
-        print(event)
-    except Exception as e:
-        print(e)
-    finally:
-        return HttpResponse()
-
-
-def clear_events(request):
-    print("In clear_events")
-    Events.objects.all().delete()
-    return HttpResponse()
 
 
 def get_csrf_token(request):

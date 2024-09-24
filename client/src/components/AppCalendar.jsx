@@ -5,8 +5,6 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
-import { EventWrapper } from './EventWrapper'
-
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
 /*
@@ -60,6 +58,7 @@ const GMTToISO = (date) =>
     const newDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
     return newDate.toISOString().slice(0, 16)
 }
+
 export const AppCalendar = 
     ({
         calRef,
@@ -119,7 +118,6 @@ export const AppCalendar =
     
     const handleSelectSlot = (args) =>
     {
-        console.log(args)
         let event = null;
         if(editModalActive)
         {
@@ -137,10 +135,12 @@ export const AppCalendar =
         else
         {
             event = createEvent(null, "New Event", args.start, args.end, null, false, 'localEvents');
+                
         }
             
         setEvents(prevEvents => [...prevEvents, event])    
         openModal(args) 
+            
     }
 
     const openModal = (args) =>
@@ -177,11 +177,23 @@ export const AppCalendar =
             modal.style.left = `${args.bounds.left}px`
         }
     } 
-    
+   const handleAllDayEvent = (event) => 
+    {
+        if (event.allDay) 
+        {
+            const start = new Date(event.start);
+            const end = new Date(event.end);
+
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+
+            return { start: start, end: end };
+        }
+
+        return { start: new Date(event.start), end: new Date(event.end) };
+    };
     const handleToolbarEventAdd = () =>
     {
-        handleCancel()
-        
         let event = createEvent
         (
             null, 
@@ -190,6 +202,8 @@ export const AppCalendar =
             new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0)),
             //round to next nearest 15 min period and account for hour rollover
             new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0) + 15 * 60000), 
+            null,
+            false,
             null,
             true,
         )
@@ -207,21 +221,14 @@ export const AppCalendar =
     {
         e.preventDefault();
         const formData = new FormData(modalInputRef.current);
-        console.log(formData + " - formData")
-        if(formData)
-        {
-            formData.forEach((key, value) => 
-            {
-                console.log(`${key} - ${value}`)
-            })
-        }
+
         const data = 
         {
             title: formData.get("title"),
             project: formData.get("project"),
             description: formData.get("description"),
-            start: formData.get('start'),
-            end: formData.get('end'),
+            start: new Date(formData.get('start')),
+            end: new Date(formData.get('end')),
             allDay: formData.get('allDay'),
         }        
 
@@ -238,7 +245,6 @@ export const AppCalendar =
     }
     const handleEventTimeChange = (info) =>
     {
-        console.log(info)
         let event = events.find(e => e.id === info.event.id);
         const data = 
         {
@@ -249,10 +255,6 @@ export const AppCalendar =
             end: info.end,
             allDay: event.allDay
         }
-
-        //fixes a stutter issue by temporarily loading a new event into the calendar
-        //before the state change dispatches and updates - not very clean 
-        //way around this might be to go async instead? 
         let newEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
         setEvents( prevEvents =>
         {
@@ -275,7 +277,6 @@ export const AppCalendar =
         {
             //remove all the temporary events
             const notTemporary = prevEvents.filter(e => !('isTemporary' in e));
-            console.log(notTemporary.length)
             if(notTemporary[notTemporary.length - 1].id !== event.id)
             {
                 const filtered = notTemporary.filter(e => e.id !== event.id);
@@ -482,7 +483,7 @@ export const AppCalendar =
                 events={events}
                 date={new Date(calendarFunctions.date)}
                 view={calendarFunctions.view}
-                onDragStart={() => "dragging"}
+                
                 onSelectSlot={info => handleSelectSlot(info)}
                 onSelectEvent={(info) => { handleEventClick(info)}}
                 onEventDrop={(info) => handleEventTimeChange(info)}
@@ -491,13 +492,7 @@ export const AppCalendar =
                 eventPropGetter={(event, start, end, isSelected) => 
                 {
                     return {
-                        className: "asf",
-                        
-                        style: 
-                        {
-                            backgroundColor: event.color || 'blue', 
-                            borderRadius: '4px',
-                        },
+                        className: styles.event
                     };
                 }}
                 resources=
@@ -518,8 +513,16 @@ export const AppCalendar =
                         header: (info) => CustomHeader(info),
                         event: (info) => 
                         {
+                            //console.log(info)
                             return(
-                                <div>a</div>
+                                <>
+                                    <>
+                                        {info.title}
+                                        {
+                                            info.event.project ? info.event.project : null
+                                        }
+                                    </>
+                                </>
                             )
                         }
                     }
@@ -539,11 +542,16 @@ export const AppCalendar =
                 dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
-                //min={new Date(new Date().setHours(6, 0, 0, 0))}
-                //max={new Date(new Date().setHours(18, 0, 0, 0))}
-                allDayAccessor={(event) =>  event.allDay}
-                startAccessor={(event) => { return new Date(event.start) }}
-                endAccessor={(event) => { return new Date(event.end) }}
+                allDayAccessor={() => false}
+                startAccessor={(event) => 
+                {
+                    return handleAllDayEvent(event).start
+                }}
+                endAccessor={(event) => 
+                { 
+                    //return new Date(event.end) 
+                    return handleAllDayEvent(event).end;
+                }}
                 resizableAccessor={() => true}
                 draggableAccessor={() =>true}
                 toolbar={null}

@@ -1,7 +1,6 @@
 #appCalendarWrap
 {
     width: 100%;
-    z-index: 1;
 }
 
 #editModalExit
@@ -277,4 +276,22 @@
 .customHeader :nth-child(2)
 {
     font-size: 24px;
+}
+.event
+{
+    width: 100%;
+}
+[class="rbc-event-label"],
+div[role="button"].event > div[class="rbc-event-label"]
+{
+    font-size: 10px;
+    font-weight: 300;
+}
+
+.event > div[class="rbc-addons-dnd-resizable"] > [class="rbc-event-content"],
+div[role="button"].event > div[class="rbc-event-content"]
+{
+    text-align: center;
+    font-size: 16px;
+    padding-top: 6px;
 }
