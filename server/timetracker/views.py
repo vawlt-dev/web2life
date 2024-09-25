@@ -292,24 +292,9 @@ def google_callback(request):
     return redirect("/")
 
 
-def get_google_events(request):
-    if "credentials" not in request.session:
-        return redirect(google_connect_oauth)
-
-    credentials_info = request.session["credentials"]
-    credentials = Credentials(
-        token=credentials_info["token"],
-        refresh_token=credentials_info["refresh_token"],
-        token_uri=credentials_info["token_uri"],
-        client_id=credentials_info["client_id"],
-        client_secret=credentials_info["client_secret"],
-        scopes=credentials_info["scopes"],
-    )
-
+def get_gmail_messages(credentials):
     try:
-
         gmail = build("gmail", "v1", credentials=credentials)
-        # default is from one month ago
         one_month_ago = datetime.now() - timedelta(days=30)
         query = f"from:me after:{one_month_ago.strftime('%Y/%m/%d') }"
 
@@ -319,10 +304,9 @@ def get_google_events(request):
             .list(userId="me", q=query, maxResults=100)
             .execute()
         )
-        print(messages_result)
         message_ids = messages_result.get("messages", [])
 
-        messageList = []
+        message_list = []
         for message_id in message_ids:
             message = (
                 gmail.users()
@@ -348,10 +332,31 @@ def get_google_events(request):
                     header["value"] for header in headers if header["name"] == "To"
                 ),
             }
-            messageList.append(info)
+            message_list.append(info)
 
-        # google calendar only likes ISO time formatting
+        return message_list
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def get_google_calendar_events(request):
+    if "credentials" not in request.session:
+        return redirect(google_connect_oauth)
+
+    credentials_info = request.session["credentials"]
+    credentials = Credentials(
+        token=credentials_info["token"],
+        refresh_token=credentials_info["refresh_token"],
+        token_uri=credentials_info["token_uri"],
+        client_id=credentials_info["client_id"],
+        client_secret=credentials_info["client_secret"],
+        scopes=credentials_info["scopes"],
+    )
+    try:
         calendar = build("calendar", "v3", credentials=credentials)
+        one_month_ago = datetime.now() - timedelta(days=30)
+
         event_res = (
             calendar.events()
             .list(
@@ -363,6 +368,7 @@ def get_google_events(request):
             )
             .execute()
         )
+
         events_list = event_res.get("items", [])
         events = []
         for event in events_list:
@@ -372,11 +378,11 @@ def get_google_events(request):
                 "end": event["end"].get("dateTime", event["end"].get("date")),
             }
             events.append(info)
-        print(events)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({"messages": messageList, "events": events_list})
+        print(events)
+        return JsonResponse({"data": events})
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
 
 
 def gitlab_connect_oauth(request):
@@ -699,7 +705,7 @@ def slack_callback(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 
-def fetch_slack_events(request):
+def get_slack_events(request):
     pass
 
 

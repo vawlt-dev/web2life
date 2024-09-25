@@ -19,7 +19,7 @@ const createEvent = (id,
                      end, 
                      project = null, 
                      allDay, 
-                     resourceId, 
+                     resourceId = 'localEvents', 
                      isTemporary = true
                     ) =>
 {
@@ -65,7 +65,6 @@ export const AppCalendar =
         events, 
         setEvents,
         projects, 
-
         webFunctions, 
         calendarFunctions,
         localizer, 
@@ -270,6 +269,9 @@ export const AppCalendar =
 
     const handleEventClick = (info) =>
     {
+        //for now, make imported events unviewable
+        if(info.resourceId !== 'localEvents') return
+
         //push the selected event to the back
         let event = events.find(event => event.id === info.id);
         
@@ -479,7 +481,7 @@ export const AppCalendar =
             
             <DragAndDropCalendar 
                 ref={calRef}
-                localizer = {localizer}
+                localizer={localizer}
                 events={events}
                 date={new Date(calendarFunctions.date)}
                 view={calendarFunctions.view}
@@ -507,6 +509,8 @@ export const AppCalendar =
                     null
                     
                 }
+                resourceIdAccessor={(event) => { return event.id } }
+                resourceTitleAccessor={(event) => { return event.title }}
                 components=
                 {
                     {
@@ -542,18 +546,24 @@ export const AppCalendar =
                 dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
-                allDayAccessor={() => false}
+                
+                allDayAccessor={() => { return false }}
                 startAccessor={(event) => 
                 {
-                    return handleAllDayEvent(event).start
+                    return handleAllDayEvent(event).start;
                 }}
                 endAccessor={(event) => 
                 { 
-                    //return new Date(event.end) 
                     return handleAllDayEvent(event).end;
                 }}
-                resizableAccessor={() => true}
-                draggableAccessor={() =>true}
+                resizableAccessor={(event) => 
+                {
+                    return event.resourceId === "localEvents";
+                }}
+                draggableAccessor={(event) => 
+                {
+                    return event.resourceId === "localEvents";
+                }}
                 toolbar={null}
             />
         </main>

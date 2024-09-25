@@ -2,25 +2,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import styles from './SecondaryMenu.module.css'
 import { Calendar } from 'react-big-calendar'
 
-export const SecondaryMenu = ({localizer, calendarFunctions}) => 
+export const SecondaryMenu = ({localizer, calendarFunctions, filteringFunctions}) => 
 {
     const dropdownRef = useRef(null);
-    const [checkboxes, setCheckboxes] = useState
-    (
-        {
-            localEvents: true,
-            importedEvents: true,
-            googleEvents: true,
-            microsoftEvents: true,
-            githubEvents: true,
-            slackEvents: true,
-            gitlabEvents: true,
-        }
-    );
+ 
 
     const handleCheckboxClick = (e) =>
     {
-        setCheckboxes(prevState => (
+        filteringFunctions.setActiveEvents(prevState => (
             {
                 ...prevState,
                 [e.target.name]: e.target.checked 
@@ -28,7 +17,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
         )
         if(e.target.name === "importedEvents" && !e.target.checked)
         {
-            setCheckboxes( prevState => 
+            filteringFunctions.setActiveEvents( prevState => 
                 ({
                     ...prevState,
                     importedEvents: false,
@@ -42,7 +31,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
         }
         else if(e.target.name === "importedEvents" && e.target.checked)
         {
-            setCheckboxes(prevState =>
+            filteringFunctions.setActiveEvents(prevState =>
             ({
                 ...prevState,
                 importedEvents: true,
@@ -54,7 +43,7 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
             }))
         }
         if (e.target.name !== 'importedEvents' && e.target.name !== 'localEvents') {
-        setCheckboxes(prevState => 
+        filteringFunctions.setActiveEvents(prevState => 
         {
             const importedEventOptionsAreUnchecked = Object.entries(prevState).every(([key, value]) => 
             {
@@ -147,59 +136,59 @@ export const SecondaryMenu = ({localizer, calendarFunctions}) =>
                 </div>
                 <div id={styles.filterDropdown} className={`${styles.active}`} ref={dropdownRef}>
                     <span>
-                        <label className={checkboxes.localEvents ? `${styles.active}` : ''}>Local Events</label>
+                        <label className={filteringFunctions.activeEvents.localEvents ? `${styles.active}` : ''}>Local Events</label>
                         <input type='checkbox'
                             name='localEvents'
-                            checked={checkboxes.localEvents}
+                            checked={filteringFunctions.activeEvents.localEvents}
                             onChange={handleCheckboxClick}
                         />
                     </span>
                     <span>
-                        <label className={checkboxes.importedEvents ? `${styles.active}` : ''}>Imported Events</label>
+                        <label className={filteringFunctions.activeEvents.importedEvents ? `${styles.active}` : ''}>Imported Events</label>
                         <input type='checkbox'
                             name='importedEvents'
-                            checked={checkboxes.importedEvents}
+                            checked={filteringFunctions.activeEvents.importedEvents}
                             onChange={handleCheckboxClick}
                         />
                     </span>
                     <div id={styles.importedEventsOptions}>
                         <span>
-                            <label className={checkboxes.googleEvents ? `${styles.active}` : ''}>- Google Events</label>
+                            <label className={filteringFunctions.activeEvents.googleEvents ? `${styles.active}` : ''}>- Google Events</label>
                             <input type='checkbox'
                                 name='googleEvents'
-                                checked={checkboxes.googleEvents}
+                                checked={filteringFunctions.activeEvents.googleEvents}
                                 onChange={handleCheckboxClick}
                             />
                         </span>
                         <span>
-                            <label className={checkboxes.microsoftEvents ? `${styles.active}` : ''}>- Microsoft Events</label>
+                            <label className={filteringFunctions.activeEvents.microsoftEvents ? `${styles.active}` : ''}>- Microsoft Events</label>
                             <input type='checkbox'
                                 name='microsoftEvents'
-                                checked={checkboxes.microsoftEvents}
+                                checked={filteringFunctions.activeEvents.microsoftEvents}
                                 onChange={handleCheckboxClick}
                             />
                         </span>
                         <span>
-                            <label className={checkboxes.githubEvents ? `${styles.active}` : ''}>- Github Events</label>
+                            <label className={filteringFunctions.activeEvents.githubEvents ? `${styles.active}` : ''}>- Github Events</label>
                             <input type='checkbox'
                                 name='githubEvents'
-                                checked={checkboxes.githubEvents}
+                                checked={filteringFunctions.activeEvents.githubEvents}
                                 onChange={handleCheckboxClick}
                             />
                         </span>
                         <span>
-                            <label className={checkboxes.slackEvents ? `${styles.active}` : ''}>- Slack Events</label>
+                            <label className={filteringFunctions.activeEvents.slackEvents ? `${styles.active}` : ''}>- Slack Events</label>
                             <input type='checkbox'
                                 name='slackEvents'
-                                checked={checkboxes.slackEvents}
+                                checked={filteringFunctions.activeEvents.slackEvents}
                                 onChange={handleCheckboxClick}
                             />
                         </span>
                         <span>
-                            <label className={checkboxes.gitlabEvents ? `${styles.active}` : ''}>- GitLab Events</label>
+                            <label className={filteringFunctions.activeEvents.gitlabEvents ? `${styles.active}` : ''}>- GitLab Events</label>
                             <input type='checkbox'
                                 name='gitlabEvents'
-                                checked={checkboxes.gitlabEvents}
+                                checked={filteringFunctions.activeEvents.gitlabEvents}
                                 onChange={handleCheckboxClick}
                             />
                         </span>

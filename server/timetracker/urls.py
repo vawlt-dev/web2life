@@ -43,14 +43,15 @@ urlpatterns = [
     # Google OAuth paths
     path("oauth/connect/google/", views.google_connect_oauth),
     path("oauth/callback/google", views.google_callback),
-    path("oauth/getGoogleEvents/", views.get_google_events),
+    path("oauth/getGmailMessages/", views.get_gmail_messages),
+    path("oauth/getGoogleCalendarEvents/", views.get_google_calendar_events),
     # Github OAuth paths
     path("oauth/connect/github", views.github_connect_oauth),
     path("oauth/callback/github", views.github_callback),
     # Slack OAuth paths
     path("oauth/connect/slack", views.slack_connect_oauth),
     path("oauth/callback/slack", views.slack_callback),
-    path("oauth/fetchSlackEvents/", views.fetch_slack_events),
+    path("oauth/getSlackEvents/", views.get_slack_events),
     # Gitlab OAuth paths
     path("oauth/connect/gitlab", views.gitlab_connect_oauth),
     path("oauth/callback/gitlab", views.gitlab_callback),

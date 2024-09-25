@@ -15,41 +15,27 @@ export const App = () =>
     const [CSRFToken, setCSRFToken] = useState(null)
     const [loading, setLoading] = useState(true);
     const [events, setEvents] = useState([]);
+    
+
+    const [activeEvents, setActiveEvents] = useState
+    (
+        {
+            localEvents: true,
+            importedEvents: true,
+            googleEvents: true,
+            microsoftEvents: true,
+            githubEvents: true,
+            slackEvents: true,
+            gitlabEvents: true,
+        }
+    )
     const [projects, setProjects] = useState([]);
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
-    const [OAuthData, setOAuthData] = useState({});
     const calRef = useRef(null);
 
 
-    useEffect(() => 
-    {
-        const fetchGoogleData = async () => 
-        {
-            try 
-            {
-                const response = await fetch("https://127.0.0.1:8000/oauth/getGoogleEvents");
-                if (!response.ok) throw new Error("Failed to fetch Google data.");
-                const data = await response.json();
-                setOAuthData(prevState => (
-                    {
-                        ...prevState,
-                        google: data
-                    })
-                );
-            } 
-            catch (error) 
-            {
-                console.error("Error fetching Google data:", error);
-            } 
-            finally 
-            {
-                setLoading(false);
-            }
-        };
-        fetchGoogleData();
-    }, []);
-
+   
   /*   useEffect(() => 
     {
         if (!loading) 
@@ -60,26 +46,70 @@ export const App = () =>
 
  */
 
+    const filteredEvents = events.filter(event => 
+        {
+            if (!activeEvents.localEvents && event.resourceId === 'localEvents') return false;
+            if (!activeEvents.googleEvents && event.resourceId === 'googleEvents') return false;
+            if (!activeEvents.microsoftEvents && event.resourceId === 'microsoftEvents') return false;
+            if (!activeEvents.githubEvents && event.resourceId === 'githubEvents') return false;
+            if (!activeEvents.slackEvents && event.resourceId === 'slackEvents') return false;
+            if (!activeEvents.gitlabEvents && event.resourceId === 'gitlabEvents') return false;
+            return true;
+        }
+    );
+
+    const getEvents = async () =>
+    {
+        try
+        {
+            const localEvents = await fetch("/getEvents").then(res =>
+            {
+                if(res.ok)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return []
+                }
+            });
+
+            const googleEvents = await fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then(res =>
+            {
+                if (res.ok)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return []
+                }
+            })
+            console.log(googleEvents)
+            setEvents(
+                [
+                    ...(localEvents?.data ? localEvents.data.map(event => ({
+                        ...event,
+                        resourceId: 'localEvents'
+                    })) : []),
+                    
+                    ...(googleEvents?.data ? googleEvents.data.map(event => ({
+                        ...event,
+                        resourceId: 'googleEvents'
+                    })) : [])
+                ]
+            );
+        }
+        catch(e)
+        {
+            console.log(e)
+        }
+        //gets all user events
+    }
     useEffect(() =>
     {
         console.log(events)
-    },[events]);    
-
-    const getEvents = () =>
-    {
-        //gets all user events
-        fetch("/getEvents").then(res => 
-        {
-            if(res.ok)
-            {
-                return res.json()
-            }
-        })
-        .then(data =>
-        {
-            setEvents(data.data);
-        })
-    }
+    },[events])
     const getProjects = () =>
     {
         fetch("/getProjects").then( res =>
@@ -96,7 +126,6 @@ export const App = () =>
     const putEvent = async (event) =>
     {
         //append '/' to posts otherwise will reset to a GET request
-        console.log(JSON.stringify(event))
         try 
         {
             fetch("/setEvent/",
@@ -164,8 +193,6 @@ export const App = () =>
             originalEvent: originalEvent,
             newEvent: newEvent
         }
-        console.log(data.originalEvent)
-        console.log(data.newEvent)
         fetch("patchEvent/",
         {
             method: "PATCH",
@@ -245,7 +272,6 @@ export const App = () =>
     const handleNavigate = (action) =>
     {
         let tempDate = new Date(date);
-        console.log(date)
         const main = document.querySelector('main');
         let x = 15;
         switch(action)
@@ -344,7 +370,7 @@ export const App = () =>
         deleteProject
     }
     let addEventFromSecondaryMenu;
-    const CalendarFunctions = 
+    const calendarFunctions = 
     {
         handleNavigate,
         setDate,
@@ -353,7 +379,11 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
     }
-
+    const filteringFunctions = 
+    {
+        activeEvents,
+        setActiveEvents,
+    }
    
 
     useEffect(() =>
@@ -397,17 +427,22 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
-            <Toolbar calendarFunctions={CalendarFunctions}/>
+            <Toolbar calendarFunctions={calendarFunctions}/>
             <div id={styles.calendarWrap}>
-                <SecondaryMenu localizer={localizer} calendarFunctions={CalendarFunctions}/>
+                <SecondaryMenu 
+                    localizer={localizer} 
+                    calendarFunctions={calendarFunctions} 
+                    filteringFunctions={filteringFunctions}
+                />
+                
                 <AppCalendar 
                     calRef={calRef}
-                    events={events} 
+                    events={filteredEvents} 
                     setEvents = {setEvents}
                     projects={projects}
                     setProjects={setProjects}
                     webFunctions = {webFunctions}
-                    calendarFunctions={CalendarFunctions}
+                    calendarFunctions={calendarFunctions}
                     localizer={localizer}
                 />
             </div>
