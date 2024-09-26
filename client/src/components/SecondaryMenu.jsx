@@ -194,7 +194,12 @@ export const SecondaryMenu = ({localizer, calendarFunctions, filteringFunctions}
                         </span>
                     </div>
                 </div>
-                
+            </div>
+
+            <div id={styles.notificationsWrap}>
+                <label>Notifications</label>
+                <div id={styles.notifications}>
+                </div>
             </div>
         </div>
     )

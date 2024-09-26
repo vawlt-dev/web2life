@@ -373,6 +373,7 @@ def get_google_calendar_events(request):
         events = []
         for event in events_list:
             info = {
+                "id": event.get("id"),
                 "title": event.get("summary", "No title"),
                 "start": event["start"].get("dateTime", event["start"].get("date")),
                 "end": event["end"].get("dateTime", event["end"].get("date")),

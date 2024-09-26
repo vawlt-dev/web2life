@@ -145,6 +145,29 @@ text.active
     border-color: var(--textColor);
 }
 
+#notificationsWrap
+{
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+}
+#notificationsWrap > label
+{
+    border-bottom: 2px solid white;
+    width: 100%;
+}
+#notifications
+{
+    width: 100%;
+    border-left: 2px solid white;
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    border-radius: 6px;
+    height: 20px;
+}
+
+/* mini calendar styles */
+
 .secondaryCalendar > [class="rbc-month-view"] > [class="rbc-row rbc-month-header"] > [class="rbc-header"]
 {
     font-weight: 300;
@@ -209,9 +232,6 @@ text.active
     border: none;
 }
 
-
-
-
 .secondaryCalendar [class="rbc-month-row"]
 {
     width: 100%;
@@ -232,8 +252,6 @@ text.active
     border: 0 !important;
 }
 
-
-
 .secondaryCalendar [class="rbc-header"]
 {
     font-size: 14px;
@@ -252,5 +270,4 @@ text.active
     height: 100%;
     border-radius: 20px;
     transition: background-color ease-in-out 250ms;
-    
 }

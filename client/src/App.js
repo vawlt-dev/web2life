@@ -13,7 +13,11 @@ export const App = () =>
 {
     const localizer = momentLocalizer(moment)
     const [CSRFToken, setCSRFToken] = useState(null)
-    const [loading, setLoading] = useState(true);
+    const [progress, setProgress] = useState(
+        {
+            loading: true,
+            percent: 0
+        });
     const [events, setEvents] = useState([]);
     
 
@@ -57,7 +61,7 @@ export const App = () =>
             return true;
         }
     );
-
+    
     const getEvents = async () =>
     {
         try
@@ -73,7 +77,7 @@ export const App = () =>
                     return []
                 }
             });
-
+            setProgress({loading: true, percent: 50})
             const googleEvents = await fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then(res =>
             {
                 if (res.ok)
@@ -85,7 +89,7 @@ export const App = () =>
                     return []
                 }
             })
-            console.log(googleEvents)
+            setProgress({loading: true, percent: 90})
             setEvents(
                 [
                     ...(localEvents?.data ? localEvents.data.map(event => ({
@@ -95,10 +99,14 @@ export const App = () =>
                     
                     ...(googleEvents?.data ? googleEvents.data.map(event => ({
                         ...event,
-                        resourceId: 'googleEvents'
+                        start: new Date(event.start),
+                        end: new Date(event.end),
+                        resourceId: 'importedEvents',
+                        source:'google'
                     })) : [])
                 ]
             );
+            setProgress({loading: false, percent: 100})
         }
         catch(e)
         {
@@ -427,6 +435,17 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
+
+            <div id={styles.loading} className={progress.loading ? styles.active : null}>
+                <label>
+                    Loading
+                </label>
+
+                <div id={styles.loadingBarWrap}>
+                    <div id={styles.loadingBar} style={{width: `${progress.percent}%`}}/>
+                </div>
+            </div>
+
             <Toolbar calendarFunctions={calendarFunctions}/>
             <div id={styles.calendarWrap}>
                 <SecondaryMenu 

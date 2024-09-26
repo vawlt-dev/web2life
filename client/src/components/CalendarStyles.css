@@ -2,7 +2,7 @@ main
 {
     padding: 20px 30px 20px 30px;
     transform: translateX( );
-    
+    min-height: 10px;
 }
 .rbc-allday-cell
 {
@@ -11,6 +11,7 @@ main
 .rbc-addons-dnd.rbc-calendar
 {
     height: 100vh;
+    min-height: 1000px;
 }
 .rbc-today
 {
@@ -84,6 +85,8 @@ main
     width: 100%;
     padding-bottom: 12px;
 }
+
+
 .rbc-header::before
 {
     content: '';
@@ -91,8 +94,8 @@ main
     height: 18px;
     background: var(--borderColor);
     align-self: flex-end;
-    
 }
+
 .rbc-label.rbc-time-header-gutter
 {
     width: 40px !important;
@@ -130,6 +133,7 @@ main
     font-weight: 300;
 }
 
+
 .rbc-day-slot.rbc-time-column > .rbc-timeslot-group
 {
     border-bottom: 2px solid var(--borderColor);
@@ -146,10 +150,10 @@ main
 }
 .rbc-time-gutter.rbc-time-column > div.rbc-timeslot-group:not(:last-child)::after
 {
-  content: '';
-  height: 2px;
-  width: 40px;
-  background: linear-gradient(90deg, transparent 50%, var(--borderColor));
+    content: '';
+    height: 2px;
+    width: 40px;
+    background: linear-gradient(90deg, transparent 50%, var(--borderColor));
 }
 .rbc-time-gutter.rbc-time-column > div.rbc-timeslot-group > .rbc-time-slot
 {
@@ -167,6 +171,8 @@ main
 {
     margin: 0;
 }
+
+
 .rbc-time-gutter.rbc-time-column
 {
     border: 0;
@@ -181,11 +187,6 @@ main
 .rbc-time-view-resources .rbc-time-header-content
 {
     width: unset;
-}
-
-.rbc-time-view-resources .rbc-time-header-gutter
-{
-    
 }
 
 .rbc-month-view
@@ -206,7 +207,13 @@ main
     font-size: 18px;
     font-weight: 600;
     padding: 12px;
+    transition: color ease-in-out 350ms;
 }
+.rbc-month-view > .rbc-month-row > .rbc-row-content > .rbc-row > .rbc-date-cell > .rbc-button-link:hover 
+{
+    color: rgb(128,128,128);
+}
+
 
 .rbc-month-view > .rbc-month-row > .rbc-row-bg > .rbc-day-bg
 {

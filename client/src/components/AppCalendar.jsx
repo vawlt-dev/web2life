@@ -509,8 +509,8 @@ export const AppCalendar =
                     null
                     
                 }
-                resourceIdAccessor={(event) => { return event.id } }
-                resourceTitleAccessor={(event) => { return event.title }}
+                resourceIdAccessor={(resource) => { return resource.id } }
+                resourceTitleAccessor={(resource) => { return resource.title }}
                 components=
                 {
                     {

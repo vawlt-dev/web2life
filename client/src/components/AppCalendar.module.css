@@ -264,10 +264,12 @@
     height: 100%;
     width: 100%;
     display: flex;
+    padding: 6px;
     flex-direction: column;
     justify-content: space-evenly;
     gap: 12px;
     font-family: "Inter";
+    transition: color ease 500ms, border-color 500ms;
 }
 .customHeader :first-child
 {
@@ -276,6 +278,10 @@
 .customHeader :nth-child(2)
 {
     font-size: 24px;
+}
+.customHeader:hover
+{
+    color: rgb(128,128,128);
 }
 .event
 {
