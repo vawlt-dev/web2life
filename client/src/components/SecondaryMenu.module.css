@@ -150,20 +150,20 @@ text.active
     display: flex;
     flex-direction: column;
     width: 75%;
+    height: 100%;    
+    margin-bottom: 12px;
 }
 #notificationsWrap > label
 {
-    border-bottom: 2px solid white;
-    width: 100%;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--textColor);
 }
 #notifications
 {
-    width: 100%;
-    border-left: 2px solid white;
-    border-right: 2px solid white;
-    border-bottom: 2px solid white;
+    border: 2px solid rgba(128, 128, 128, 0.175);
+    background-color: rgba(128, 128, 128, 0.1);
     border-radius: 6px;
-    height: 20px;
+    height: 100%;
 }
 
 /* mini calendar styles */
