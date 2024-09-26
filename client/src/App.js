@@ -13,11 +13,14 @@ export const App = () =>
 {
     const localizer = momentLocalizer(moment)
     const [CSRFToken, setCSRFToken] = useState(null)
+
+    const [initialLoad, setInitialLoad] = useState(true);
     const [progress, setProgress] = useState(
-        {
-            loading: true,
-            percent: 0
-        });
+    {
+        loading: true,
+        percent: 0,
+    });
+
     const [events, setEvents] = useState([]);
     
 
@@ -66,6 +69,7 @@ export const App = () =>
     {
         try
         {
+            setProgress({loading: true, percent: 0})
             const localEvents = await fetch("/getEvents").then(res =>
             {
                 if(res.ok)
@@ -107,6 +111,7 @@ export const App = () =>
                 ]
             );
             setProgress({loading: false, percent: 100})
+            setInitialLoad(false);
         }
         catch(e)
         {
@@ -435,8 +440,8 @@ export const App = () =>
     return (        
         
         <div id={styles.mainWrap}>
-
-            <div id={styles.loading} className={progress.loading ? styles.active : null}>
+            
+            <div id={styles.loading} className={initialLoad ? styles.active : null}>
                 <label>
                     Loading
                 </label>
