@@ -34,12 +34,12 @@ urlpatterns = [
     path("addProject/", views.add_project),
     path("deleteProject/", views.delete_project),
     path("manifest.json/", views.serve_manifest),
-    path("get_event_by_id/", views.get_event_by_id),
-    path("get_events_by_date/", views.get_events_by_date),
     path("filter-events/", views.filter_events),
     path("set_user/", views.set_user),
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
+    # OAuth Paths
+    ##########################################
     # Google OAuth paths
     path("oauth/connect/google/", views.google_connect_oauth),
     path("oauth/callback/google", views.google_callback),
@@ -56,8 +56,11 @@ urlpatterns = [
     path("oauth/connect/gitlab", views.gitlab_connect_oauth),
     path("oauth/callback/gitlab", views.gitlab_callback),
     # Microsoft OAuth paths
-    # path("oauth/connect/microsoft", views.microsoft_connect_oauth),
-    # path("oauth/callback/microsoft", views.microsoft_callback),
+    path("oauth/connect/microsoft", views.microsoft_connect_oauth),
+    path("oauth/callback/microsoft", views.microsoft_callback),
+    path("oauth/getOutlookMessages", views.get_outlook_messages),
+    path("oauth/getMicrosoftCalendarEvents", views.get_microsoft_calendar_events),
+    ########################################
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),

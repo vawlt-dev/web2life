@@ -2,11 +2,25 @@ import React, { useEffect, useRef, useState } from 'react'
 import styles from './SecondaryMenu.module.css'
 import { Calendar } from 'react-big-calendar'
 
-export const SecondaryMenu = ({localizer, calendarFunctions, filteringFunctions}) => 
+export const SecondaryMenu = (
+    {
+        localizer, 
+        calendarFunctions, 
+        filteringFunctions, 
+        notifications, 
+        colours
+    }) => 
 {
     const dropdownRef = useRef(null);
  
-
+    useEffect(() =>
+    {
+        console.log(notifications)
+    }, [notifications])
+    useEffect(() =>
+    {
+        console.log(colours)
+    }, [colours])
     const handleCheckboxClick = (e) =>
     {
         filteringFunctions.setActiveEvents(prevState => (
@@ -103,17 +117,13 @@ export const SecondaryMenu = ({localizer, calendarFunctions, filteringFunctions}
                                                 <div>
                                                     <button onClick={ () => 
                                                     { 
-                                                        let tempDate = new Date(calendarFunctions.date);
-                                                        tempDate.setMonth(tempDate.getMonth() - 1);
-                                                        calendarFunctions.setDate(tempDate);
+                                                        calendarFunctions.handleNavigate("back")
 
                                                     }}>🢐</button> 
 
                                                     <button onClick={() =>
                                                     {
-                                                        let tempDate = new Date(calendarFunctions.date);
-                                                        tempDate.setMonth(tempDate.getMonth() + 1);
-                                                        calendarFunctions.setDate(tempDate);
+                                                          calendarFunctions.handleNavigate("next")
                                                     }}>🢒</button>
                                                 </div>
                                             </div>
@@ -199,8 +209,39 @@ export const SecondaryMenu = ({localizer, calendarFunctions, filteringFunctions}
             <div id={styles.notificationsWrap}>
                 <label>Notifications</label>
                 <div id={styles.notifications}>
+                    {
+                        notifications?.length > 0 
+                        ?
+                        (
+                            notifications.map((notification, index) => 
+                            (
+                                <div 
+                                    key={index} 
+                                    className={styles.notification} 
+                                    style={{backgroundColor: colours?.[notification.source]}}
+                                >
+                                    <label>
+                                        {notification.date}
+                                    </label>
+                                    <label>
+                                        {notification.recipient}
+                                    </label>
+                                    <label>
+                                        {notification.subject}
+                                    </label>
+
+                                </div>
+
+                            ))
+                        )
+                        :
+                        <div className={styles.notification}>
+                            <label id={styles.noNotifications}>No notifications</label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     )
 }
+

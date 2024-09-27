@@ -67,9 +67,11 @@ export const AppCalendar =
         projects, 
         webFunctions, 
         calendarFunctions,
-        localizer, 
+        colours,
+        localizer
     }) => 
 {    
+    
     const [editModalActive, setEditModalActive] = useState(false);
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
@@ -492,9 +494,30 @@ export const AppCalendar =
                 onEventResize={(info) => handleEventTimeChange(info)}
                 onDoubleClickEvent={(info) => editEvent(info)}
                 eventPropGetter={(event, start, end, isSelected) => 
-                {
+                {       
+                    //using css injection instead of adding the source as a classname
+                    //because we might wanna add a setting for changing event colours later
+                    let backgroundColor = ''    
+
+                    switch(event.source)
+                    {
+                        case 'google':
+                            backgroundColor = colours.google;
+                            break
+                        case 'microsoft':
+                            backgroundColor = colours.microsoft;
+                            break
+                        default:
+                            backgroundColor = colours.local;
+                            break;
+                    }            
                     return {
-                        className: styles.event
+                        className: styles.event,
+                        style:
+                        {
+                            backgroundColor: backgroundColor,
+                        }
+                        
                     };
                 }}
                 resources=

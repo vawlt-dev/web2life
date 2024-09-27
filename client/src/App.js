@@ -21,9 +21,17 @@ export const App = () =>
         percent: 0,
     });
 
-    const [events, setEvents] = useState([]);
-    
+    const [colours, setColours] = useState
+    (
+        {
+            local: "#274da5",
+            google: "#2775a5",
+            microsoft: "#27a596",
+        }
+    ) 
 
+    const [notifications, setNotifications] = useState([])
+    const [events, setEvents] = useState([]);
     const [activeEvents, setActiveEvents] = useState
     (
         {
@@ -37,6 +45,7 @@ export const App = () =>
         }
     )
     const [projects, setProjects] = useState([]);
+
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
     const calRef = useRef(null);
@@ -54,62 +63,118 @@ export const App = () =>
  */
 
     const filteredEvents = events.filter(event => 
+    {
+        if (event.resourceId === 'localEvents') 
         {
-            if (!activeEvents.localEvents && event.resourceId === 'localEvents') return false;
-            if (!activeEvents.googleEvents && event.resourceId === 'googleEvents') return false;
-            if (!activeEvents.microsoftEvents && event.resourceId === 'microsoftEvents') return false;
-            if (!activeEvents.githubEvents && event.resourceId === 'githubEvents') return false;
-            if (!activeEvents.slackEvents && event.resourceId === 'slackEvents') return false;
-            if (!activeEvents.gitlabEvents && event.resourceId === 'gitlabEvents') return false;
-            return true;
+            return activeEvents.localEvents;
+        } 
+        else if (event.resourceId === 'importedEvents') 
+        {
+            switch (event.source) 
+            {
+                case 'google':
+                    return activeEvents.googleEvents;
+                case 'microsoft':
+                    return activeEvents.microsoftEvents;
+                case 'github':
+                    return activeEvents.githubEvents;
+                case 'slack':
+                    return activeEvents.slackEvents;
+                case 'gitlab':
+                    return activeEvents.gitlabEvents;
+                default:
+                    return true;
+            }
         }
-    );
-    
+        return true;
+    });
+    const filteredNotifications = notifications.filter(notification => 
+    {
+        switch (notification.source) 
+        {
+            case 'google':
+                return activeEvents.googleEvents;
+            case 'microsoft':
+                return activeEvents.microsoftEvents;
+            // Add additional cases if necessary
+            case 'github':
+                return activeEvents.githubEvents;
+            case 'slack':
+                return activeEvents.slackEvents;
+            case 'gitlab':
+                return activeEvents.gitlabEvents;
+            default:
+                return true;
+        }
+    });
+
     const getEvents = async () =>
     {
         try
         {
             setProgress({loading: true, percent: 0})
-            const localEvents = await fetch("/getEvents").then(res =>
-            {
-                if(res.ok)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return []
-                }
-            });
+            //allSettled instead of Promise.all() - resolves regardless if one or more responses are bad
+            const results = await Promise.allSettled(
+            [
+                fetch("/getEvents").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then(res => res.ok ? res.json() : []),
+            ])
             setProgress({loading: true, percent: 50})
-            const googleEvents = await fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then(res =>
-            {
-                if (res.ok)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return []
-                }
-            })
-            setProgress({loading: true, percent: 90})
+            
+            console.log(results[3])
+            const localEvents = results[0].status === 'fulfilled' ? results[0].value?.data || [] : [];
+            const googleCalendarEvents = results[1].status === 'fulfilled' ? results[1].value?.data || [] : [];
+            const gmailNotifications = results[2].status === 'fulfilled' ? results[2].value?.data || [] : [];
+            const outlookNotifications = results[3].status === 'fulfilled' ? results[3].value?.data || [] : [];
+            const microsoftCalendarEvents = results[4].status === 'fulfilled' ? results[4].value?.data || [] : [];
+            console.log(outlookNotifications)
             setEvents(
-                [
-                    ...(localEvents?.data ? localEvents.data.map(event => ({
+            [
+                ...localEvents.map(event => (
+                    {
                         ...event,
                         resourceId: 'localEvents'
-                    })) : []),
-                    
-                    ...(googleEvents?.data ? googleEvents.data.map(event => ({
+                    }
+                )),
+                ...googleCalendarEvents.map(event => (
+                    {
                         ...event,
                         start: new Date(event.start),
                         end: new Date(event.end),
                         resourceId: 'importedEvents',
-                        source:'google'
-                    })) : [])
-                ]
-            );
+                        source: 'google'
+                    }
+                )),
+                ...microsoftCalendarEvents.map(event => (
+                    {
+                        ...event,
+                        start: new Date(event.start_time),
+                        end: new Date(event.end_time),
+                        resourceId: 'importedEvents',
+                        source: 'microsoft'
+                    }
+                ))
+            ]);
+
+            setNotifications(
+            [
+                ...gmailNotifications.map(notification => ({
+                    ...notification,
+                    date: new Date(notification.date).toString(), //these dates need to be strings, not objects
+                    source: 'google'
+                })),
+                ...outlookNotifications.map(notification => (
+                    {
+                        ...notification,
+                        date: new Date(notification.time_sent).toString(),
+                        source: 'microsoft'
+                    }
+                ))
+            ]);
+
             setProgress({loading: false, percent: 100})
             setInitialLoad(false);
         }
@@ -119,10 +184,12 @@ export const App = () =>
         }
         //gets all user events
     }
+    
     useEffect(() =>
     {
         console.log(events)
     },[events])
+
     const getProjects = () =>
     {
         fetch("/getProjects").then( res =>
@@ -370,7 +437,7 @@ export const App = () =>
         setDate(tempDate)
     }
 
-    //wrappers for web and calendar functions so we don't pass down 20 different props
+    //wrapper objects so we don't pass down 20 different props 
     const webFunctions = 
     {
         getEvents,
@@ -397,7 +464,6 @@ export const App = () =>
         activeEvents,
         setActiveEvents,
     }
-   
 
     useEffect(() =>
     {
@@ -457,6 +523,8 @@ export const App = () =>
                     localizer={localizer} 
                     calendarFunctions={calendarFunctions} 
                     filteringFunctions={filteringFunctions}
+                    notifications={filteredNotifications}
+                    colours={colours}
                 />
                 
                 <AppCalendar 
@@ -467,6 +535,7 @@ export const App = () =>
                     setProjects={setProjects}
                     webFunctions = {webFunctions}
                     calendarFunctions={calendarFunctions}
+                    colours={colours}
                     localizer={localizer}
                 />
             </div>

@@ -24,23 +24,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Google OAuth2.0 configs
 GOOGLE_SECRET = os.getenv("GOOGLE_SECRET")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "googleClientID")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CALLBACK = os.getenv("GOOGLE_CALLBACK_URI")
+
+#
+MICROSOFT_SECRET = os.getenv("MICROSOFT_SECRET")
+MICROSOFT_CLIENT_ID = os.getenv("MICROSOFT_CLIENT_ID")
+MICROSOFT_CALLBACK = os.getenv("MICROSOFT_CALLBACK_URI")
 
 # Github OAuth2.0 configs
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_SECRET = os.getenv("GITHUB_SECRET")
-GITHUB_CALLBACK_URI = os.getenv("GITHUB_CALLBACK_URI")
+GITHUB_CALLBACK = os.getenv("GITHUB_CALLBACK_URI")
 
 # Slack OAuth2.0 configs
 SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
 SLACK_SECRET = os.getenv("SLACK_SECRET")
-SLACK_CALLBACK_URI = os.getenv("SLACK_CALLBACK_URI")
+SLACK_CALLBACK = os.getenv("SLACK_CALLBACK_URI")
 
 # Gitlab OAuth2.0 configs
 GITLAB_CLIENT_ID = os.getenv("GITLAB_CLIENT_ID")
 GITLAB_SECRET = os.getenv("GITLAB_SECRET")
-GITLAB_CALLBACK_URI = os.getenv("GITLAB_CALLBACK_URI")
+GITLAB_CALLBACK = os.getenv("GITLAB_CALLBACK_URI")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

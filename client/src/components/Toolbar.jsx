@@ -138,11 +138,8 @@ export const Toolbar = ({ calendarFunctions }) => {
             <div id={styles.date}>
                 <span>
                     {
-                        
-                        calendarFunctions.view === Views.DAY ?
-                            calendarFunctions.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})
-                        :
-                        console.log(calendarFunctions)
+                        //might come back to here
+                        calendarFunctions.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})
                     }
                 </span>
             </div>

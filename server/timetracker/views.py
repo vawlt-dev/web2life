@@ -25,6 +25,7 @@ import base64
 import hashlib
 import random
 import string
+import traceback
 
 
 def generate_state():
@@ -227,6 +228,11 @@ def delete_project(request):
         return HttpResponse()
 
 
+###########################
+#### GOOGLE FUNCTIONS #####
+###########################
+
+
 def google_connect_oauth(request):
     flow = Flow.from_client_config(
         {
@@ -246,14 +252,15 @@ def google_connect_oauth(request):
     authorization_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true"
     )
-
-    request.session["state"] = state
+    # store states with their own keys, otherwise the values might conflict
+    # i.e. send gmail creds to microsoft
+    request.session["google_state"] = state
 
     return redirect(authorization_url)
 
 
 def google_callback(request):
-    state = request.session.get("state")
+    state = request.session.get("google_state")
 
     flow = Flow.from_client_config(
         {
@@ -280,7 +287,7 @@ def google_callback(request):
 
     credentials = flow.credentials
 
-    request.session["credentials"] = {
+    request.session["google_credentials"] = {
         "token": credentials.token,
         "refresh_token": credentials.refresh_token,
         "token_uri": credentials.token_uri,
@@ -292,23 +299,69 @@ def google_callback(request):
     return redirect("/")
 
 
-def get_gmail_messages(credentials):
+from googleapiclient.discovery import build
+from googleapiclient.http import BatchHttpRequest
+from google.oauth2.credentials import Credentials
+from datetime import datetime, timedelta
+
+
+# uses batch processing, cuts time down from 25 seconds to 2 seconds (50 messages)
+def get_gmail_messages(request):
+    if "google_credentials" not in request.session:
+        return redirect(google_connect_oauth)
+
+    credentials_info = request.session["google_credentials"]
+    credentials = Credentials(
+        token=credentials_info["token"],
+        refresh_token=credentials_info["refresh_token"],
+        token_uri=credentials_info["token_uri"],
+        client_id=credentials_info["client_id"],
+        client_secret=credentials_info["client_secret"],
+        scopes=credentials_info["scopes"],
+    )
+
     try:
         gmail = build("gmail", "v1", credentials=credentials)
+
         one_month_ago = datetime.now() - timedelta(days=30)
-        query = f"from:me after:{one_month_ago.strftime('%Y/%m/%d') }"
+        query = f"after:{one_month_ago.strftime('%Y/%m/%d')}"
+
+        # IMPORTANT
+        # maxResults cannot exceed 30 if you're using a free Google API due to rate limits
 
         messages_result = (
-            gmail.users()
-            .messages()
-            .list(userId="me", q=query, maxResults=100)
-            .execute()
+            gmail.users().messages().list(userId="me", q=query, maxResults=30).execute()
         )
         message_ids = messages_result.get("messages", [])
-
         message_list = []
+
+        def handle_message_request(request_id, response, exception):
+            if exception is None:
+                headers = response["payload"]["headers"]
+                info = {
+                    "date": next(
+                        header["value"]
+                        for header in headers
+                        if header["name"] == "Date"
+                    ),
+                    "subject": next(
+                        header["value"]
+                        for header in headers
+                        if header["name"] == "Subject"
+                    ),
+                    "recipient": next(
+                        header["value"] for header in headers if header["name"] == "To"
+                    ),
+                }
+                message_list.append(info)
+            else:
+                print(f"Error with request {request_id}: {exception}")
+
+        batch = BatchHttpRequest(callback=handle_message_request)
+        batch._batch_uri = "https://gmail.googleapis.com/batch"
+
         for message_id in message_ids:
-            message = (
+            batch.add(
                 gmail.users()
                 .messages()
                 .get(
@@ -317,34 +370,22 @@ def get_gmail_messages(credentials):
                     format="metadata",
                     metadataHeaders=["Date", "Subject", "To"],
                 )
-                .execute()
             )
-            headers = message["payload"]["headers"]
 
-            info = {
-                "date": next(
-                    header["value"] for header in headers if header["name"] == "Date"
-                ),
-                "subject": next(
-                    header["value"] for header in headers if header["name"] == "Subject"
-                ),
-                "recipient": next(
-                    header["value"] for header in headers if header["name"] == "To"
-                ),
-            }
-            message_list.append(info)
+        batch.execute()
 
-        return message_list
+        return JsonResponse({"data": message_list})
 
     except Exception as e:
-        return {"error": str(e)}
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)})
 
 
 def get_google_calendar_events(request):
-    if "credentials" not in request.session:
+    if "google_credentials" not in request.session:
         return redirect(google_connect_oauth)
 
-    credentials_info = request.session["credentials"]
+    credentials_info = request.session["google_credentials"]
     credentials = Credentials(
         token=credentials_info["token"],
         refresh_token=credentials_info["refresh_token"],
@@ -380,181 +421,150 @@ def get_google_calendar_events(request):
             }
             events.append(info)
 
-        print(events)
         return JsonResponse({"data": events})
     except Exception as e:
         return JsonResponse({"error": str(e)})
 
 
-def gitlab_connect_oauth(request):
-    # for some horrid reason, gitlab REALLY doesn't like to work with the oauth2 library
-    # so i had to manually make the requests and authorize it
-    state = generate_state()
-    verifier = generate_code_verifier()
-    challenge = generate_code_challenge(verifier)
-
-    request.session["oauth_state"] = state
-    request.session["code_verifier"] = verifier
-
-    authorization_url = (
-        "https://gitlab.com/oauth/authorize"
-        + f"?client_id={settings.GITLAB_CLIENT_ID}"
-        + f"&redirect_uri={settings.GITLAB_CALLBACK_URI}"
-        + "&response_type=code"
-        + f"&state={state}"
-        + "&scope=read_user+api"
-        + f"&code_challenge={challenge}"
-        + "&code_challenge_method=S256"
-    )
-    return redirect(authorization_url)
-
-
-def gitlab_callback(request):
-    # i know this is a bit busted, will fix later
-    code = request.GET.get("code")
-    verifier = request.session["code_verifier"]
-
-    try:
-        token_url = "https://gitlab.com/oauth/token"
-        params = {
-            "client_id": settings.GITLAB_CLIENT_ID,
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": settings.GITLAB_CALLBACK_URI,
-            "code_verifier": verifier,
-        }
-        token = requests.post(token_url, data=params).json()
-        print(token)
-        request.session["oauth_token"] = token
-        headers = {"Authorization": f"Bearer {token['access_token']}"}
-
-        projects = requests.get(
-            "https://gitlab.com/api/v4/projects", headers=headers
-        ).json()
-
-        for project in projects:
-            repo_ID = projects[project]["id"]
-            repo_name = projects[project]["name"]
-
-            pushEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repo_ID}/events?action=pushed",
-                headers=headers,
-            ).json()
-            branchEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repo_ID}/repository/branches",
-                headers=headers,
-            ).json()
-
-            events = []
-            for event in pushEvents:
-                events.append(
-                    {
-                        "repo": repo_name,
-                        "branch": event["push_data"]["ref"],
-                        "time": event["created_at"],
-                        "commit_sha": event["push_data"]["commit_to"],
-                    }
-                )
-            for branch in branchEvents:
-                if (
-                    "parent_ids" in branch["commit"]
-                    and not branch["commit"]["parent_ids"]
-                ):
-                    events.append(
-                        {
-                            "repo": repo_name,
-                            "branch": branch["name"],
-                            "time": branch["commit"]["committed_date"],
-                            "commit_sha": branch["commit"]["id"],
-                        }
-                    )
-            return JsonResponse(events, safe=False)
-        else:
-            return JsonResponse({"error:": "No projects found"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+###########################
+### MICROSOFT FUNCTIONS ###
+###########################
 
 
 def microsoft_connect_oauth(request):
-
-    state = generate_state()
-    request.session["oauth_state"] = state
-
-    authorization_url = (
+    authorization_base_url = (
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
-        + f"?client_id={settings.MICROSOFT_CLIENT_ID}"
-        + "&response_type=code"
-        + f"&redirect_uri={settings.MICROSOFT_CALLBACK_URI}"
-        + "&response_mode=query"
-        + "&scope=Mail.Read Calendars.Read offline_access"
-        + f"&state={state}"
     )
+
+    microsoft = OAuth2Session(
+        client_id=settings.MICROSOFT_CLIENT_ID,
+        redirect_uri=settings.MICROSOFT_CALLBACK,
+        scope=[
+            "https://graph.microsoft.com/Mail.Read",
+            "https://graph.microsoft.com/Calendars.Read",
+            "offline_access",
+        ],
+    )
+
+    authorization_url, state = microsoft.authorization_url(authorization_base_url)
+
+    request.session["microsoft_state"] = state
+
     return redirect(authorization_url)
 
 
 def microsoft_callback(request):
-    code = request.GET.get("code")
-    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    state = request.session.get("microsoft_state")
 
-    data = {
-        "client_id": settings.MICROSOFT_CLIENT_ID,
-        "client_secret": settings.MICROSOFT_SECRET,
-        "code": code,
-        "grant_type": "authorization_code",
-        "redirect_uri": settings.MICROSOFT_CALLBACK_URI,
-        "scope": "Mail.Read Calendars.Read offline_access",
-    }
+    microsoft = OAuth2Session(
+        client_id=settings.MICROSOFT_CLIENT_ID,
+        redirect_uri=settings.MICROSOFT_CALLBACK,
+        state=state,
+        scope=[
+            "https://graph.microsoft.com/Mail.Read",
+            "https://graph.microsoft.com/Calendars.Read",
+            "offline_access",
+        ],
+    )
+
+    authorization_response = request.build_absolute_uri()
+
     try:
-        response = requests.post(token_url, data=data)
-        token = response.json()
-        access_token = token.get("access_token")
-
-        headers = {"Authorization": f"Bearer {access_token}"}
-
-        email_data = (
-            requests.get(
-                "https://graph.microsoft.com/v1.0/me/messages", headers=headers
-            )
-            .json()
-            .get("value", [])
+        token = microsoft.fetch_token(
+            token_url="https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            authorization_response=authorization_response,
+            client_secret=settings.MICROSOFT_SECRET,
         )
-        emails = []
-        for email in email_data:
-            emails.append(
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    request.session["microsoft_credentials"] = {
+        "access_token": token.get("access_token"),
+        "refresh_token": token.get("refresh_token"),
+        "token_type": token.get("token_type"),
+        "expires_in": token.get("expires_in"),
+        "scope": token.get("scope"),
+    }
+    print(token.get("scope"))
+    return redirect("/")
+
+
+def get_outlook_messages(request):
+    credentials_info = request.session.get("microsoft_credentials")
+    if not credentials_info or not credentials_info.get("access_token"):
+        return redirect(microsoft_connect_oauth)
+
+    try:
+        headers = {"Authorization": f"Bearer {credentials_info['access_token']}"}
+        response = requests.get(
+            "https://graph.microsoft.com/v1.0/me/messages", headers=headers
+        )
+
+        if response.status_code == 200:
+            email_data = response.json().get("value", [])
+            emails = [
                 {
                     "time_sent": email.get("sentDateTime"),
                     "recipient": email.get("toRecipients", [{}])[0]
                     .get("emailAddress", {})
                     .get("address"),
                     "subject": email.get("subject"),
-                },
-            )
-
-        calendar_data = (
-            requests.get("https://graph.microsoft.com/v1.0/me/events", headers=headers)
-            .json()
-            .get("value", [])
-        )
-
-        calendar_events = []
-
-        for event in calendar_data:
-            calendar_events.append(
-                {
-                    "title": event.get("subject"),
-                    "start_time": event.get("start", {}).get("dateTime"),
-                    "end_time": event.get("end", {}).get("dateTime"),
                 }
+                for email in email_data
+            ]
+            return JsonResponse({"data": emails})
+        else:
+            return JsonResponse(
+                {"error": f"Failed to fetch emails: {response.status_code}"},
+                status=response.status_code,
             )
-        return JsonResponse({"emails": emails, "calendar_events": calendar_events})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
 
+def get_microsoft_calendar_events(request):
+    credentials_info = request.session.get("microsoft_credentials")
+
+    if not credentials_info or "access_token" not in credentials_info:
+        return redirect(microsoft_connect_oauth)
+
+    try:
+        access_token = credentials_info["access_token"]
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        response = requests.get(
+            "https://graph.microsoft.com/v1.0/me/events", headers=headers
+        )
+
+        if response.status_code != 200:
+            return JsonResponse(
+                {"error": f"Failed to fetch events: {response.status_code}"}
+            )
+
+        calendar_data = response.json().get("value", [])
+        calendar_events = [
+            {
+                "title": event.get("subject", "No title"),
+                "start_time": event.get("start", {}).get(
+                    "dateTime", "Unknown start time"
+                ),
+                "end_time": event.get("end", {}).get("dateTime", "Unknown end time"),
+            }
+            for event in calendar_data
+        ]
+        return JsonResponse({"data": calendar_events})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
+
+
+###########################
+#### GITHUB FUNCTIONS #####
+###########################
 def github_connect_oauth(request):
     github_session = OAuth2Session(
         client_id=settings.GITHUB_CLIENT_ID,
-        redirect_uri=settings.GITHUB_CALLBACK_URI,
+        redirect_uri=settings.GITHUB_CALLBACK,
         scope="repo,read:user",
     )
     auth_url, state = github_session.authorization_url(
@@ -623,10 +633,107 @@ def github_callback(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 
+###########################
+#### GITLAB FUNCTIONS #####
+###########################
+
+
+def gitlab_connect_oauth(request):
+    # for some horrid reason, gitlab REALLY doesn't like to work with the oauth2 library
+    # so i had to manually make the requests and authorize it
+    state = generate_state()
+    verifier = generate_code_verifier()
+    challenge = generate_code_challenge(verifier)
+
+    request.session["oauth_state"] = state
+    request.session["code_verifier"] = verifier
+
+    authorization_url = (
+        "https://gitlab.com/oauth/authorize"
+        + f"?client_id={settings.GITLAB_CLIENT_ID}"
+        + f"&redirect_uri={settings.GITLAB_CALLBACK}"
+        + "&response_type=code"
+        + f"&state={state}"
+        + "&scope=read_user+api"
+        + f"&code_challenge={challenge}"
+        + "&code_challenge_method=S256"
+    )
+    return redirect(authorization_url)
+
+
+def gitlab_callback(request):
+    # i know this is a bit busted, will fix later
+    code = request.GET.get("code")
+    verifier = request.session["code_verifier"]
+
+    try:
+        token_url = "https://gitlab.com/oauth/token"
+        params = {
+            "client_id": settings.GITLAB_CLIENT_ID,
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": settings.GITLAB_CALLBACK,
+            "code_verifier": verifier,
+        }
+        token = requests.post(token_url, data=params).json()
+        print(token)
+        request.session["oauth_token"] = token
+        headers = {"Authorization": f"Bearer {token['access_token']}"}
+
+        projects = requests.get(
+            "https://gitlab.com/api/v4/projects", headers=headers
+        ).json()
+
+        for project in projects:
+            repo_ID = projects[project]["id"]
+            repo_name = projects[project]["name"]
+
+            pushEvents = requests.get(
+                f"https://gitlab.com/api/v4/projects/{repo_ID}/events?action=pushed",
+                headers=headers,
+            ).json()
+            branchEvents = requests.get(
+                f"https://gitlab.com/api/v4/projects/{repo_ID}/repository/branches",
+                headers=headers,
+            ).json()
+
+            events = []
+            for event in pushEvents:
+                events.append(
+                    {
+                        "repo": repo_name,
+                        "branch": event["push_data"]["ref"],
+                        "time": event["created_at"],
+                        "commit_sha": event["push_data"]["commit_to"],
+                    }
+                )
+            for branch in branchEvents:
+                if (
+                    "parent_ids" in branch["commit"]
+                    and not branch["commit"]["parent_ids"]
+                ):
+                    events.append(
+                        {
+                            "repo": repo_name,
+                            "branch": branch["name"],
+                            "time": branch["commit"]["committed_date"],
+                            "commit_sha": branch["commit"]["id"],
+                        }
+                    )
+            return JsonResponse(events, safe=False)
+        else:
+            return JsonResponse({"error:": "No projects found"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+###########################
+##### SLACK FUNCTIONS #####
+###########################
 def slack_connect_oauth(request):
     slack_session = OAuth2Session(
         client_id=settings.SLACK_CLIENT_ID,
-        redirect_uri=settings.SLACK_CALLBACK_URI,
+        redirect_uri=settings.SLACK_CALLBACK,
         scope=[
             "channels:history",
             "im:history",
@@ -647,7 +754,7 @@ def slack_callback(request):
     slack_session = OAuth2Session(
         client_id=settings.SLACK_CLIENT_ID,
         state=request.session["oauth_state"],
-        redirect_uri=settings.SLACK_CALLBACK_URI,
+        redirect_uri=settings.SLACK_CALLBACK,
     )
 
     try:
@@ -708,38 +815,6 @@ def slack_callback(request):
 
 def get_slack_events(request):
     pass
-
-
-# FIXME: Native timezone warnings?
-# Needs min and max parameters in url in format Y-M-D
-# To get all events on a certain date just use that date
-# as both the min and max arguments
-def get_events_by_date(request):
-    print(request)
-    today = datetime.datetime.now()
-    min_arg = request.GET.get("min", "?")
-    max_arg = request.GET.get("max", "?")
-    min_ts = (
-        datetime.datetime.strptime(request.GET.get("min", "?"), "%Y-%m-%d").date()
-        if (min_arg != "?")
-        else today
-    )
-    max_ts = (
-        datetime.datetime.strptime(request.GET.get("max", "?"), "%Y-%m-%d").date()
-        if (max_arg != "?")
-        else today
-    )
-
-    try:
-        events = Events.objects.filter(start__gte=min_ts, end__lte=max_ts).all()
-        event_ids = []
-        for e in events:
-            event_ids.append(e.id)
-        # Don't know in what format the front-end wants the events
-        return JsonResponse({"data": event_ids})
-    except Exception as e:
-        print(e)
-        return HttpResponse()
 
 
 def get_csrf_token(request):
