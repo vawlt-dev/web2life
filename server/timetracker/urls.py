@@ -45,21 +45,23 @@ urlpatterns = [
     path("oauth/callback/google", views.google_callback),
     path("oauth/getGmailMessages/", views.get_gmail_messages),
     path("oauth/getGoogleCalendarEvents/", views.get_google_calendar_events),
-    # Github OAuth paths
-    path("oauth/connect/github", views.github_connect_oauth),
-    path("oauth/callback/github", views.github_callback),
-    # Slack OAuth paths
-    path("oauth/connect/slack", views.slack_connect_oauth),
-    path("oauth/callback/slack", views.slack_callback),
-    path("oauth/getSlackEvents/", views.get_slack_events),
-    # Gitlab OAuth paths
-    path("oauth/connect/gitlab", views.gitlab_connect_oauth),
-    path("oauth/callback/gitlab", views.gitlab_callback),
     # Microsoft OAuth paths
     path("oauth/connect/microsoft", views.microsoft_connect_oauth),
     path("oauth/callback/microsoft", views.microsoft_callback),
     path("oauth/getOutlookMessages", views.get_outlook_messages),
     path("oauth/getMicrosoftCalendarEvents", views.get_microsoft_calendar_events),
+    # Github OAuth paths
+    path("oauth/connect/github", views.github_connect_oauth),
+    path("oauth/callback/github", views.github_callback),
+    path("oauth/getGithubEvents", views.get_github_events),
+    # Gitlab OAuth paths
+    path("oauth/connect/gitlab", views.gitlab_connect_oauth),
+    path("oauth/callback/gitlab", views.gitlab_callback),
+    path("oauth/getGitlabEvents", views.get_gitlab_events),
+    # Slack OAuth paths
+    path("oauth/connect/slack", views.slack_connect_oauth),
+    path("oauth/callback/slack", views.slack_callback),
+    path("oauth/getSlackEvents/", views.get_slack_events),
     ########################################
     re_path(r"^favicon\.ico$", favicon_view),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),

@@ -249,18 +249,14 @@ def google_connect_oauth(request):
         ],
         redirect_uri=settings.GOOGLE_CALLBACK,
     )
-    authorization_url, state = flow.authorization_url(
+    authorization_url, _ = flow.authorization_url(
         access_type="offline", include_granted_scopes="true"
     )
-    # store states with their own keys, otherwise the values might conflict
-    # i.e. send gmail creds to microsoft
-    request.session["google_state"] = state
 
     return redirect(authorization_url)
 
 
 def google_callback(request):
-    state = request.session.get("google_state")
 
     flow = Flow.from_client_config(
         {
@@ -277,7 +273,6 @@ def google_callback(request):
         ],
         redirect_uri=settings.GOOGLE_CALLBACK,
     )
-    flow.state = state
 
     authorization_response = request.build_absolute_uri()
     try:
@@ -432,6 +427,7 @@ def get_google_calendar_events(request):
 
 
 def microsoft_connect_oauth(request):
+
     authorization_base_url = (
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     )
@@ -476,7 +472,8 @@ def microsoft_callback(request):
             client_secret=settings.MICROSOFT_SECRET,
         )
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        print(e)
+        return redirect("/")
 
     request.session["microsoft_credentials"] = {
         "access_token": token.get("access_token"),
@@ -485,7 +482,6 @@ def microsoft_callback(request):
         "expires_in": token.get("expires_in"),
         "scope": token.get("scope"),
     }
-    print(token.get("scope"))
     return redirect("/")
 
 
@@ -567,17 +563,16 @@ def github_connect_oauth(request):
         redirect_uri=settings.GITHUB_CALLBACK,
         scope="repo,read:user",
     )
-    auth_url, state = github_session.authorization_url(
+    auth_url, _ = github_session.authorization_url(
         "https://github.com/login/oauth/authorize"
     )
-    request.session["oauth_state"] = state
     return redirect(auth_url)
 
 
 def github_callback(request):
     github_session = OAuth2Session(
         client_id=settings.GITHUB_CLIENT_ID,
-        redirect_uri=settings.GITHUB_CALLBACK_URI,
+        redirect_uri=settings.GITHUB_CALLBACK,
         scope="repo,read:user",
     )
     try:
@@ -587,27 +582,39 @@ def github_callback(request):
             authorization_response=request.build_absolute_uri(),
         )
 
-        request.session["oauth_token"] = token
+        request.session["github_oauth_token"] = token
 
-        username = github_session.get("https://api.github.com/user").json().get("login")
+        return redirect("/")
 
+    except Exception as e:
+        print(f"Error during GitHub OAuth callback: {e}")
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def get_github_events(request):
+    REPOSITORY_OWNER = "vawlt-dev"
+    REPOSITORY = "https://github.com/vawlt-dev/web2life"
+    token = request.session.get("github_oauth_token")
+    if not token:
+        return JsonResponse({"error": "No GitHub token found in session"}, status=401)
+
+    try:
+        github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
         response = github_session.get(
-            f"https://api.github.com/users/{username}/events/public"
-        )
-        events_json = response.json()
-
+            f"https://api.github.com/users/{REPOSITORY_OWNER}/repos"
+        ).json()
+        print(response)
         events = []
-        for event in events_json:
+        for event in response:
             if event["type"] == "PushEvent":
                 branch_name = event["payload"]["ref"].split("/")[-1]
-                repo_name = event["repo"]["name"]
                 for commit in event["payload"]["commits"]:
                     events.append(
                         {
-                            "type": "PushEvent",
+                            "type": "push",
                             "time": event["created_at"],
                             "branch": branch_name,
-                            "repo": repo_name,
+                            "repo": event["repo"]["name"],
                             "commit_sha": commit["sha"],
                             "message": commit["message"],
                         }
@@ -620,16 +627,15 @@ def github_callback(request):
                     {
                         "type": "CreateEvent",
                         "time": event["created_at"],
-                        "branch": branch_name,
-                        "repo": repo_name,
+                        "branch": event["payload"]["ref"],
+                        "repo": event["repo"]["name"],
                     }
                 )
 
-        test = event_translation.translate_github_events(events)
+        return JsonResponse({"data": events})
 
-        return JsonResponse(events, safe=False)
     except Exception as e:
-        print(f"Error fetching token or events: {e}")
+        print(f"Error fetching GitHub events: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
 
@@ -639,32 +645,30 @@ def github_callback(request):
 
 
 def gitlab_connect_oauth(request):
-    # for some horrid reason, gitlab REALLY doesn't like to work with the oauth2 library
-    # so i had to manually make the requests and authorize it
     state = generate_state()
     verifier = generate_code_verifier()
     challenge = generate_code_challenge(verifier)
 
-    request.session["oauth_state"] = state
-    request.session["code_verifier"] = verifier
-
-    authorization_url = (
-        "https://gitlab.com/oauth/authorize"
-        + f"?client_id={settings.GITLAB_CLIENT_ID}"
-        + f"&redirect_uri={settings.GITLAB_CALLBACK}"
-        + "&response_type=code"
-        + f"&state={state}"
-        + "&scope=read_user+api"
-        + f"&code_challenge={challenge}"
-        + "&code_challenge_method=S256"
+    request.session["gitlab_verifier"] = verifier
+    gitlab = OAuth2Session(
+        client_id=settings.GITLAB_CLIENT_ID,
+        redirect_uri=settings.GITLAB_CALLBACK,
+        scope=["read_user", "api"],
+        state=state,
     )
+    authorization_url, _ = gitlab.authorization_url(
+        "https://gitlab.com/oauth/authorize",
+        code_challenge=challenge,
+        code_challenge_method="S256",
+    )
+
     return redirect(authorization_url)
 
 
 def gitlab_callback(request):
-    # i know this is a bit busted, will fix later
+
     code = request.GET.get("code")
-    verifier = request.session["code_verifier"]
+    verifier = request.session["gitlab_verifier"]
 
     try:
         token_url = "https://gitlab.com/oauth/token"
@@ -676,53 +680,60 @@ def gitlab_callback(request):
             "code_verifier": verifier,
         }
         token = requests.post(token_url, data=params).json()
-        print(token)
-        request.session["oauth_token"] = token
-        headers = {"Authorization": f"Bearer {token['access_token']}"}
 
-        projects = requests.get(
-            "https://gitlab.com/api/v4/projects", headers=headers
+        request.session["gitlab_token"] = token
+        print(json.dumps(token))
+        return redirect("/")
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def get_gitlab_events(request):
+    # may want to alter this in settings, points to the test gitlab repo
+    PROJECT_ID = 61199933
+
+    access_token = request.session["gitlab_token"]["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # Gitlab is surprisingly comprehensive in the information returned by the push events
+    # we don't need to analyze the branches API, we can just select all events where
+    # the action was 'created' and the reference type is 'branch'
+    try:
+        push_events = requests.get(
+            f"https://gitlab.com/api/v4/projects/{PROJECT_ID}/events?action=pushed",
+            headers=headers,
         ).json()
 
-        for project in projects:
-            repo_ID = projects[project]["id"]
-            repo_name = projects[project]["name"]
+        events = []
+        for event in push_events:
+            push_data = event.get("push_data", {})
 
-            pushEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repo_ID}/events?action=pushed",
-                headers=headers,
-            ).json()
-            branchEvents = requests.get(
-                f"https://gitlab.com/api/v4/projects/{repo_ID}/repository/branches",
-                headers=headers,
-            ).json()
+            events.append(
+                {
+                    "type": "push",
+                    "branch": push_data.get("ref"),
+                    "time": event.get("created_at"),
+                    "commit_sha": push_data.get("commit_to"),
+                    "commit_title": push_data.get("commit_title"),
+                }
+            )
 
-            events = []
-            for event in pushEvents:
+            if (
+                push_data.get("action") == "created"
+                and push_data.get("ref_type") == "branch"
+            ):
                 events.append(
                     {
-                        "repo": repo_name,
-                        "branch": event["push_data"]["ref"],
-                        "time": event["created_at"],
-                        "commit_sha": event["push_data"]["commit_to"],
+                        "type": "branch_creation",
+                        "branch": push_data.get("ref"),
+                        "time": event.get("created_at"),
+                        "commit_sha": push_data.get("commit_to"),
+                        "commit_title": push_data.get("commit_title"),
                     }
                 )
-            for branch in branchEvents:
-                if (
-                    "parent_ids" in branch["commit"]
-                    and not branch["commit"]["parent_ids"]
-                ):
-                    events.append(
-                        {
-                            "repo": repo_name,
-                            "branch": branch["name"],
-                            "time": branch["commit"]["committed_date"],
-                            "commit_sha": branch["commit"]["id"],
-                        }
-                    )
-            return JsonResponse(events, safe=False)
-        else:
-            return JsonResponse({"error:": "No projects found"})
+
+        return JsonResponse({"data": events}, safe=False)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
@@ -730,6 +741,8 @@ def gitlab_callback(request):
 ###########################
 ##### SLACK FUNCTIONS #####
 ###########################
+
+
 def slack_connect_oauth(request):
     slack_session = OAuth2Session(
         client_id=settings.SLACK_CLIENT_ID,
@@ -746,75 +759,84 @@ def slack_connect_oauth(request):
     authorization_url, state = slack_session.authorization_url(
         "https://slack.com/oauth/v2/authorize"
     )
-    request.session["oauth_state"] = state
+    request.session["slack_state"] = state
     return redirect(authorization_url)
 
 
 def slack_callback(request):
-    slack_session = OAuth2Session(
+    slack = OAuth2Session(
         client_id=settings.SLACK_CLIENT_ID,
-        state=request.session["oauth_state"],
+        state=request.session.get("slack_state"),
         redirect_uri=settings.SLACK_CALLBACK,
     )
 
     try:
-        token = slack_session.fetch_token(
+        token = slack.fetch_token(
             "https://slack.com/api/oauth.v2.access",
             client_secret=settings.SLACK_SECRET,
             authorization_response=request.build_absolute_uri(),
         )
-        request.session["oauth_token"] = token
 
-        headers = {"Authorization": f"Bearer {token['access_token']}"}
+        request.session["slack_token"] = token
+        return redirect("/")
 
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def get_slack_events(request):
+    token = request.session.get("slack_token")
+
+    if not token or "access_token" not in token:
+        return JsonResponse({"error": "No access token found in session"})
+
+    access_token = token["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    try:
         response = requests.get(
-            "https://slack.com/api/conversations.list",
-            headers=headers,
+            "https://slack.com/api/conversations.list", headers=headers
         )
         channel_info = response.json().get("channels", [])
-        channels = {}
-        for channel in channel_info:
-            channel_id = channel.get("id")
-            channel_name = channel.get("name")
-            channels[channel_id] = channel_name
 
-        print(channels)
-        print(
-            requests.get(
-                "https://slack.com/api/conversations.history",
-                headers=headers,
-                params={"channel": channel_id},
-            ).json()
-        )
+        if not channel_info:
+            return JsonResponse({"error": "No channels found"})
+
+        channels = []
+        for channel in channel_info:
+            channels.append(
+                {"channel_id": channel.get("id"), "channel_name": channel.get("name")}
+            )
+
         messages = []
-        for channel_id, channel_name in channels.items():
+        for channel in channels:
             response = requests.get(
                 "https://slack.com/api/conversations.history",
                 headers=headers,
-                params={"channel": channel_id},
+                params={"channel": channel["channel_id"]},
             )
-            messageList = response.json().get("messages", [])
+            message_list = response.json().get("messages", [])
 
-            for message in messageList:
+            for message in message_list:
                 messages.append(
                     {
                         "type": "message",
                         "user": message.get("user"),
                         "time": message.get("ts"),
                         "text": message.get("text"),
-                        "channel": channel_name,
+                        "channel": channel["channel_name"],
                     }
                 )
-        print(messages)
-        return JsonResponse(messages, safe=False)
+
+        return JsonResponse({"data": messages})
 
     except Exception as e:
-        print(f"Error fetching token or messages: {e}")
-        return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse({"error": str(e)})
 
 
-def get_slack_events(request):
-    pass
+###########################
+#### SERVER FUNCTIONS #####
+###########################
 
 
 def get_csrf_token(request):
