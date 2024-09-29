@@ -590,10 +590,14 @@ def github_callback(request):
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
-
+#@NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
-    REPOSITORY_OWNER = "vawlt-dev"
-    REPOSITORY = "https://github.com/vawlt-dev/web2life"
+    repo_path = request.GET.get("repo", "")
+    username = request.GET.get("user", "")
+
+    if len(repo_path) == 0 or len(username) == 0:
+        return JsonResponse({"error": "Missing arguments"}, status=400)
+
     token = request.session.get("github_oauth_token")
     if not token:
         return JsonResponse({"error": "No GitHub token found in session"}, status=401)
@@ -601,36 +605,19 @@ def get_github_events(request):
     try:
         github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
         response = github_session.get(
-            f"https://api.github.com/users/{REPOSITORY_OWNER}/repos"
+            f"https://api.github.com/repos/{repo_path}/commits?author={username}"
         ).json()
-        print(response)
         events = []
         for event in response:
-            if event["type"] == "PushEvent":
-                branch_name = event["payload"]["ref"].split("/")[-1]
-                for commit in event["payload"]["commits"]:
-                    events.append(
-                        {
-                            "type": "push",
-                            "time": event["created_at"],
-                            "branch": branch_name,
-                            "repo": event["repo"]["name"],
-                            "commit_sha": commit["sha"],
-                            "message": commit["message"],
-                        }
-                    )
-            elif (
-                event["type"] == "CreateEvent"
-                and event["payload"]["ref_type"] == "branch"
-            ):
-                events.append(
-                    {
-                        "type": "CreateEvent",
-                        "time": event["created_at"],
-                        "branch": event["payload"]["ref"],
-                        "repo": event["repo"]["name"],
-                    }
-                )
+            commit = event["commit"]
+            events.append(
+                {
+                    "type": "push",
+                    "time": commit["author"]["date"],
+                    "repo": repo_path,
+                    "message": commit["message"],
+                }
+            )
 
         return JsonResponse({"data": events})
 
