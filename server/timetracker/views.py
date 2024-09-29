@@ -1,5 +1,8 @@
 import datetime
 import json
+import django.db
+import django.db.models
+import django.db.models.utils
 import requests
 import django.middleware.csrf
 
@@ -18,6 +21,7 @@ from google_auth_oauthlib.flow import Flow
 from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
+from django.forms.models import model_to_dict
 from . import event_translation
 from . import filter
 import os
@@ -619,7 +623,10 @@ def get_github_events(request):
                 }
             )
 
-        return JsonResponse({"data": events})
+        translated = event_translation.translate_github_events(events)
+        translated_dict = []
+        for t in translated: translated_dict.append(model_to_dict(t))
+        return JsonResponse({"data": translated_dict})
 
     except Exception as e:
         print(f"Error fetching GitHub events: {e}")
