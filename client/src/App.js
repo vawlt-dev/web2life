@@ -148,6 +148,13 @@ export const App = () =>
                     resourceId: 'importedEvents',
                     source: 'microsoft'
                 })),
+                ...githubNotifications.map(event => ({
+                    ...event,
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    resourceId: 'importedEvents',
+                    source: 'github'
+                })),
             ]);
 
             setNotifications(
@@ -162,11 +169,11 @@ export const App = () =>
                     date: new Date(notification.time_sent).toString(),
                     source: 'microsoft'
                 })),
-                ...githubNotifications.map(notification => ({
+                /*...githubNotifications.map(notification => ({
                     ...notification,
                     date: new Date(notification.time).toString(),
                     source: 'github'
-                })),
+                })),*/
                 ...gitlabNotifications.map(notification => ({
                     ...notification,
                     date: new Date(notification.time).toString(),

@@ -623,11 +623,11 @@ def get_github_events(request):
                 }
             )
 
-        #translated = event_translation.translate_github_events(events)
-        #translated_dict = []
-        #for t in translated: translated_dict.append(model_to_dict(t))
-        #return JsonResponse({"data": translated_dict})
-        return JsonResponse({"data": events})
+        translated = event_translation.translate_github_events(events)
+        translated_dict = []
+        for t in translated: translated_dict.append(model_to_dict(t))
+        return JsonResponse({"data": translated_dict})
+        #return JsonResponse({"data": events})
 
     except Exception as e:
         print(f"Error fetching GitHub events: {e}")
