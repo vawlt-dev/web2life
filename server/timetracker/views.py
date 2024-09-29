@@ -596,8 +596,8 @@ def github_callback(request):
 
 #@NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
-    repo_path = request.GET.get("repo", "jdennis9/zno")
-    username = request.GET.get("user", "jdennis9")
+    repo_path = request.GET.get("repo", "")
+    username = request.GET.get("user", "")
 
     if len(repo_path) == 0 or len(username) == 0:
         return JsonResponse({"error": "Missing arguments"}, status=400)
