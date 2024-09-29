@@ -596,8 +596,8 @@ def github_callback(request):
 
 #@NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
-    repo_path = request.GET.get("repo", "")
-    username = request.GET.get("user", "")
+    repo_path = request.GET.get("repo", "jdennis9/zno")
+    username = request.GET.get("user", "jdennis9")
 
     if len(repo_path) == 0 or len(username) == 0:
         return JsonResponse({"error": "Missing arguments"}, status=400)
@@ -623,10 +623,11 @@ def get_github_events(request):
                 }
             )
 
-        translated = event_translation.translate_github_events(events)
-        translated_dict = []
-        for t in translated: translated_dict.append(model_to_dict(t))
-        return JsonResponse({"data": translated_dict})
+        #translated = event_translation.translate_github_events(events)
+        #translated_dict = []
+        #for t in translated: translated_dict.append(model_to_dict(t))
+        #return JsonResponse({"data": translated_dict})
+        return JsonResponse({"data": events})
 
     except Exception as e:
         print(f"Error fetching GitHub events: {e}")
