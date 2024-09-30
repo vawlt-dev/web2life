@@ -190,9 +190,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
+                    time.get("start") == data["start"]
+                    and time.get("end") == data["end"]
+                    and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -261,7 +261,6 @@ def google_connect_oauth(request):
 
 
 def google_callback(request):
-
     flow = Flow.from_client_config(
         {
             "web": {
@@ -431,7 +430,6 @@ def get_google_calendar_events(request):
 
 
 def microsoft_connect_oauth(request):
-
     authorization_base_url = (
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     )
@@ -594,6 +592,7 @@ def github_callback(request):
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
+
 #@NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
     repo_path = request.GET.get("repo", "")
@@ -661,7 +660,6 @@ def gitlab_connect_oauth(request):
 
 
 def gitlab_callback(request):
-
     code = request.GET.get("code")
     verifier = request.session["gitlab_verifier"]
 
@@ -715,8 +713,8 @@ def get_gitlab_events(request):
             )
 
             if (
-                push_data.get("action") == "created"
-                and push_data.get("ref_type") == "branch"
+                    push_data.get("action") == "created"
+                    and push_data.get("ref_type") == "branch"
             ):
                 events.append(
                     {
@@ -862,3 +860,30 @@ def get_user_by_id(request):
 
 def get_users(request):
     return None
+
+
+def set_preferences(request):
+    try:
+        if request.content_type != 'application/json':
+            return HttpResponse("Invalid content type, expected application/json", status=400)
+        data = json.loads(request.body)
+        with open("UserPrefs.json", "w") as file:
+            json.dump(data, file)
+        return HttpResponse(status=200)
+    except json.JSONDecodeError:
+        return HttpResponse("Invalid JSON format", status=400)
+    except Exception as e:
+        # Catch any other errors, such as file write errors
+        return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+
+def get_preferences(request):
+    try:
+        with open("UserPrefs.json", "r") as file:
+            preferences = json.load(file)
+        return JsonResponse({"preferences": preferences}, status=200)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Failed to decode preferences"}, status=500)
+    except Exception as e:
+        # Catch any other errors, such as file read errors
+        return JsonResponse({"error": str(e)}, status=500)
