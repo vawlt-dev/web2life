@@ -55,14 +55,6 @@ def translate_github_events(data) -> list:
 
     return events
 
-
-# @TODO: Set up a POST to use this
-def map_slack_channel_to_project(channel_name, project_name):
-    ProjectSlackChannelMapEntry.objects.create(
-        project=project_name, channel_name=channel_name
-    )
-
-
 def translate_slack_event(data):
     try:
         if data["type"] == "message":
