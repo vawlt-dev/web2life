@@ -1,7 +1,7 @@
 import datetime
 from django.forms.models import model_to_dict
 from .models import Events
-from .models import EventOrigin
+#from .models import EventOrigin
 
 def get_all_event_ids():
     events = list(Events.objects.all())
@@ -82,4 +82,3 @@ def filter_events(request):
         e = Events.objects.get(id=i)
         events.append(model_to_dict(e))
     return events
-

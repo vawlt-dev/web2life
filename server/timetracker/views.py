@@ -1,5 +1,13 @@
 import datetime
 import json
+import os
+import base64
+import hashlib
+import random
+import string
+import traceback
+from pathlib import Path
+from datetime import datetime, timedelta
 import django.db
 import django.db.models
 import django.db.models.utils
@@ -7,29 +15,25 @@ import requests
 import django.middleware.csrf
 
 from django.utils._os import safe_join
-from pathlib import Path
 from django.views.static import serve
 from django import views
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from django.forms.models import model_to_dict
+from django.conf import settings
+from django.shortcuts import redirect
+from googleapiclient.http import BatchHttpRequest
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from django.conf import settings
+from google_auth_oauthlib.flow import Flow
+
+from requests_oauthlib import OAuth2Session
+
+from . import event_translation
+#from . import filter as filtering
 from .models import Events
 from .models import Project
-from google_auth_oauthlib.flow import Flow
-from django.shortcuts import redirect
-from requests_oauthlib import OAuth2Session
-from datetime import datetime, timedelta
-from django.forms.models import model_to_dict
-from . import event_translation
-from . import filter
-import os
-import base64
-import hashlib
-import random
-import string
-import traceback
+
 
 
 def generate_state():
@@ -56,11 +60,11 @@ def serve_static(request, path):
     print(f"serve_static(): {full_path}")
     if full_path.is_file():
         return serve(request, path, settings.STATIC_SOURCE)
-    else:
-        return views.default.page_not_found(request, FileNotFoundError())
+
+    return views.default.page_not_found(request, FileNotFoundError())
 
 
-def get_events(request):
+def get_events(request): # pylint: disable=unused-argument
     events = []
     for event in Events.objects.select_related("projectId").all():
         events.append(
@@ -97,22 +101,21 @@ def set_event(request):
             projectId=project,
         )
         event.save()
+        return HttpResponse()
     except Exception as e:
         print(e)
-    finally:
+        #@TODO: Return error code
         return HttpResponse()
-
 
 def get_event_by_id(request):
     print(request)
     try:
         data = json.loads(request.body)
         event = Events.objects.get(id=data["id"])
+        return JsonResponse({"data": event.task})
     except Exception as e:
         print(e)
-        return HttpResponse()
-    finally:
-        return JsonResponse({"data": event.task})
+        return JsonResponse({"error": "Event not found"})
 
 
 def get_projects(request):
@@ -140,17 +143,18 @@ def patch_event(request):
     try:
         data = json.loads(request.body)
         event = Events.objects.get(id=data["originalEvent"]["id"])
+        new_event = data["newEvent"]
 
-        newStart = data["newEvent"]["start"]
-        newEnd = data["newEvent"]["end"]
-        newAllDay = data["newEvent"]["allDay"]
-        newDescription = data["newEvent"]["description"]
+        new_start = new_event["start"]
+        new_end = new_event["end"]
+        new_all_day = new_event["allDay"]
+        new_description = new_event["description"]
         # newProject = data["newEvent"]["project"]
 
-        event.start = newStart
-        event.end = newEnd
-        event.allDay = newAllDay
-        event.description = newDescription
+        event.start = new_start
+        event.end = new_end
+        event.allDay = new_all_day
+        event.description = new_description
         event.save()
     except Exception as e:
         print(e)
@@ -161,20 +165,18 @@ def update_event_times(request):
     try:
         data = json.loads(request.body)
         event = Events.objects.get(id=data["originalEvent"]["id"])
-        newEvent = data["newEvent"]
-        newStart = newEvent.get("start")
-        newEnd = newEvent.get("end")
-        newAllDay = newEvent.get("allDay")
+        new_event = data["newEvent"]
+        new_start = new_event.get("start")
+        new_end = new_event.get("end")
+        new_all_day = new_event.get("allDay")
 
-        event.start = newStart
-        event.end = newEnd
-        event.allDay = newAllDay
-        print(newStart)
+        event.start = new_start
+        event.end = new_end
+        event.allDay = new_all_day
         event.save()
     except Exception as e:
         print(e)
-    finally:
-        return HttpResponse()
+    return HttpResponse()
 
 
 def delete_event_time(request):
@@ -198,8 +200,7 @@ def delete_event_time(request):
         event.save()
     except Exception as e:
         print(e)
-    finally:
-        return HttpResponse()
+    return HttpResponse()
 
 
 def delete_event(request):
@@ -210,11 +211,10 @@ def delete_event(request):
         print(event)
     except Exception as e:
         print(e)
-    finally:
-        return HttpResponse()
+    return HttpResponse()
 
 
-def clear_events(request):
+def clear_events(request): # pylint: disable=unused-argument
     print("In clear_events")
     Events.objects.all().delete()
     return HttpResponse()
@@ -237,7 +237,7 @@ def delete_project(request):
 ###########################
 
 
-def google_connect_oauth(request):
+def google_connect_oauth(request): # pylint: disable=unused-argument
     flow = Flow.from_client_config(
         {
             "web": {
@@ -295,13 +295,6 @@ def google_callback(request):
     }
 
     return redirect("/")
-
-
-from googleapiclient.discovery import build
-from googleapiclient.http import BatchHttpRequest
-from google.oauth2.credentials import Credentials
-from datetime import datetime, timedelta
-
 
 # uses batch processing, cuts time down from 25 seconds to 2 seconds (50 messages)
 def get_gmail_messages(request):
@@ -511,11 +504,11 @@ def get_outlook_messages(request):
                 for email in email_data
             ]
             return JsonResponse({"data": emails})
-        else:
-            return JsonResponse(
-                {"error": f"Failed to fetch emails: {response.status_code}"},
-                status=response.status_code,
-            )
+        
+        return JsonResponse(
+            {"error": f"Failed to fetch emails: {response.status_code}"},
+            status=response.status_code,
+        )
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
@@ -559,7 +552,7 @@ def get_microsoft_calendar_events(request):
 ###########################
 #### GITHUB FUNCTIONS #####
 ###########################
-def github_connect_oauth(request):
+def github_connect_oauth(request): # pylint: disable=unused-argument
     github_session = OAuth2Session(
         client_id=settings.GITHUB_CLIENT_ID,
         redirect_uri=settings.GITHUB_CALLBACK,
@@ -593,14 +586,17 @@ def github_callback(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 
-# example call = https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life
+# example call:
+# https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life
 # @NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
+    '''Get GitHub events for specific user from specific repository.
+    The user must be authorized to view the repository'''
     repo_path = request.GET.get("repo", "")
     username = request.GET.get("user", "")
 
     if len(repo_path) == 0 or len(username) == 0:
-        return JsonResponse({"error": "Missing arguments"}, status=400)
+        return JsonResponse({"error": "Missing repo and/or user arguments"}, status=400)
 
     token = request.session.get("github_oauth_token")
     if not token:
@@ -851,15 +847,15 @@ def serve_ico(request):
     return serve(request, "favicon.ico", settings.FRONTEND_BUILD_PATH)
 
 
-def set_user(request):
+def set_user(request): # pylint: disable=unused-argument
     return None
 
 
-def get_user_by_id(request):
+def get_user_by_id(request): # pylint: disable=unused-argument
     return None
 
 
-def get_users(request):
+def get_users(request): # pylint: disable=unused-argument
     return None
 
 
@@ -909,7 +905,7 @@ def set_preferences(request):
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
-def get_preferences(request):
+def get_preferences(request): # pylint: disable=unused-argument
     try:
         with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "r") as file:
             preferences = json.load(file)
