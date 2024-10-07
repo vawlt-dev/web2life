@@ -110,7 +110,7 @@ export const SettingsModal = ({settingsOpen,
                                             }
                                         </select>
                                     :
-                                    <input type='text' placeholder='Repository URL' name='githubrepo' required/>
+                                    <input type='text' placeholder='Repository Name (user/repo)' name='githubrepo' required/>
                                 }
                                 <button>
                                     Add
@@ -155,7 +155,7 @@ export const SettingsModal = ({settingsOpen,
                                             }
                                         </select>
                                     :
-                                    <input type='text' placeholder='Repository URL' name='gitlabrepo' required/>
+                                    <input type='text' placeholder='Repository Name (user/repo)' name='gitlabrepo' required/>
                                 }
                                 <button>
                                     Add
