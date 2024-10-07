@@ -1,6 +1,6 @@
 import { Views } from "react-big-calendar";
 import styles from "./Toolbar.module.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import logo from "../resources/images/logo.png";
 import googleLogo from "../resources/images/google.png"
 import microsoftLogo from "../resources/images/microsoft.png"
@@ -18,42 +18,52 @@ const DropDownButton = (props) =>
 };
 
 export const Toolbar = ({ calendarFunctions }) => {
-    const sliderRef = useRef(null);
-    const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
+    const [hamburgerMenuActive, setHamburgerMenuActive] = useState(false);
     const [dropDownActive, setDropDownActive] = useState(false);
     const dropDownRef = useRef(null);
-
-    const handleNonDropdownClick = useCallback((e) => 
+    const hamburgerMenuRef = useRef(null);
+    
+    const addOutsideClickListener = (ref, setActive) => 
     {
-        if (dropDownRef.current && !dropDownRef.current.contains(e.target)) 
+        const handleClickOutside = (e) => 
         {
-            setDropDownActive(false);
+            if (ref.current && !ref.current.contains(e.target)) 
+            {
+                ref.current.classList.remove(styles.active);
+                setActive(false);
+                window.removeEventListener("click", handleClickOutside);
+                console.log("removed")
+            }
+        };
+        setTimeout(() => 
+        {
+            window.addEventListener("click", handleClickOutside);
+        }, 0);
+    };
+
+    const toggleMenu = (ref, setActive, active) => 
+    {
+        console.log(ref, active)
+        if (active) 
+        {
+            if (ref.current) 
+            {
+                ref.current.classList.remove(styles.active);
+            }
+            setActive(false);
         }
-    }, []);
-
-    useEffect(() => 
-    {
-        if (dropDownActive) 
-        {
-            window.addEventListener("click", handleNonDropdownClick);
-        } 
         else 
         {
-            window.removeEventListener("click", handleNonDropdownClick);
-        }
         
-        return () => 
-        {
-            window.removeEventListener("click", handleNonDropdownClick);
-        };
-    }, [dropDownActive, handleNonDropdownClick]);
-
-    useEffect(() => 
-    {
-        localStorage.setItem('theme', lightMode);
-        window.dispatchEvent(new CustomEvent("themeChange", { detail: lightMode }));
-    }, [lightMode]);
-
+            if (ref.current) 
+            {
+                ref.current.classList.add(styles.active);
+            }
+            setActive(true);
+            addOutsideClickListener(ref, setActive);
+        }
+    };
+    
     const back = () => 
     {
         calendarFunctions.handleNavigate('back')
@@ -73,14 +83,13 @@ export const Toolbar = ({ calendarFunctions }) => {
 
     return (
         <header>
-                 <div id={styles.hamburgerMenu} onClick={() =>
+            <div id={styles.hamburgerMenu} onClick={(e) =>
                 {
-                    let menu = document.getElementById(`${styles.hamburgerMenuDropdown}`);
-                    menu.classList.contains(`${styles.active}`) ? menu.classList.remove(`${styles.active}`) : menu.classList.add(`${styles.active}`)
-                    
+                    e.stopPropagation()
+                    toggleMenu(hamburgerMenuRef, setHamburgerMenuActive, hamburgerMenuActive);     
                 }}>
                     <svg viewBox="0 0 32 32" height={32} width={32}>
-                        <rect x={1} y={1} width={30} height={30} fill="transparent" stroke="white" strokeWidth={1.25}rx={5.5} ></rect>
+                        <rect x={1} y={1} width={30} height={30} fill="transparent" stroke="white" strokeWidth={1.25} rx={5} ></rect>
                         <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={10} y2={10} strokeLinecap="round"></line>
                         <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={16} y2={16} strokeLinecap="round"></line>
                         <line x1={6} x2={26} stroke="white" strokeWidth={1.25} y1={22} y2={22} strokeLinecap="round"></line>
@@ -114,8 +123,7 @@ export const Toolbar = ({ calendarFunctions }) => {
                         }
                     ).finished.then(() =>
                     {
-                        alert("Test")
-
+                        calendarFunctions.openSettings(true)
                     })
                                     
                 }}>
@@ -126,29 +134,30 @@ export const Toolbar = ({ calendarFunctions }) => {
                              4.010667-28.010667l90.005333-69.994667q-2.005333-13.994667-2.005333-42.005333t2.005333-42.005333l-90.005333-69.994667q-13.994667-10.005333-4.010667-28.010667l85.994667-148.010667q8-13.994667
                              26.005333-8l106.005333 42.005333q42.005333-29.994667 72-42.005333l16-112q4.010667-18.005333 20.010667-18.005333l172.010667 0q16 0 20.010667 18.005333l16 112q37.994667 16 72
                              42.005333l106.005333-42.005333q18.005333-5.994667 26.005333 8l85.994667 148.010667q10.005333 18.005333-4.010667 28.010667l-90.005333 69.994667q2.005333 13.994667 2.005333 42.005333t-2.005333 42.005333z"
-                            />
+                    />
                 </svg>
 
-            <div id={styles.toolbarLeftButtonWrap}>
-                <button onClick={goToToday}>Today</button>
-                <button onClick={back}>Back</button>
-                <button onClick={next}>Next</button>
-            </div>
+                <div id={styles.toolbarLeftButtonWrap}>
+                    <button onClick={goToToday}>Today</button>
+                    <button onClick={back}>Back</button>
+                    <button onClick={next}>Next</button>
+                </div>
 
-            <div id={styles.date}>
-                <span>
+                <div id={styles.date}>
+                    <span>
+                        {
+                            calendarFunctions.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})
+                        }
+                    </span>
+                </div>
+
+                <div
+                    id={styles.dropDownWrapper}
+                    onClick={(e) =>  
                     {
-                        //might come back to here
-                        calendarFunctions.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})
-                    }
-                </span>
-            </div>
-
-            <div
-                id={styles.dropDownWrapper}
-                ref={dropDownRef}
-                onClick={() => setDropDownActive(!dropDownActive)}
-            >
+                        toggleMenu(dropDownRef, setDropDownActive, dropDownActive);
+                    }}
+                >
                 <button id={styles.dropDownButton}>
                     <div>
                         {calendarFunctions.view.toString().charAt(0).toUpperCase() +
@@ -168,7 +177,8 @@ export const Toolbar = ({ calendarFunctions }) => {
             
                 <div
                     id={styles.dropDownMenu}
-                    className={dropDownActive ? styles.active : ""}
+                    ref={dropDownRef}
+                    onClick={(e) => e.stopPropagation()}
                 >
                     <DropDownButton callback={() => changeView(Views.DAY)} text={"Day"} />
                     <DropDownButton callback={() => changeView(Views.WEEK)} text={"Week"} />
@@ -176,7 +186,7 @@ export const Toolbar = ({ calendarFunctions }) => {
                 </div>
             </div>
             
-            <div id={styles.hamburgerMenuDropdown}>
+            <div ref={hamburgerMenuRef} id={styles.hamburgerMenuDropdown}>
                 <span id={styles.OAuthGrid}>
                     <label>Connect with OAuth</label>
                     <button onClick={() => window.location.href = "https://127.0.0.1:8000/oauth/connect/google"}>
@@ -196,15 +206,13 @@ export const Toolbar = ({ calendarFunctions }) => {
                     </button>
                 </span>
                
-                <div id={styles.themeSlider} onClick={() => setLightMode(!lightMode)}>
-                    <div ref={sliderRef} id={styles.slider} className={lightMode ? "" : styles.active}>
-                        {lightMode ? "🔆" : "🌙"}
-                    </div>
-                </div> 
+                
             </div>
             <div>
                 <img src={logo} alt=""/>
             </div>
+
+            
         </header>
     );
 };

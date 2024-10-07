@@ -53,3 +53,17 @@
     border-radius: 5px;
     transition: width linear 250ms;
 }
+#settingsModal
+{
+    
+    position: absolute;    
+    background-color: transparent;
+    width: 100vw;
+    height: 100vh;
+
+}
+#settingsModal.active
+{
+    background-color: white;
+    z-index: 9999;
+}

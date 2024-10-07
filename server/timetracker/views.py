@@ -190,9 +190,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                    time.get("start") == data["start"]
-                    and time.get("end") == data["end"]
-                    and time.get("allDay") == data["allDay"]
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -593,7 +593,8 @@ def github_callback(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 
-#@NOTE(Jamie D): Takes and requires 'repo' and 'user' args
+# example call = https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life
+# @NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
     repo_path = request.GET.get("repo", "")
     username = request.GET.get("user", "")
@@ -624,12 +625,12 @@ def get_github_events(request):
 
         translated = event_translation.translate_github_events(events)
         translated_dict = []
-        for t in translated: translated_dict.append(model_to_dict(t))
+        for t in translated:
+            translated_dict.append(model_to_dict(t))
         return JsonResponse({"data": translated_dict})
-        #return JsonResponse({"data": events})
+        # return JsonResponse({"data": events})
 
     except Exception as e:
-        print(f"Error fetching GitHub events: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
 
@@ -713,8 +714,8 @@ def get_gitlab_events(request):
             )
 
             if (
-                    push_data.get("action") == "created"
-                    and push_data.get("ref_type") == "branch"
+                push_data.get("action") == "created"
+                and push_data.get("ref_type") == "branch"
             ):
                 events.append(
                     {
@@ -864,22 +865,53 @@ def get_users(request):
 
 def set_preferences(request):
     try:
-        if request.content_type != 'application/json':
-            return HttpResponse("Invalid content type, expected application/json", status=400)
+        if request.content_type != "application/json":
+            return HttpResponse(
+                "Invalid content type, expected application/json", status=400
+            )
         data = json.loads(request.body)
-        with open("UserPrefs.json", "w") as file:
-            json.dump(data, file)
+        prefs_path = f"{settings.FRONTEND_BUILD_PATH}/prefs.json"
+        prefs = {}
+        print("prefs")
+        if os.path.exists(prefs_path):
+            with open(prefs_path, "r") as file:
+                try:
+                    print("loaded")
+                    prefs = json.load(file)
+                except json.JSONDecodeError:
+                    # file is empty
+                    pass
+                except Exception as e:
+                    # some other exception
+                    return JsonResponse({"error": str(e)})
+        prefs["githubrepos"] = prefs.get("githubrepos", []) + data.get(
+            "githubrepos", []
+        )
+        prefs["gitlabrepos"] = prefs.get("gitlabrepos", []) + data.get(
+            "gitlabrepos", []
+        )
+        print(prefs)
+        prefs.update(
+            {
+                key: value
+                for key, value in data.items()
+                if key != "githubrepos" and key != "gitlabrepos"
+            }
+        )
+        with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "w") as file:
+            json.dump(prefs, file)
         return HttpResponse(status=200)
     except json.JSONDecodeError:
         return HttpResponse("Invalid JSON format", status=400)
     except Exception as e:
         # Catch any other errors, such as file write errors
+        print(e)
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
 def get_preferences(request):
     try:
-        with open("UserPrefs.json", "r") as file:
+        with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "r") as file:
             preferences = json.load(file)
         return JsonResponse({"preferences": preferences}, status=200)
     except json.JSONDecodeError:

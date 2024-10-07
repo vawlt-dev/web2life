@@ -139,6 +139,7 @@ main
     border-bottom: 2px solid var(--borderColor);
 }
 
+
 .rbc-time-gutter.rbc-time-column > .rbc-timeslot-group > .rbc-time-slot:not(:nth-child(1))
 {
     display: none;
@@ -240,4 +241,8 @@ main
 .rbc-events-container
 {
     width: 100%;
+}
+.rbc-time-column .rbc-timeslot-group 
+{
+    flex: none;
 }

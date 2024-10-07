@@ -161,44 +161,7 @@ z-index: 222;
     cursor: pointer;
 }
 
-#themeSlider
-{
-    display: flex;
-    align-items: center;
-    background-color: rgb(133, 133, 133);
-    width: 190px;
-    height: 25px;
-    border-radius: 20px;
-    align-self: flex-end;
-    margin-bottom: 20px;
-    margin-right: 20px;
-    cursor: pointer;
-    transition: all ease 250ms;
-    user-select: none;
-}
-#slider
-{
-    position: relative;
-    height: 20px;
-    width: 20px;
-    left: 2px;
-    border-radius: 10px;
-    transition: all ease 250ms;
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.5;
-    background-color: aliceblue;
 
-}
-#themeSlider:has(#slider.active)
-{
-    background-color: rgb(56, 79, 103);
-}
-#slider.active
-{
-    transform: translateX(165px);
-    background-color: rgb(50, 50, 50);
-}
 #hamburgerMenu
 {
     padding-left: 20px;
@@ -245,14 +208,14 @@ z-index: 222;
     
     background-color: white;
     width: 225px;
-    height: 250px;
+    height: 180px;
     border-radius: 6px;
     align-items: center;
     justify-content: space-evenly;
     z-index: 999999999;
     pointer-events: all;
 
-    transition: opacity ease-in-out 350ms 55ms, width 350ms 0ms, height 350ms 0ms, display 1ms 0ms;
+    transition: opacity ease-in-out 350ms 55ms, width 350ms 0ms, height 250ms 0ms, display 1ms 0ms;
 }
 #hamburgerMenuDropdown > #OAuthGrid 
 {
@@ -289,6 +252,7 @@ z-index: 222;
     text-align: center;
     width: 100%;
     margin-bottom: 6px;
+    font-size: 18px;
 }
 #hamburgerMenuDropdown > #OAuthGrid button > img
 {
@@ -300,12 +264,12 @@ z-index: 222;
     width: 40px;
 }
 
-
-
 #settingsSVG
 {
     cursor: pointer;
     fill: var(--textColor);
     stroke: rgb(128, 128, 128, 0.5);
     stroke-width: 20px;
+    min-width:30px;
+    margin-right: 20px;
 }

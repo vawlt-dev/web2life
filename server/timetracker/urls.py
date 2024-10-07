@@ -38,8 +38,8 @@ urlpatterns = [
     path("set_user/", views.set_user),
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
-    path("get_preferences/", views.get_preferences),
-    path("set_preferences/", views.set_preferences),
+    path("getPreferences/", views.get_preferences),
+    path("setPreferences/", views.set_preferences),
     # OAuth Paths
     ##########################################
     # Google OAuth paths

@@ -115,8 +115,7 @@ export const AppCalendar =
         }
     }, [editModalActive])
     
-    
-    
+
     const handleSelectSlot = (args) =>
     {
         let event = null;
@@ -551,7 +550,7 @@ export const AppCalendar =
                                     </>
                                 </>
                             )
-                        }
+                        },
                     }
                 }
                 timeslots={4}

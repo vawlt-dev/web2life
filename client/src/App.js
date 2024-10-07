@@ -8,6 +8,7 @@ import { Toolbar } from "./components/Toolbar";
 
 import { momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
+import { SettingsModal } from "./components/SettingsModal";
 
 export const App = () =>
 {
@@ -47,7 +48,8 @@ export const App = () =>
         }
     )
     const [projects, setProjects] = useState([]);
-
+    const [userPreferences, setUserPreferences] = useState({});
+    const [settingsOpen, openSettings] = useState(false);
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
     const calRef = useRef(null);
@@ -110,7 +112,7 @@ export const App = () =>
                 fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then(res => res.ok ? res.json() : []),
-                fetch("https://127.0.0.1:8000/oauth/getGithubEvents").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getGitlabEvents").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getSlackEvents").then(res => res.ok ? res.json() : []),
                 
@@ -196,7 +198,47 @@ export const App = () =>
         }
         //gets all user events
     }
-    
+
+    const getPreferences = async () =>
+    {
+        await fetch("/getPreferences").then((res) =>
+        {
+            if(res)
+            {
+                res.json().then((data) =>
+                {
+                    setUserPreferences
+                    (
+                        {
+                            ...data.preferences,
+                            githubrepos: data.preferences.githubrepos || [],
+                            gitlabrepos: data.preferences.gitlabrepos || [],
+                        }
+                    )
+                })
+            }
+        }) 
+    }
+    const setPreferences = async (data) => 
+    {
+        await fetch("/setPreferences/",
+        {
+            method: 'POST',
+            headers:
+            {
+                'X-CSRFToken': CSRFToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then((res) =>
+        {
+            if(res.ok)
+            {
+                getPreferences();
+            }
+        })    
+    }
+
     useEffect(() =>
     {
         console.log(events)
@@ -470,6 +512,7 @@ export const App = () =>
         view,
         setView,
         addEventFromSecondaryMenu,
+        openSettings
     }
     const filteringFunctions = 
     {
@@ -477,6 +520,7 @@ export const App = () =>
         setActiveEvents,
     }
 
+    //ON PAGE LOAD FUNCTION
     useEffect(() =>
     {
         //set CSRF token for database modification
@@ -490,7 +534,8 @@ export const App = () =>
         }))
 
         getEvents();
-        getProjects();
+        getProjects();  
+        getPreferences();
         window.addEventListener('themeChange', (e) =>
         {
             if (localStorage.getItem('theme') === "true")
@@ -519,15 +564,13 @@ export const App = () =>
         
         <div id={styles.mainWrap}>
             
-            <div id={styles.loading} className={initialLoad ? styles.active : null}>
-                <label>
-                    Loading
-                </label>
-
-                <div id={styles.loadingBarWrap}>
-                    <div id={styles.loadingBar} style={{width: `${progress.percent}%`}}/>
-                </div>
-            </div>
+            <SettingsModal 
+                settingsOpen={settingsOpen} 
+                openSettings={openSettings} 
+                setPreferences={setPreferences}
+                preferences={userPreferences}
+                colours={colours}
+            />
 
             <Toolbar calendarFunctions={calendarFunctions}/>
             <div id={styles.calendarWrap}>
