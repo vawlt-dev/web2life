@@ -52,7 +52,7 @@ def filter_events_by_project(request):
         print(f"filter_events_by_project: {e}")
     return out
 
-def filter_events_by_origin(request):
+"""def filter_events_by_origin(request):
     enabled = [1] * len(EventOrigin)
     for key in EventOrigin.__dict__.keys():
         try:
@@ -64,14 +64,15 @@ def filter_events_by_origin(request):
     events = Events.objects.all()
     for e in events:
         if enabled[e.origin]: out.append(e.id)
-    return out
+    return out"""
 
 # Filter supplied events array using parameters from request and return the filtered array
 def filter_events(request):
     by_date = filter_events_by_date(request)
     by_project = filter_events_by_project(request)
-    by_origin = filter_events_by_origin(request)
-    intersection = list(set(by_date) & set(by_project) & set(by_origin))
+    #by_origin = filter_events_by_origin(request)
+    #intersection = list(set(by_date) & set(by_project) & set(by_origin))
+    intersection = list(set(by_date) & set(by_project))
     print(intersection)
     events = []
     for i in intersection:
