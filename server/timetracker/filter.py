@@ -1,12 +1,13 @@
+import datetime
 from .models import Events
 from .models import EventOrigin
-import datetime
 from django.forms.models import model_to_dict
 
 def get_all_event_ids():
     events = list(Events.objects.all())
     out = []
-    for e in events: out.append(e.id)
+    for e in events:
+        out.append(e.id)
     return out
 
 # Needs min and max parameters in url in format Y-M-D
@@ -17,8 +18,9 @@ def filter_events_by_date(request):
     today = datetime.datetime.now()
     min_arg = request.GET.get("date_min", "?")
     max_arg = request.GET.get("date_max", "?")
-    
-    if min_arg == "?" and max_arg == "?": return get_all_event_ids()
+
+    if min_arg == "?" and max_arg == "?":
+        return get_all_event_ids()
 
     min_ts = (
         datetime.datetime.strptime(min_arg, "%Y-%m-%d").date()
@@ -43,7 +45,8 @@ def filter_events_by_date(request):
 def filter_events_by_project(request):
     out = []
     arg = request.GET.get("project_id", "?")
-    if arg == "?": return get_all_event_ids()
+    if arg == "?":
+        return get_all_event_ids()
     proj_id = int(arg)
     try:
         events = Events.objects.filter(project_id=proj_id)

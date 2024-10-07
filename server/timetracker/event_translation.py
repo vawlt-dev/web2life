@@ -1,14 +1,10 @@
-from .models import Events
-from .models import Project
-from .models import ProjectSlackChannelMapEntry
-from .models import EventOrigin
-from . import models
-import datetime
-import calendar
-from collections import defaultdict
 import logging
 import dateutil
-
+import datetime
+from collections import defaultdict
+from .models import Events
+from .models import ProjectSlackChannelMapEntry
+from . import models
 
 def generate_project_name_from_github_repo(repo):
     return repo
@@ -16,7 +12,8 @@ def generate_project_name_from_github_repo(repo):
 
 # @NOTE(Jamie D)
 # Returns an array of Event objects. Commits that happen within the same 1-hour
-# time frame are grouped into one event called something like "Pushed <no. commits> commits to <respository>".
+# time frame are grouped into one event called something like
+# "Pushed <no. commits> commits to <respository>".
 # Data should be an array of events that came from
 # Github. @TODO: Only works on PushEvent for now
 def translate_github_events(data) -> list:
@@ -42,16 +39,16 @@ def translate_github_events(data) -> list:
 
     events = []
 
-    for repo in commit_count_map.keys():
-        for hour in commit_count_map[repo].keys():
-            count = commit_count_map[repo][hour]
+    for repo in commit_count_map.items():
+        for hour in commit_count_map[repo[0]].keys():
+            count = repo[1][hour]
             e = Events(
-                title=f"Pushed {count} commits to {repo}",
-                projectId=models.get_or_add_project_from_name(repo),
+                title=f"Pushed {count} commits to {repo[0]}",
+                projectId=models.get_or_add_project_from_name(repo[0]),
                 start=datetime.datetime.fromtimestamp(hour * 3600),
                 end=datetime.datetime.fromtimestamp((hour + 1) * 3600),
                 allDay=False,
-                description=description_map[repo][hour],
+                description=description_map[repo[0]][hour],
             )
 
             events.append(e)
@@ -72,7 +69,7 @@ def translate_slack_event(data):
             project = ProjectSlackChannelMapEntry.objects.get(
                 channel_name=data["channel"]
             )
-            if project == None:
+            if project is None:
                 return None
             return Events(
                 title=f"Message from {data['user']} in {data['channel']}",
@@ -84,7 +81,7 @@ def translate_slack_event(data):
                 task="Messaging",
                 allDay=False,
             )
-        logging.debug("Unknown Slack event type {}", data["type"])
+        logging.debug(f"Unknown Slack event type {data['type']}")
         return None
     except:
         return None
