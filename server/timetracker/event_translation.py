@@ -3,7 +3,6 @@ import dateutil
 import datetime
 from collections import defaultdict
 from .models import Events
-from .models import ProjectSlackChannelMapEntry
 from . import models
 
 # @NOTE(Jamie D)
@@ -52,27 +51,28 @@ def translate_github_events(data) -> list:
     return events
 
 def translate_slack_event(data):
-    try:
-        if data["type"] == "message":
-            project = ProjectSlackChannelMapEntry.objects.get(
-                channel_name=data["channel"]
-            )
-            if project is None:
-                return None
-            return Events(
-                title=f"Message from {data['user']} in {data['channel']}",
-                # @TODO: What format is 'ts' in ?
-                start=datetime.datetime.now(),
-                end=datetime.datetime.now(),
-                description=data["text"],
-                projId=project.project,
-                task="Messaging",
-                allDay=False,
-            )
-        logging.debug(f"Unknown Slack event type {data['type']}")
-        return None
-    except:
-        return None
+    return None
+    #try:
+    #    if data["type"] == "message":
+    #        project = ProjectSlackChannelMapEntry.objects.get(
+    #            channel_name=data["channel"]
+    #        )
+    #        if project is None:
+    #            return None
+    #        return Events(
+    #            title=f"Message from {data['user']} in {data['channel']}",
+    #            # @TODO: What format is 'ts' in ?
+    #            start=datetime.datetime.now(),
+    #            end=datetime.datetime.now(),
+    #            description=data["text"],
+    #            projId=project.project,
+    #            task="Messaging",
+    #            allDay=False,
+    #        )
+    #    logging.debug(f"Unknown Slack event type {data['type']}")
+    #    return None
+    #except:
+    #    return None
 
 
 def google_email_create_events(data):
