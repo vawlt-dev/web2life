@@ -30,10 +30,10 @@ from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 
 from . import event_translation
-#from . import filter as filtering
+
+# from . import filter as filtering
 from .models import Events
 from .models import Project
-
 
 
 def generate_state():
@@ -64,7 +64,7 @@ def serve_static(request, path):
     return views.default.page_not_found(request, FileNotFoundError())
 
 
-def get_events(request): # pylint: disable=unused-argument
+def get_events(request):  # pylint: disable=unused-argument
     events = []
     for event in Events.objects.select_related("projectId").all():
         events.append(
@@ -104,8 +104,9 @@ def set_event(request):
         return HttpResponse()
     except Exception as e:
         print(e)
-        #@TODO: Return error code
+        # @TODO: Return error code
         return HttpResponse()
+
 
 def get_event_by_id(request):
     print(request)
@@ -214,7 +215,7 @@ def delete_event(request):
     return HttpResponse()
 
 
-def clear_events(request): # pylint: disable=unused-argument
+def clear_events(request):  # pylint: disable=unused-argument
     print("In clear_events")
     Events.objects.all().delete()
     return HttpResponse()
@@ -237,7 +238,7 @@ def delete_project(request):
 ###########################
 
 
-def google_connect_oauth(request): # pylint: disable=unused-argument
+def google_connect_oauth(request):  # pylint: disable=unused-argument
     flow = Flow.from_client_config(
         {
             "web": {
@@ -295,6 +296,7 @@ def google_callback(request):
     }
 
     return redirect("/")
+
 
 # uses batch processing, cuts time down from 25 seconds to 2 seconds (50 messages)
 def get_gmail_messages(request):
@@ -504,7 +506,7 @@ def get_outlook_messages(request):
                 for email in email_data
             ]
             return JsonResponse({"data": emails})
-        
+
         return JsonResponse(
             {"error": f"Failed to fetch emails: {response.status_code}"},
             status=response.status_code,
@@ -552,7 +554,7 @@ def get_microsoft_calendar_events(request):
 ###########################
 #### GITHUB FUNCTIONS #####
 ###########################
-def github_connect_oauth(request): # pylint: disable=unused-argument
+def github_connect_oauth(request):  # pylint: disable=unused-argument
     github_session = OAuth2Session(
         client_id=settings.GITHUB_CLIENT_ID,
         redirect_uri=settings.GITHUB_CALLBACK,
@@ -590,8 +592,8 @@ def github_callback(request):
 # https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life
 # @NOTE(Jamie D): Takes and requires 'repo' and 'user' args
 def get_github_events(request):
-    '''Get GitHub events for specific user from specific repository.
-    The user must be authorized to view the repository'''
+    """Get GitHub events for specific user from specific repository.
+    The user must be authorized to view the repository"""
     repo_path = request.GET.get("repo", "")
     username = request.GET.get("user", "")
 
@@ -847,15 +849,15 @@ def serve_ico(request):
     return serve(request, "favicon.ico", settings.FRONTEND_BUILD_PATH)
 
 
-def set_user(request): # pylint: disable=unused-argument
+def set_user(request):  # pylint: disable=unused-argument
     return None
 
 
-def get_user_by_id(request): # pylint: disable=unused-argument
+def get_user_by_id(request):  # pylint: disable=unused-argument
     return None
 
 
-def get_users(request): # pylint: disable=unused-argument
+def get_users(request):  # pylint: disable=unused-argument
     return None
 
 
@@ -868,11 +870,9 @@ def set_preferences(request):
         data = json.loads(request.body)
         prefs_path = f"{settings.FRONTEND_BUILD_PATH}/prefs.json"
         prefs = {}
-        print("prefs")
         if os.path.exists(prefs_path):
             with open(prefs_path, "r") as file:
                 try:
-                    print("loaded")
                     prefs = json.load(file)
                 except json.JSONDecodeError:
                     # file is empty
@@ -880,13 +880,32 @@ def set_preferences(request):
                 except Exception as e:
                     # some other exception
                     return JsonResponse({"error": str(e)})
+
+        if "removeGithub" in data:
+            removal = data["removeGithub"]
+            prefs["githubrepos"] = [
+                repo for repo in prefs.get("githubrepos", []) if repo != removal
+            ]
+            with open(prefs_path, "w") as file:
+                json.dump(prefs, file)
+            return HttpResponse(status=200)
+
+        if "removeGitlab" in data:
+            removal = data["removeGitlab"]
+            prefs["gitlabrepos"] = [
+                repo for repo in prefs.get("gitlabrepos", []) if repo != removal
+            ]
+            with open(prefs_path, "w") as file:
+                json.dump(prefs, file)
+            return HttpResponse(status=200)
+
         prefs["githubrepos"] = prefs.get("githubrepos", []) + data.get(
             "githubrepos", []
         )
         prefs["gitlabrepos"] = prefs.get("gitlabrepos", []) + data.get(
             "gitlabrepos", []
         )
-        print(prefs)
+
         prefs.update(
             {
                 key: value
@@ -905,7 +924,7 @@ def set_preferences(request):
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
-def get_preferences(request): # pylint: disable=unused-argument
+def get_preferences(request):  # pylint: disable=unused-argument
     try:
         with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "r") as file:
             preferences = json.load(file)
