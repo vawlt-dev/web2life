@@ -152,6 +152,8 @@ STATIC_URL = "/static/"
 
 FRONTEND_BUILD_PATH = "../client/build"
 
+PREFS_PATH = f"{FRONTEND_BUILD_PATH}/prefs.json"
+
 STATIC_SOURCE = safe_join(FRONTEND_BUILD_PATH, "static")
 
 STATICFILES_DIRS = [STATIC_SOURCE]

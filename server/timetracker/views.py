@@ -587,27 +587,10 @@ def github_callback(request):
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
-
-# example call:
-# https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life
-# @NOTE(Jamie D): Takes and requires 'repo' and 'user' args
-def get_github_events(request):
-    """Get GitHub events for specific user from specific repository.
-    The user must be authorized to view the repository"""
-    repo_path = request.GET.get("repo", "")
-    username = request.GET.get("user", "")
-
-    if len(repo_path) == 0 or len(username) == 0:
-        return JsonResponse({"error": "Missing repo and/or user arguments"}, status=400)
-
-    token = request.session.get("github_oauth_token")
-    if not token:
-        return JsonResponse({"error": "No GitHub token found in session"}, status=401)
-
+def github_get_user_events_for_repo(session, user, repo):
     try:
-        github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
-        response = github_session.get(
-            f"https://api.github.com/repos/{repo_path}/commits?author={username}"
+        response = session.get(
+            f"https://api.github.com/repos/{repo}/commits?author={user}"
         ).json()
         events = []
         for event in response:
@@ -616,21 +599,39 @@ def get_github_events(request):
                 {
                     "type": "push",
                     "time": commit["author"]["date"],
-                    "repo": repo_path,
+                    "repo": repo,
                     "message": commit["message"],
                 }
             )
+        return events
+    except Exception as e:
+        print(f"Failed to get GitHub events: {e}")
+        return []
 
+def get_github_events(request):
+    """Get GitHub events for user and repositories as specified in preferences"""
+    prefs = load_preferences_from_file()
+    if "error" in prefs: return JsonResponse({"data": []})
+
+    try:
+        token = request.session.get("github_oauth_token")
+        if not token:
+            return JsonResponse({"error": "No GitHub token found in session"}, status=401)
+        github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
+        events = []
+        user = prefs["githubusername"]
+        for repo in prefs["githubrepos"]:
+            events.extend(github_get_user_events_for_repo(github_session, user, repo))
+
+        # Translate events
         translated = event_translation.translate_github_events(events)
         translated_dict = []
+        # Can't serialize models directly to JSON, so manually convert each event to a dict
         for t in translated:
             translated_dict.append(model_to_dict(t))
         return JsonResponse({"data": translated_dict})
-        # return JsonResponse({"data": events})
-
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
-
+        return JsonResponse({"error": f"{e}"}, status=400)
 
 ###########################
 #### GITLAB FUNCTIONS #####
@@ -868,7 +869,7 @@ def set_preferences(request):
                 "Invalid content type, expected application/json", status=400
             )
         data = json.loads(request.body)
-        prefs_path = f"{settings.FRONTEND_BUILD_PATH}/prefs.json"
+        prefs_path = settings.PREFS_PATH
         prefs = {}
         if os.path.exists(prefs_path):
             with open(prefs_path, "r") as file:
@@ -886,8 +887,7 @@ def set_preferences(request):
             prefs["githubrepos"] = [
                 repo for repo in prefs.get("githubrepos", []) if repo != removal
             ]
-            with open(prefs_path, "w") as file:
-                json.dump(prefs, file)
+            save_preferences_to_file(prefs)
             return HttpResponse(status=200)
 
         if "removeGitlab" in data:
@@ -895,8 +895,7 @@ def set_preferences(request):
             prefs["gitlabrepos"] = [
                 repo for repo in prefs.get("gitlabrepos", []) if repo != removal
             ]
-            with open(prefs_path, "w") as file:
-                json.dump(prefs, file)
+            save_preferences_to_file(prefs)
             return HttpResponse(status=200)
 
         prefs["githubrepos"] = prefs.get("githubrepos", []) + data.get(
@@ -913,8 +912,7 @@ def set_preferences(request):
                 if key != "githubrepos" and key != "gitlabrepos"
             }
         )
-        with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "w") as file:
-            json.dump(prefs, file)
+        save_preferences_to_file(prefs)
         return HttpResponse(status=200)
     except json.JSONDecodeError:
         return HttpResponse("Invalid JSON format", status=400)
@@ -923,10 +921,30 @@ def set_preferences(request):
         print(e)
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+def load_preferences_from_file():
+    try:
+        with open(settings.PREFS_PATH, "r") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        return {"error": "Failed to decode preferences"}
+    except Exception as e:
+        return {"error": f"{e}"}
+
+def save_preferences_to_file(data):
+    try:
+        with open(settings.PREFS_PATH, "w") as file:
+            json.dump(data, file)
+            print(f"Saved preferences to {settings.PREFS_PATH}")
+    except Exception as e:
+        print(f"Failed to save preferences: {e}")
 
 def get_preferences(request):  # pylint: disable=unused-argument
+    prefs = load_preferences_from_file()
+    if "error" in prefs: return JsonResponse(prefs, status=500)
+    return JsonResponse(prefs)
+
     try:
-        with open(f"{settings.FRONTEND_BUILD_PATH}/prefs.json", "r") as file:
+        with open(settings.PREFS_PATH, "r") as file:
             preferences = json.load(file)
         return JsonResponse({"preferences": preferences}, status=200)
     except json.JSONDecodeError:
