@@ -570,6 +570,7 @@ export const App = () =>
                 setPreferences={setPreferences}
                 preferences={userPreferences}
                 colours={colours}
+                setColours={setColours}
             />
 
             <Toolbar calendarFunctions={calendarFunctions}/>

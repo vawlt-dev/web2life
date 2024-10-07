@@ -264,3 +264,41 @@
     border: 2px solid rgba(128, 128, 128, 0.3);
     border-radius: 8px;
 }
+
+.repoWrap
+{
+    margin-left: 112px !important;
+}
+.repoEntry
+{
+    display: flex;
+    border: 2px solid rgba(128, 128, 128, 0.3);
+    border-radius: 8px;
+}
+.repoEntry > label
+{
+    display: block;
+    width: 175px;
+    background-color: white;
+    color: black;
+    padding-inline: 5px;
+    font-size: 12px;
+    line-height: 1.7;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    
+}
+.repoEntry > button
+{
+    width: 50px;
+    height: 20px;
+    border: 0;
+    padding: 0;
+    background-color: rgb(255, 0, 0);
+    color: #fff;
+    font-size: 12px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-family: "Inter";
+    cursor: pointer;
+}

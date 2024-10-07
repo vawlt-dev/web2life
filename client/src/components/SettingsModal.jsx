@@ -5,7 +5,8 @@ export const SettingsModal = ({settingsOpen,
                                openSettings, 
                                preferences, 
                                setPreferences, 
-                               colours}) => 
+                               colours,
+                               setColours}) => 
 {
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
 
@@ -18,7 +19,7 @@ export const SettingsModal = ({settingsOpen,
     {
         console.log(preferences)
     }, [preferences])
-    
+
     return (
         
         <div id={styles.settingsModal} className={settingsOpen ? styles.active : null}>
@@ -37,27 +38,34 @@ export const SettingsModal = ({settingsOpen,
                     <label>Event Colours</label>
                     <div>
                         <label>Your Events</label>
-                        <input type='color' defaultValue={colours.local}/>
+                        <input type='color' defaultValue={colours.local} 
+                        onChange={(e) => {setColours({...colours, local: e.target.value})}}
+                        />
                     </div>
                     <div>
                         <label>Google Events</label>
-                        <input type='color' defaultValue={colours.google}/>
+                        <input type='color' defaultValue={colours.google}
+                        onChange={(e) => {setColours({...colours, google: e.target.value})}}/>
                     </div>
                     <div>
                         <label>Microsoft Events</label>
-                        <input type='color' defaultValue={colours.microsoft}/>
+                        <input type='color' defaultValue={colours.microsoft}
+                        onChange={(e) => {setColours({...colours, microsoft: e.target.value})}}/>
                     </div>
                     <div>
                         <label>Github Events</label>
-                        <input type='color' defaultValue={colours.github}/>
+                        <input type='color' defaultValue={colours.github}
+                        onChange={(e) => {setColours({...colours, github: e.target.value})}}/>
                     </div>
                     <div>
                         <label>GitLab Events</label>
-                        <input type='color' defaultValue={colours.gitlab}/>
+                        <input type='color' defaultValue={colours.gitlab}
+                        onChange={(e) => {setColours({...colours, gitlab: e.target.value})}}/>
                     </div>
                     <div>
                         <label>Slack Events</label>
-                        <input type='color' defaultValue={colours.slack}/>
+                        <input type='color' defaultValue={colours.slack} onChange={(e) => {setColours({...colours, slack: e.target.value})}}/>
+                        
                     </div>
                 </div>
                 <div>
@@ -98,26 +106,28 @@ export const SettingsModal = ({settingsOpen,
                         }}>
                             <label>Repositories</label>
                             <div>
-                                {console.log(preferences.githubrepos)}
-                                {
-                                    preferences.githubrepos && preferences.githubrepos.length > 0 ?
-                                        
-                                        <select>
-                                            {
-                                                preferences.githubrepos.map((repo, index) => (
-                                                    <option key={index} value={repo}></option>
-                                                ))
-                                            }
-                                        </select>
-                                    :
-                                    <input type='text' placeholder='Repository Name (user/repo)' name='githubrepo' required/>
-                                }
+                                <input type='text' placeholder='Repository Name (user/repo)' name='githubrepo' required/>
                                 <button>
                                     Add
                                 </button>
                             </div>
                         </form>
                     </div>
+                    {
+                        preferences.githubrepos && (
+                            <div className={styles.repoWrap}>
+                                {
+                                    preferences.githubrepos.map((repo) => 
+                                    (
+                                        <div className={styles.repoEntry}>
+                                            <label>{repo}</label>
+                                            <button onClick={() => setPreferences({"removeGithub": repo})}>Remove</button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
                 </div>
                 
                 <div id={styles.gitlabSettings}>
@@ -143,26 +153,28 @@ export const SettingsModal = ({settingsOpen,
                         }}>
                             <label>Repositories</label>
                             <div>
-                                {
-                                    preferences.gitlabrepos && preferences.gitlabrepos.length > 0 ?
-
-                                        <select>
-                                            {
-                                                preferences.gitlabrepos.map((repo, index) => 
-                                                (
-                                                    <option key={index} value={repo}></option>
-                                                ))
-                                            }
-                                        </select>
-                                    :
-                                    <input type='text' placeholder='Repository Name (user/repo)' name='gitlabrepo' required/>
-                                }
+                                <input type='text' placeholder='Repository Name (user/repo)' name='gitlabrepo' required/>
                                 <button>
                                     Add
                                 </button>
                             </div>
                         </form>
                     </div>
+                    {
+                        preferences.gitlabrepos && (
+                            <div className={styles.repoWrap}>
+                                {
+                                    preferences.gitlabrepos.map((repo) => 
+                                    (
+                                        <div className={styles.repoEntry}>
+                                            <label>{repo}</label>
+                                            <button onClick={() => setPreferences({"removeGitlab": repo})}>Remove</button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
                 </div>
             </div>            
         </div>

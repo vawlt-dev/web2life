@@ -2,6 +2,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import styles from './SecondaryMenu.module.css'
 import { Calendar } from 'react-big-calendar'
 
+const hexToRgb = (colour) =>
+{
+    let r = parseInt(colour.slice(1, 3), 16);
+    let g = parseInt(colour.slice(3, 5), 16);
+    let b = parseInt(colour.slice(5, 7), 16);
+    return { r, g, b };
+}
+
 export const SecondaryMenu = (
     {
         localizer, 
@@ -12,7 +20,7 @@ export const SecondaryMenu = (
     }) => 
 {
     const dropdownRef = useRef(null);
- 
+    
     useEffect(() =>
     {
         console.log(notifications)
@@ -214,26 +222,38 @@ export const SecondaryMenu = (
                         ?
                         (
                             notifications.map((notification, index) => 
-                            (
-                                <div 
-                                    key={index} 
-                                    className={styles.notification} 
-                                    style={{backgroundColor: colours?.[notification.source]}}
-                                >
-                                    <label>
-                                        {notification.date}
-                                    </label>
-                                    <label>
-                                        {notification.recipient}
-                                    </label>
-                                    <label>
-                                        {notification.subject}
-                                    </label>
+                            {
+                                const { r, g, b } = hexToRgb(colours?.[notification.source]);
+                                let labelColour;
+                                if(r > 128 && g > 128 && b > 128)
+                                {
+                                    labelColour = 'black'
+                                }
+                                else
+                                {
+                                    labelColour = 'white'
+                                }
+                                
+                                return(
+                                    <div 
+                                        key={index} 
+                                        className={styles.notification} 
+                                        style={{backgroundColor: colours?.[notification.source]}}
+                                    >
+                                        <label style={{color: labelColour}}>
+                                            {notification.date}
+                                        </label>
+                                        <label style={{color: labelColour}}>
+                                            {notification.recipient}
+                                        </label>
+                                        <label style={{color: labelColour}}>
+                                            {notification.subject}
+                                        </label>
 
-                                </div>
-
-                            ))
-                        )
+                                    </div>
+                                )
+                            }
+                        ))                        
                         :
                         <div className={styles.notification}>
                             <label id={styles.noNotifications}>No notifications</label>
