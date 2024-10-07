@@ -1,13 +1,13 @@
-from django.test import TestCase
-from . import models
-from . import event_translation
 import datetime
+from django.test import TestCase
+from . import event_translation
 
 class EventTranslationTest(TestCase):
     def setUp(self):
         pass
 
-    # @NOTE(Jamie D): This test will break if the title format from translate_github_events is changed
+    # @NOTE(Jamie D): This test will break if the title format
+    # from translate_github_events is changed
     def test_github_event_translation(self):
         repo_name = "my/repo"
         now = datetime.datetime.now().timestamp()
