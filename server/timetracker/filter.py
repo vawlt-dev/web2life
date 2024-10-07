@@ -1,7 +1,7 @@
 import datetime
+from django.forms.models import model_to_dict
 from .models import Events
 from .models import EventOrigin
-from django.forms.models import model_to_dict
 
 def get_all_event_ids():
     events = list(Events.objects.all())
@@ -50,24 +50,24 @@ def filter_events_by_project(request):
     proj_id = int(arg)
     try:
         events = Events.objects.filter(project_id=proj_id)
-        for e in events: out.append(e.id)
+        for e in events:
+            out.append(e.id)
     except Exception as e:
         print(f"filter_events_by_project: {e}")
     return out
 
-"""def filter_events_by_origin(request):
-    enabled = [1] * len(EventOrigin)
-    for key in EventOrigin.__dict__.keys():
-        try:
-            value = int(request.GET.get(key, "1"))
-            enabled[EventOrigin.__dict__[key]] = value
-        except: pass
-    
-    out = []
-    events = Events.objects.all()
-    for e in events:
-        if enabled[e.origin]: out.append(e.id)
-    return out"""
+#def filter_events_by_origin(request):
+# enabled = [1] * len(EventOrigin)
+# for key in EventOrigin.__dict__.keys():
+#     try:
+#         value = int(request.GET.get(key, "1"))
+#         enabled[EventOrigin.__dict__[key]] = value
+#     except: pass
+# out = []
+# events = Events.objects.all()
+# for e in events:
+#     if enabled[e.origin]: out.append(e.id)
+#return out
 
 # Filter supplied events array using parameters from request and return the filtered array
 def filter_events(request):
@@ -82,4 +82,4 @@ def filter_events(request):
         e = Events.objects.get(id=i)
         events.append(model_to_dict(e))
     return events
-    
+

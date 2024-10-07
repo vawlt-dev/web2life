@@ -1,17 +1,19 @@
-from django.db import models
+# pylint: disable=too-few-public-methods
 from enum import Enum
-
+from django.db import models
 
 class Project(models.Model):
+    '''A project added by the user that groups events'''
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=64, unique=True)
 
-    class Meta:
+    class Meta: # pylint: disable=missing-class-docstring
         db_table = "Project"
 
 
 # @NOTE(Jamie D): These codes are what is stored in the DB so don't change them
 class EventOrigin(Enum):
+    '''Currently unused but might be used later'''
     USER = 0
     GOOGLE_GMAIL = 1
     GITHUB = 2
@@ -21,6 +23,7 @@ class EventOrigin(Enum):
 
 
 class Events(models.Model):
+    '''An event presented to the user in the calendar UI'''
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, default="")
     start = models.DateTimeField(null=True)
@@ -34,21 +37,16 @@ class Events(models.Model):
     def __str__(self):
         return f'{{ID: {self.id}, Title: "{self.title}", Description: "{self.description}"}}'
 
-    class Meta:
+    class Meta: # pylint: disable=missing-class-docstring
         db_table = "Events"
 
-
-# Maps a Slack channel name to a project in the database
-class ProjectSlackChannelMapEntry(models.Model):
-    channel_name = models.CharField(max_length=64, primary_key=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-
-
 def get_or_add_project_from_name(name):
+    '''Try to find a project matching the specified name. 
+    If the project does not exist, it is created and added to the database'''
     try:
         project = Project.objects.get(title=name)
         return project
 
-    except:
+    except models.Model.DoesNotExist:
         # @TODO: Descriptions
         return Project.objects.create(title=name)
