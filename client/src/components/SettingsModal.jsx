@@ -32,39 +32,72 @@ export const SettingsModal = ({settingsOpen,
                 <label>Settings</label>
             </div>
 
+            {
+                // needa find a way to set colour other the onchange listener: sends tens of requests with each colour change
+            }
             <div id={styles.generalSettingsWrap}>
                 <label> General Settings </label>
                 <div id={styles.eventColourListWrap}>
                     <label>Event Colours</label>
                     <div>
                         <label>Your Events</label>
-                        <input type='color' defaultValue={colours.local} 
-                        onChange={(e) => {setColours({...colours, local: e.target.value})}}
+                        <input type='color' value={colours.local} 
+                        onChange={(e) => 
+                        {
+                            setColours({...colours, local: e.target.value});
+                            setPreferences({"localColour": e.target.value})
+                        }}
+                        onMouseUp={(e) => setPreferences({ localColour: e.target.value })}
                         />
                     </div>
                     <div>
                         <label>Google Events</label>
-                        <input type='color' defaultValue={colours.google}
-                        onChange={(e) => {setColours({...colours, google: e.target.value})}}/>
+                        <input type='color' value={colours.google}
+                        onChange={(e) => 
+                        {
+                            setColours({...colours, google: e.target.value});
+                            setPreferences({"googleColour": e.target.value})
+                        }}
+                        />
                     </div>
                     <div>
                         <label>Microsoft Events</label>
-                        <input type='color' defaultValue={colours.microsoft}
-                        onChange={(e) => {setColours({...colours, microsoft: e.target.value})}}/>
+                        <input type='color' value={colours.microsoft}
+                        onChange={(e) => 
+                        {
+                            setColours({...colours, microsoft: e.target.value});
+                            setPreferences({"microsoftColour": e.target.value})
+                        }}
+                        />
                     </div>
                     <div>
                         <label>Github Events</label>
-                        <input type='color' defaultValue={colours.github}
-                        onChange={(e) => {setColours({...colours, github: e.target.value})}}/>
+                        <input type='color' value={colours.github}
+                        onChange={(e) => 
+                        {
+                            setColours({...colours, github: e.target.value});
+                            setPreferences({"githubColour": e.target.value})
+                        }}
+                        />
                     </div>
                     <div>
                         <label>GitLab Events</label>
-                        <input type='color' defaultValue={colours.gitlab}
-                        onChange={(e) => {setColours({...colours, gitlab: e.target.value})}}/>
+                        <input type='color' value={colours.gitlab}
+                        onChange={(e) => 
+                        {
+                            setColours({...colours, gitlab: e.target.value});
+                            setPreferences({"gitlabColour": e.target.value})
+                        }}
+                        />
                     </div>
                     <div>
                         <label>Slack Events</label>
-                        <input type='color' defaultValue={colours.slack} onChange={(e) => {setColours({...colours, slack: e.target.value})}}/>
+                        <input type='color' value={colours.slack} onChange={(e) => 
+                        {
+                            setColours({...colours, slack: e.target.value});
+                            setPreferences({"slackColour": e.target.value})
+                        }}
+                        />
                         
                     </div>
                 </div>
