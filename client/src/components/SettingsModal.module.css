@@ -1,6 +1,7 @@
 #settingsModal > *
 {
     color: var(--textColor);
+    transition: color ease 350ms;
 }
 #settingsModal
 {
@@ -19,7 +20,9 @@
     background-color: var(--primaryColor);
     z-index: 9999;
     pointer-events: all;
-    transition: opacity ease 350ms;
+    
+    transition: opacity ease 350ms,
+                background-color ease 350ms;;
 }
 #topWrap
 {
@@ -39,10 +42,12 @@
     border: 2px solid var(--textColor);
     border-radius: 20px;
     cursor: pointer;
+    transition: border-color ease 350ms;
 }
 #topWrap > button > svg
 {
     fill: var(--textColor);
+    transition: fill ease 300ms;
     width: 18px;
 }
 #topWrap > label
