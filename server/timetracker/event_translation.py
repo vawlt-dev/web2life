@@ -1,3 +1,4 @@
+# pylint: disable=no-member, missing-module-docstring
 import logging
 import dateutil
 import datetime
@@ -5,10 +6,6 @@ from collections import defaultdict
 from .models import Events
 from .models import ProjectSlackChannelMapEntry
 from . import models
-
-def generate_project_name_from_github_repo(repo):
-    return repo
-
 
 # @NOTE(Jamie D)
 # Returns an array of Event objects. Commits that happen within the same 1-hour
@@ -40,7 +37,7 @@ def translate_github_events(data) -> list:
     events = []
 
     for repo in commit_count_map.items():
-        for hour in commit_count_map[repo[0]].keys():
+        for hour in repo[1].keys():
             count = repo[1][hour]
             e = Events(
                 title=f"Pushed {count} commits to {repo[0]}",
