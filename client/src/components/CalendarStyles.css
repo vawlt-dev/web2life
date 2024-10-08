@@ -142,7 +142,6 @@ main
 {
     position: relative;
     transform: translateX(-40px);
-    z-index: 9999999999;
     width: 40px;
     right: 2px;
     height: 2px;
@@ -245,7 +244,4 @@ main
 .rbc-events-container
 {
     width: 100%;
-}
-.rbc-time-column .rbc-timeslot-group 
-{
 }
