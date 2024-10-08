@@ -1,13 +1,8 @@
-@font-face {
-    font-family: "Inter";
-    src: url("../public/resources/fonts/Inter-VariableFont.ttf");
-}
-
 #mainWrap
 {
     font-family: "Inter";
     color: var(--textColor);
-    height: 100vh;
+    min-height: 100vh;
 }
 
 #calendarWrap

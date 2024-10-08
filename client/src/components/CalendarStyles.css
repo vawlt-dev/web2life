@@ -151,7 +151,6 @@ main
     background: linear-gradient(90deg, transparent 50%, var(--borderColor));
 }
 
-
 .rbc-time-gutter.rbc-time-column > .rbc-timeslot-group > .rbc-time-slot:not(:nth-child(1))
 {
     display: none;
@@ -161,13 +160,6 @@ main
     min-height: 50px;
     
 }
-/* .rbc-time-gutter.rbc-time-column > div.rbc-timeslot-group:not(:last-child)::after
-{
-    content: '';
-    height: 2px;
-    width: 40px;
-    background: linear-gradient(90deg, transparent 50%, var(--borderColor));
-} */
 .rbc-time-gutter.rbc-time-column > div.rbc-timeslot-group > .rbc-time-slot
 {
     display: flex;

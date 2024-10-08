@@ -1,3 +1,7 @@
+@font-face {
+    font-family: "Inter";
+    src: url("../public/resources/fonts/Inter-VariableFont.ttf");
+}
 :root
 {
     /* variable definitions for theme changing */
@@ -21,6 +25,6 @@ body, #root
 {
     background-color: var(--primaryColor);
     min-height: 100vh;
-
+    min-width: fit-content;
     transition: background-color ease 500ms;
 }

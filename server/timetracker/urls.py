@@ -16,11 +16,10 @@ Including another URLconf
 """
 
 from django.urls import path, re_path
-#from django.conf import settings
+
+# from django.conf import settings
 from django.views.generic.base import RedirectView
 from . import views
-
-favicon_view = RedirectView.as_view(url="/static/favicon.ico")
 
 urlpatterns = [
     path("getEvents/", views.get_events),
@@ -28,7 +27,7 @@ urlpatterns = [
     path("patchEvent/", views.patch_event),
     path("clearEvents/", views.clear_events),
     path("deleteEvent/", views.delete_event),
-    path("getCsrfToken/", views.get_csrf_token, name="get_csrf"),
+    path("getCsrfToken/", views.get_csrf_token),
     path("getProjects/", views.get_projects),
     path("addProject/", views.add_project),
     path("deleteProject/", views.delete_project),
@@ -64,7 +63,7 @@ urlpatterns = [
     path("oauth/callback/slack", views.slack_callback),
     path("oauth/getSlackEvents/", views.get_slack_events),
     ########################################
-    re_path(r"^favicon\.ico$", favicon_view),
+    re_path(r"^favicon\.ico$", views.serve_ico),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
     path("", views.index),
 ]

@@ -129,7 +129,6 @@ export const App = () =>
             const gitlabNotifications = results[6].status === 'fulfilled' ? results[6].value?.data || [] : [];
             const slackNotifications = results[7].status === "fulfilled" ? results[7].value?.data || [] : [];
 
-            console.log(gitlabNotifications)
             setEvents(
             [
                 ...localEvents.map(event => ({
@@ -257,10 +256,6 @@ export const App = () =>
         })    
     }
 
-    useEffect(() =>
-    {
-        console.log(events)
-    },[events])
   
     const getProjects = () =>
     {

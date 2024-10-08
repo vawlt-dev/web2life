@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import styles from './SecondaryMenu.module.css'
 import { Calendar } from 'react-big-calendar'
 
@@ -21,14 +21,6 @@ export const SecondaryMenu = (
 {
     const dropdownRef = useRef(null);
     
-    useEffect(() =>
-    {
-        console.log(notifications)
-    }, [notifications])
-    useEffect(() =>
-    {
-        console.log(colours)
-    }, [colours])
     const handleCheckboxClick = (e) =>
     {
         filteringFunctions.setActiveEvents(prevState => (
@@ -223,6 +215,7 @@ export const SecondaryMenu = (
                         (
                             notifications.map((notification, index) => 
                             {
+                                //change text colour to black or white if notification colour is greater/lesser than gray
                                 const { r, g, b } = hexToRgb(colours?.[notification.source]);
                                 let labelColour;
                                 if(r > 128 && g > 128 && b > 128)
@@ -233,7 +226,7 @@ export const SecondaryMenu = (
                                 {
                                     labelColour = 'white'
                                 }
-                                
+
                                 return(
                                     <div 
                                         key={index} 

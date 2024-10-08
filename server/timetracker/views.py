@@ -49,21 +49,6 @@ def generate_code_challenge(verifier):
     return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("utf-8")
 
 
-def index(request):
-    print("Serve index")
-    print(safe_join(settings.FRONTEND_BUILD_PATH, "index.html"))
-    return serve(request, "index.html", settings.FRONTEND_BUILD_PATH)
-
-
-def serve_static(request, path):
-    full_path = Path(safe_join(settings.STATIC_SOURCE, path))
-    print(f"serve_static(): {full_path}")
-    if full_path.is_file():
-        return serve(request, path, settings.STATIC_SOURCE)
-
-    return views.default.page_not_found(request, FileNotFoundError())
-
-
 def get_events(request):  # pylint: disable=unused-argument
     events = []
     for event in Events.objects.select_related("projectId").all():
@@ -587,6 +572,7 @@ def github_callback(request):
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
+
 def github_get_user_events_for_repo(session, user, repo):
     try:
         response = session.get(
@@ -608,15 +594,19 @@ def github_get_user_events_for_repo(session, user, repo):
         print(f"Failed to get GitHub events: {e}")
         return []
 
+
 def get_github_events(request):
     """Get GitHub events for user and repositories as specified in preferences"""
     prefs = load_preferences_from_file()
-    if "error" in prefs: return JsonResponse({"data": []})
+    if "error" in prefs:
+        return JsonResponse({"data": []})
 
     try:
         token = request.session.get("github_oauth_token")
         if not token:
-            return JsonResponse({"error": "No GitHub token found in session"}, status=401)
+            return JsonResponse(
+                {"error": "No GitHub token found in session"}, status=401
+            )
         github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
         events = []
         user = prefs["githubusername"]
@@ -632,6 +622,7 @@ def get_github_events(request):
         return JsonResponse({"data": translated_dict})
     except Exception as e:
         return JsonResponse({"error": f"{e}"}, status=400)
+
 
 ###########################
 #### GITLAB FUNCTIONS #####
@@ -832,6 +823,21 @@ def get_slack_events(request):
 ###########################
 
 
+def index(request):
+    print("Serve index")
+    print(safe_join(settings.FRONTEND_BUILD_PATH, "index.html"))
+    return serve(request, "index.html", settings.FRONTEND_BUILD_PATH)
+
+
+def serve_static(request, path):
+    full_path = Path(safe_join(settings.STATIC_SOURCE, path))
+    print(f"serve_static(): {full_path}")
+    if full_path.is_file():
+        return serve(request, path, settings.STATIC_SOURCE)
+
+    return views.default.page_not_found(request, FileNotFoundError())
+
+
 def get_csrf_token(request):
     return JsonResponse({"csrf-token": django.middleware.csrf.get_token(request)})
 
@@ -844,10 +850,11 @@ def serve_manifest(request):
 
 
 def serve_ico(request):
+    path = "resources/images/favicon.ico"
     # with open((settings.FRONTEND_BUILD_PATH + "/favicon.ico"), "rb") as file:
     #    data = file.read()
     # return HttpResponse(data)
-    return serve(request, "favicon.ico", settings.FRONTEND_BUILD_PATH)
+    return serve(request, path, document_root=settings.FRONTEND_BUILD_PATH)
 
 
 def set_user(request):  # pylint: disable=unused-argument
@@ -921,6 +928,7 @@ def set_preferences(request):
         print(e)
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+
 def load_preferences_from_file():
     try:
         with open(settings.PREFS_PATH, "r") as file:
@@ -930,6 +938,7 @@ def load_preferences_from_file():
     except Exception as e:
         return {"error": f"{e}"}
 
+
 def save_preferences_to_file(data):
     try:
         with open(settings.PREFS_PATH, "w") as file:
@@ -938,11 +947,12 @@ def save_preferences_to_file(data):
     except Exception as e:
         print(f"Failed to save preferences: {e}")
 
+
 def get_preferences(request):  # pylint: disable=unused-argument
     prefs = load_preferences_from_file()
-    if "error" in prefs: return JsonResponse(prefs, status=500)
+    if "error" in prefs:
+        return JsonResponse(prefs, status=500)
     return JsonResponse(prefs)
-
     try:
         with open(settings.PREFS_PATH, "r") as file:
             preferences = json.load(file)
