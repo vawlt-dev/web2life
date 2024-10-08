@@ -62,6 +62,9 @@ urlpatterns = [
     path("oauth/connect/slack", views.slack_connect_oauth),
     path("oauth/callback/slack", views.slack_callback),
     path("oauth/getSlackEvents/", views.get_slack_events),
+	# Custom event sources
+	re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
+	re_path(r"^import-events/(?P<name>.*)$", views.import_events),
     ########################################
     re_path(r"^favicon\.ico$", views.serve_ico),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),

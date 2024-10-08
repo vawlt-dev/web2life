@@ -30,6 +30,7 @@ from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 
 from . import event_translation
+from .event_source_list import EVENT_SOURCES
 
 # from . import filter as filtering
 from .models import Events
@@ -594,35 +595,35 @@ def github_get_user_events_for_repo(session, user, repo):
         print(f"Failed to get GitHub events: {e}")
         return []
 
-
-def get_github_events(request):
+def get_and_translate_github_events(request):
     """Get GitHub events for user and repositories as specified in preferences"""
     prefs = load_preferences_from_file()
     if "error" in prefs:
-        return JsonResponse({"data": []})
+        return []
 
+    token = request.session.get("github_oauth_token")
+    if not token:
+        return []
+    github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
+    events = []
+    user = prefs["githubusername"]
+    for repo in prefs["githubrepos"]:
+        events.extend(github_get_user_events_for_repo(github_session, user, repo))
+
+    # Translate events
+    translated = event_translation.translate_github_events(events)
+    return translated
+
+def get_github_events(request):
     try:
-        token = request.session.get("github_oauth_token")
-        if not token:
-            return JsonResponse(
-                {"error": "No GitHub token found in session"}, status=401
-            )
-        github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
-        events = []
-        user = prefs["githubusername"]
-        for repo in prefs["githubrepos"]:
-            events.extend(github_get_user_events_for_repo(github_session, user, repo))
-
-        # Translate events
-        translated = event_translation.translate_github_events(events)
-        translated_dict = []
+        events = get_and_translate_github_events(request)
+        event_dict = []
         # Can't serialize models directly to JSON, so manually convert each event to a dict
-        for t in translated:
-            translated_dict.append(model_to_dict(t))
-        return JsonResponse({"data": translated_dict})
+        for t in events:
+            event_dict.append(model_to_dict(t))
+        return JsonResponse({"data": event_dict})
     except Exception as e:
-        return JsonResponse({"error": f"{e}"}, status=400)
-
+        return JsonResponse({"error": f"{e}"})
 
 ###########################
 #### GITLAB FUNCTIONS #####
@@ -953,12 +954,29 @@ def get_preferences(request):  # pylint: disable=unused-argument
     if "error" in prefs:
         return JsonResponse(prefs, status=500)
     return JsonResponse(prefs)
+
+def connect_source(request, name):
     try:
-        with open(settings.PREFS_PATH, "r") as file:
-            preferences = json.load(file)
-        return JsonResponse({"preferences": preferences}, status=200)
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Failed to decode preferences"}, status=500)
+        for source in EVENT_SOURCES:
+            if source['name'] == name:
+                iface = source['interface']
+                return iface.connect(request)
     except Exception as e:
-        # Catch any other errors, such as file read errors
-        return JsonResponse({"error": str(e)}, status=500)
+        print(f"connect_source: {e}")
+    return HttpResponse()
+
+def import_events(request, name):
+    print(name)
+    try:
+        for source in EVENT_SOURCES:
+            print(f"{name} == {source['name']}")
+            if source['name'] == name:
+                iface = source['interface']
+                events = iface.import_events(request)
+                event_dict = []
+                for e in events:
+                    event_dict.append(model_to_dict(e))
+                return JsonResponse({"data": event_dict})
+    except Exception as e:
+        return JsonResponse({"error": f"{e}"})
+    return JsonResponse({"error": f"Event source {name} does not exist"})
