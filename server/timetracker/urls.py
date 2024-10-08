@@ -51,9 +51,9 @@ urlpatterns = [
     path("oauth/getOutlookMessages", views.get_outlook_messages),
     path("oauth/getMicrosoftCalendarEvents", views.get_microsoft_calendar_events),
     # Github OAuth paths
-    path("oauth/connect/github", views.github_connect_oauth),
+    #path("oauth/connect/github", views.github_connect_oauth),
     path("oauth/callback/github", views.github_callback),
-    path("oauth/getGithubEvents", views.get_github_events),
+    #path("oauth/getGithubEvents", views.get_github_events),
     # Gitlab OAuth paths
     path("oauth/connect/gitlab", views.gitlab_connect_oauth),
     path("oauth/callback/gitlab", views.gitlab_callback),
@@ -65,6 +65,7 @@ urlpatterns = [
 	# Custom event sources
 	re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
 	re_path(r"^import-events/(?P<name>.*)$", views.import_events),
+	re_path(r"^source-callback/(?P<name>.*)$", views.source_callback),
     ########################################
     re_path(r"^favicon\.ico$", views.serve_ico),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),

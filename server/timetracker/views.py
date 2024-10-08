@@ -31,6 +31,7 @@ from requests_oauthlib import OAuth2Session
 
 from . import event_translation
 from .event_source_list import EVENT_SOURCES
+from . import prefs as user_prefs
 
 # from . import filter as filtering
 from .models import Events
@@ -540,17 +541,6 @@ def get_microsoft_calendar_events(request):
 ###########################
 #### GITHUB FUNCTIONS #####
 ###########################
-def github_connect_oauth(request):  # pylint: disable=unused-argument
-    github_session = OAuth2Session(
-        client_id=settings.GITHUB_CLIENT_ID,
-        redirect_uri=settings.GITHUB_CALLBACK,
-        scope="repo,read:user",
-    )
-    auth_url, _ = github_session.authorization_url(
-        "https://github.com/login/oauth/authorize"
-    )
-    return redirect(auth_url)
-
 
 def github_callback(request):
     github_session = OAuth2Session(
@@ -568,62 +558,9 @@ def github_callback(request):
         request.session["github_oauth_token"] = token
 
         return redirect("/")
-
     except Exception as e:
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
-
-
-def github_get_user_events_for_repo(session, user, repo):
-    try:
-        response = session.get(
-            f"https://api.github.com/repos/{repo}/commits?author={user}"
-        ).json()
-        events = []
-        for event in response:
-            commit = event["commit"]
-            events.append(
-                {
-                    "type": "push",
-                    "time": commit["author"]["date"],
-                    "repo": repo,
-                    "message": commit["message"],
-                }
-            )
-        return events
-    except Exception as e:
-        print(f"Failed to get GitHub events: {e}")
-        return []
-
-def get_and_translate_github_events(request):
-    """Get GitHub events for user and repositories as specified in preferences"""
-    prefs = load_preferences_from_file()
-    if "error" in prefs:
-        return []
-
-    token = request.session.get("github_oauth_token")
-    if not token:
-        return []
-    github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
-    events = []
-    user = prefs["githubusername"]
-    for repo in prefs["githubrepos"]:
-        events.extend(github_get_user_events_for_repo(github_session, user, repo))
-
-    # Translate events
-    translated = event_translation.translate_github_events(events)
-    return translated
-
-def get_github_events(request):
-    try:
-        events = get_and_translate_github_events(request)
-        event_dict = []
-        # Can't serialize models directly to JSON, so manually convert each event to a dict
-        for t in events:
-            event_dict.append(model_to_dict(t))
-        return JsonResponse({"data": event_dict})
-    except Exception as e:
-        return JsonResponse({"error": f"{e}"})
 
 ###########################
 #### GITLAB FUNCTIONS #####
@@ -895,7 +832,7 @@ def set_preferences(request):
             prefs["githubrepos"] = [
                 repo for repo in prefs.get("githubrepos", []) if repo != removal
             ]
-            save_preferences_to_file(prefs)
+            user_prefs.save(prefs)
             return HttpResponse(status=200)
 
         if "removeGitlab" in data:
@@ -903,7 +840,7 @@ def set_preferences(request):
             prefs["gitlabrepos"] = [
                 repo for repo in prefs.get("gitlabrepos", []) if repo != removal
             ]
-            save_preferences_to_file(prefs)
+            user_prefs.save(prefs)
             return HttpResponse(status=200)
 
         prefs["githubrepos"] = prefs.get("githubrepos", []) + data.get(
@@ -920,7 +857,7 @@ def set_preferences(request):
                 if key != "githubrepos" and key != "gitlabrepos"
             }
         )
-        save_preferences_to_file(prefs)
+        user_prefs.save(prefs)
         return HttpResponse(status=200)
     except json.JSONDecodeError:
         return HttpResponse("Invalid JSON format", status=400)
@@ -930,53 +867,38 @@ def set_preferences(request):
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
-def load_preferences_from_file():
-    try:
-        with open(settings.PREFS_PATH, "r") as file:
-            return json.load(file)
-    except json.JSONDecodeError:
-        return {"error": "Failed to decode preferences"}
-    except Exception as e:
-        return {"error": f"{e}"}
-
-
-def save_preferences_to_file(data):
-    try:
-        with open(settings.PREFS_PATH, "w") as file:
-            json.dump(data, file)
-            print(f"Saved preferences to {settings.PREFS_PATH}")
-    except Exception as e:
-        print(f"Failed to save preferences: {e}")
-
-
 def get_preferences(request):  # pylint: disable=unused-argument
-    prefs = load_preferences_from_file()
+    prefs = user_prefs.load()
     if "error" in prefs:
         return JsonResponse(prefs, status=500)
     return JsonResponse(prefs)
 
 def connect_source(request, name):
     try:
-        for source in EVENT_SOURCES:
-            if source['name'] == name:
-                iface = source['interface']
-                return iface.connect(request)
+        source = EVENT_SOURCES[name]
+        return source.connect(request)
     except Exception as e:
         print(f"connect_source: {e}")
     return HttpResponse()
 
 def import_events(request, name):
-    print(name)
+    try:
+        source = EVENT_SOURCES[name]
+        print(source)
+        events = source.import_events(request)
+        event_dict = []
+        for e in events:
+            event_dict.append(model_to_dict(e))
+        
+        return JsonResponse({"data": event_dict})
+    except Exception as e:
+        return JsonResponse({"error": f"{e}"})
+
+def source_callback(request, name):
     try:
         for source in EVENT_SOURCES:
-            print(f"{name} == {source['name']}")
-            if source['name'] == name:
-                iface = source['interface']
-                events = iface.import_events(request)
-                event_dict = []
-                for e in events:
-                    event_dict.append(model_to_dict(e))
-                return JsonResponse({"data": event_dict})
+            if source.name == name:
+                return source.callback(request)
     except Exception as e:
         return JsonResponse({"error": f"{e}"})
     return JsonResponse({"error": f"Event source {name} does not exist"})
