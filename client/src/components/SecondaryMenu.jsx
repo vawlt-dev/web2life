@@ -227,7 +227,29 @@ export const SecondaryMenu = (
                                     labelColour = 'white'
                                 }
 
-                                return(
+                                if (notification.source === 'slack')
+                                {
+                                    return (
+                                        <div 
+                                            key={index} 
+                                            className={styles.notification} 
+                                            style={{backgroundColor: colours?.[notification.source]}}
+                                        >
+                                            <label style={{color: labelColour}}>
+                                                Date: {notification.date}
+                                            </label>
+                                            <label style={{color: labelColour}}>
+                                                Channel: {notification.channel}
+                                            </label>
+                                            <label style={{color: labelColour}}>
+                                                User: {notification.user}
+                                            </label>
+                                        </div>
+                                    );
+                                    
+
+                                }
+                                else return(
                                     <div 
                                         key={index} 
                                         className={styles.notification} 
@@ -237,7 +259,7 @@ export const SecondaryMenu = (
                                             Date: {notification.date}
                                         </label>
                                         <label style={{color: labelColour}}>
-                                            From: {notification.recipient}
+                                            To: {notification.recipient}
                                         </label>
                                         <label style={{color: labelColour}}>
                                             Subject: {notification.subject}

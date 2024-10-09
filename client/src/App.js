@@ -161,7 +161,7 @@ export const App = () =>
             
             const formatDate = (date) =>
             {
-                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`
+                return `${date.getDate()} ${date.toLocaleString('default', {month: 'short'})} ${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`
             }
             setNotifications(
             [
@@ -202,7 +202,10 @@ export const App = () =>
         }
         //gets all user events
     }
-
+    useEffect(() =>
+    {
+        console.log(notifications)
+    }, [notifications])
     const getPreferences = async () =>
     {
         await fetch("/getPreferences").then(res =>
