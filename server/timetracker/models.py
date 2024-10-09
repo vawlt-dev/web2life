@@ -47,6 +47,6 @@ def get_or_add_project_from_name(name):
         project = Project.objects.get(title=name)
         return project
 
-    except models.Model.DoesNotExist:
+    except Project.DoesNotExist:
         # @TODO: Descriptions
         return Project.objects.create(title=name)

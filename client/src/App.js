@@ -112,8 +112,8 @@ export const App = () =>
                 fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then(res => res.ok ? res.json() : []),
-                fetch("https://127.0.0.1:8000/oauth/getGithubEvents?user=feijoatears&repo=vawlt-dev%2Fweb2life").then(res => res.ok ? res.json() : []),
-                fetch("https://127.0.0.1:8000/oauth/getGitlabEvents").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/import-events/github").then(res => res.ok ? res.json() : []),
+                fetch("https://127.0.0.1:8000/import-events/gitlab").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getSlackEvents").then(res => res.ok ? res.json() : []),
                 
             ])

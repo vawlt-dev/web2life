@@ -260,13 +260,13 @@ export const Toolbar = ({ calendarFunctions }) =>
                     <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft")}>
                         <img src={microsoftLogo} alt="Microsoft" />
                     </button>
-                    <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/github")}>
+                    <button onClick={() => (window.location.href = "https://127.0.0.1:8000/connect-source/github")}>
                         <img src={githubLogo} alt="GitHub" />
                     </button>
                     <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/slack")}>
                         <img src={slackLogo} alt="Slack" />
                     </button>
-                    <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/gitlab")}>
+                    <button onClick={() => (window.location.href = "https://127.0.0.1:8000/connect-source/gitlab")}>
                         <img src={gitlabLogo} alt="Gitlab" />
                     </button>
                 </span>

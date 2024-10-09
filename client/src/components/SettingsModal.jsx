@@ -186,7 +186,7 @@ export const SettingsModal = ({settingsOpen,
                         }}>
                             <label>Repositories</label>
                             <div>
-                                <input type='text' placeholder='Repository Name (user/repo)' name='gitlabrepo' required/>
+                                <input type='text' placeholder='Project ID' name='gitlabrepo' required/>
                                 <button>
                                     Add
                                 </button>
