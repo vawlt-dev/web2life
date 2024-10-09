@@ -129,6 +129,7 @@ export const App = () =>
             const gitlabNotifications = results[6].status === 'fulfilled' ? results[6].value?.data || [] : [];
             const slackNotifications = results[7].status === "fulfilled" ? results[7].value?.data || [] : [];
 
+            
             setEvents(
             [
                 ...localEvents.map(event => ({
@@ -157,17 +158,21 @@ export const App = () =>
                     source: 'github'
                 })),
             ]);
-
+            
+            const formatDate = (date) =>
+            {
+                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`
+            }
             setNotifications(
             [
                 ...gmailNotifications.map(notification => ({
                     ...notification,
-                    date: new Date(notification.date).toString(), //these dates need to be strings, not objects
+                    date: formatDate(new Date(notification.date)).toString(), //these dates need to be strings, not objects
                     source: 'google'
                 })),
                 ...outlookNotifications.map(notification => ({
                     ...notification,
-                    date: new Date(notification.time_sent).toString(),
+                    date: formatDate(new Date(notification.time_sent)).toString(),
                     source: 'microsoft'
                 })),
                 /*...githubNotifications.map(notification => ({
@@ -177,12 +182,12 @@ export const App = () =>
                 })),*/
                 ...gitlabNotifications.map(notification => ({
                     ...notification,
-                    date: new Date(notification.time).toString(),
+                    date: formatDate(new Date(notification.time)).toString(),
                     source: 'gitlab'
                 })),
                 ...slackNotifications.map(notification => ({
                     ...notification,
-                    date: new Date(Math.floor(parseFloat(notification.time)) * 1000).toString(),
+                    date: formatDate(new Date(Math.floor(parseFloat(notification.time)) * 1000)).toString(),
                     source: 'slack'
 
                 }))

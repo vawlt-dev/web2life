@@ -234,13 +234,13 @@ export const SecondaryMenu = (
                                         style={{backgroundColor: colours?.[notification.source]}}
                                     >
                                         <label style={{color: labelColour}}>
-                                            {notification.date}
+                                            Date: {notification.date}
                                         </label>
                                         <label style={{color: labelColour}}>
-                                            {notification.recipient}
+                                            From: {notification.recipient}
                                         </label>
                                         <label style={{color: labelColour}}>
-                                            {notification.subject}
+                                            Subject: {notification.subject}
                                         </label>
 
                                     </div>
