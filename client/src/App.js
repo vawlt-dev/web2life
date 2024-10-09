@@ -200,42 +200,48 @@ export const App = () =>
 
     const getPreferences = async () =>
     {
-        await fetch("/getPreferences").then((res) =>
+        await fetch("/getPreferences").then(res =>
         {
-            if(res)
+            if(res.ok)
             {
-                res.json().then((data) =>
+                res.json().then(data =>
                 {
                     setUserPreferences
                     (
                         {
-                            ...data.preferences,
-                            githubrepos: data.preferences.githubrepos || [],
-                            gitlabrepos: data.preferences.gitlabrepos || [],
+                            ...data,
+                            githubrepos: data.githubrepos || [],
+                            gitlabrepos: data.gitlabrepos || [],
                         }
                     )
 
-                    if (data.preferences.localColour || 
-                        data.preferences.googleColour ||
-                        data.preferences.microsoftColour ||
-                        data.preferences.githubColour ||
-                        data.preferences.gitlabColour ||
-                        data.preferences.slackColour) 
+                    if (data.localColour || 
+                        data.googleColour ||
+                        data.microsoftColour ||
+                        data.githubColour ||
+                        data.gitlabColour ||
+                        data.slackColour) 
                     {
                         setColours(
                         {
-                            local: data.preferences.localColour || "#274da5",   
-                            google: data.preferences.googleColour || "#2775a5",
-                            microsoft: data.preferences.microsoftColour || "#27a596",
-                            github: data.preferences.githubColour || "#42368b",
-                            gitlab: data.preferences.gitlabColour || "#e34124",
-                            slack: data.preferences.slackColour || "#481449",
+                            local: data.localColour || "#274da5",   
+                            google: data.googleColour || "#2775a5",
+                            microsoft: data.microsoftColour || "#27a596",
+                            github: data.githubColour || "#42368b",
+                            gitlab: data.gitlabColour || "#e34124",
+                            slack: data.slackColour || "#481449",
                         });
                     }
+                
                 })
-            }
-        }) 
+            } 
+        });
+        
     }
+    useEffect(() =>
+    {
+        console.log(userPreferences)
+    }, [userPreferences])
     const setPreferences = async (data) => 
     {
         await fetch("/setPreferences/",

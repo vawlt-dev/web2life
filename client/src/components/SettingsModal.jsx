@@ -126,7 +126,7 @@ export const SettingsModal = ({settingsOpen,
                         }}>
                             <label>Username</label>
                             <div>
-                                <input name='githubusername' type='text' placeholder='Your GitHub Username' required defaultValue={preferences.githubusername}/>
+                                <input name='githubusername' type='text' placeholder='Your GitHub Username' required value={preferences.githubusername}/>
                                 <button>Save</button>
                             </div>
                         </form>
