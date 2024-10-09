@@ -1,10 +1,6 @@
 import datetime
 import json
 import os
-import base64
-import hashlib
-import random
-import string
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -29,27 +25,12 @@ from google_auth_oauthlib.flow import Flow
 
 from requests_oauthlib import OAuth2Session
 
-from . import event_translation
 from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
 
 # from . import filter as filtering
 from .models import Events
 from .models import Project
-
-
-def generate_state():
-    return "".join(random.choices(string.ascii_letters + string.digits, k=32))
-
-
-def generate_code_verifier():
-    return base64.urlsafe_b64encode(os.urandom(32)).rstrip(b"=").decode("utf-8")
-
-
-def generate_code_challenge(verifier):
-    digest = hashlib.sha256(verifier.encode("utf-8")).digest()
-    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("utf-8")
-
 
 def get_events(request):  # pylint: disable=unused-argument
     events = []
@@ -541,7 +522,6 @@ def get_microsoft_calendar_events(request):
 ###########################
 #### GITHUB FUNCTIONS #####
 ###########################
-
 def github_callback(request):
     github_session = OAuth2Session(
         client_id=settings.GITHUB_CLIENT_ID,
@@ -565,29 +545,6 @@ def github_callback(request):
 ###########################
 #### GITLAB FUNCTIONS #####
 ###########################
-
-
-def gitlab_connect_oauth(request):
-    state = generate_state()
-    verifier = generate_code_verifier()
-    challenge = generate_code_challenge(verifier)
-
-    request.session["gitlab_verifier"] = verifier
-    gitlab = OAuth2Session(
-        client_id=settings.GITLAB_CLIENT_ID,
-        redirect_uri=settings.GITLAB_CALLBACK,
-        scope=["read_user", "api"],
-        state=state,
-    )
-    authorization_url, _ = gitlab.authorization_url(
-        "https://gitlab.com/oauth/authorize",
-        code_challenge=challenge,
-        code_challenge_method="S256",
-    )
-
-    return redirect(authorization_url)
-
-
 def gitlab_callback(request):
     code = request.GET.get("code")
     verifier = request.session["gitlab_verifier"]
@@ -610,61 +567,9 @@ def gitlab_callback(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-
-def get_gitlab_events(request):
-    # may want to alter this in settings, points to the test gitlab repo
-    PROJECT_ID = 61199933
-
-    access_token = request.session["gitlab_token"]["access_token"]
-    headers = {"Authorization": f"Bearer {access_token}"}
-
-    # Gitlab is surprisingly comprehensive in the information returned by the push events
-    # we don't need to analyze the branches API, we can just select all events where
-    # the action was 'created' and the reference type is 'branch'
-    try:
-        push_events = requests.get(
-            f"https://gitlab.com/api/v4/projects/{PROJECT_ID}/events?action=pushed",
-            headers=headers,
-        ).json()
-
-        events = []
-        for event in push_events:
-            push_data = event.get("push_data", {})
-
-            events.append(
-                {
-                    "type": "push",
-                    "branch": push_data.get("ref"),
-                    "time": event.get("created_at"),
-                    "commit_sha": push_data.get("commit_to"),
-                    "commit_title": push_data.get("commit_title"),
-                }
-            )
-
-            if (
-                push_data.get("action") == "created"
-                and push_data.get("ref_type") == "branch"
-            ):
-                events.append(
-                    {
-                        "type": "branch_creation",
-                        "branch": push_data.get("ref"),
-                        "time": event.get("created_at"),
-                        "commit_sha": push_data.get("commit_to"),
-                        "commit_title": push_data.get("commit_title"),
-                    }
-                )
-
-        return JsonResponse({"data": events}, safe=False)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
-
-
 ###########################
 ##### SLACK FUNCTIONS #####
 ###########################
-
-
 def slack_connect_oauth(request):
     slack_session = OAuth2Session(
         client_id=settings.SLACK_CLIENT_ID,
@@ -884,7 +789,6 @@ def connect_source(request, name):
 def import_events(request, name):
     try:
         source = EVENT_SOURCES[name]
-        print(source)
         events = source.import_events(request)
         event_dict = []
         for e in events:
@@ -894,11 +798,3 @@ def import_events(request, name):
     except Exception as e:
         return JsonResponse({"error": f"{e}"})
 
-def source_callback(request, name):
-    try:
-        for source in EVENT_SOURCES:
-            if source.name == name:
-                return source.callback(request)
-    except Exception as e:
-        return JsonResponse({"error": f"{e}"})
-    return JsonResponse({"error": f"Event source {name} does not exist"})

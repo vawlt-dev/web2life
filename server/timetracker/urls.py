@@ -55,9 +55,9 @@ urlpatterns = [
     path("oauth/callback/github", views.github_callback),
     #path("oauth/getGithubEvents", views.get_github_events),
     # Gitlab OAuth paths
-    path("oauth/connect/gitlab", views.gitlab_connect_oauth),
+    #path("oauth/connect/gitlab", views.gitlab_connect_oauth),
     path("oauth/callback/gitlab", views.gitlab_callback),
-    path("oauth/getGitlabEvents", views.get_gitlab_events),
+    #path("oauth/getGitlabEvents", views.get_gitlab_events),
     # Slack OAuth paths
     path("oauth/connect/slack", views.slack_connect_oauth),
     path("oauth/callback/slack", views.slack_callback),
@@ -65,7 +65,6 @@ urlpatterns = [
 	# Custom event sources
 	re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
 	re_path(r"^import-events/(?P<name>.*)$", views.import_events),
-	re_path(r"^source-callback/(?P<name>.*)$", views.source_callback),
     ########################################
     re_path(r"^favicon\.ico$", views.serve_ico),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),
