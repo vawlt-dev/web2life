@@ -64,13 +64,15 @@ class Template(models.Model):
 
 
 class TemplateEvents(models.Model):
-    '''An event presented to the user in the calendar UI'''
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, default="")
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
     day = models.CharField(max_length=9, default="")
     billable = models.BooleanField(default=True)
+    projectId = models.ForeignKey(
+        Project, on_delete=models.CASCADE, default=None, null=True
+    )
     templateId = models.ForeignKey(
         Template,
         on_delete=models.CASCADE,

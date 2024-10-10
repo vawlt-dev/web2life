@@ -30,7 +30,7 @@ from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
 
 # from . import filter as filtering
-from .models import Events
+from .models import Events, TemplateEvents
 from .models import Project
 
 
@@ -806,6 +806,7 @@ def import_events(request, name):
 
 
 def create_template(request):
+    TemplateEvents.objects.all().delete()
     print("doing it")
     data = json.loads(request.body)
     if data:
@@ -829,6 +830,16 @@ def create_template(request):
             )
             print(start_of_week, end_of_week)
             print(events_for_week)
+            for event in events_for_week:
+                j = TemplateEvents(
+                    title=event.title,
+                    start=event.start,
+                    end=event.end,
+                    day=event.start.strftime("%A"),
+                    billable=event.billable,
+                    projectId=event.projectId,
+                )
+                j.save()
         else:
             print("Invalid date format")
     # j = Events.objects.all().filter(start__gte="2024-10-06 00:00:00").filter(start__lte="2024-10-12 00:00:00")
