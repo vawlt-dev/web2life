@@ -541,8 +541,7 @@ export const App = () =>
         patchEvent,
         patchProject,
         deleteEvent,
-        deleteProject,
-        createTemplate
+        deleteProject
     }
     let addEventFromSecondaryMenu;
     const calendarFunctions = 
@@ -554,6 +553,7 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
         openSettings,
+        createTemplate
     }
     const filteringFunctions = 
     {

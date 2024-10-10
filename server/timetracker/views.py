@@ -10,7 +10,7 @@ import django.db.models.utils
 import requests
 import django.middleware.csrf
 
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_datetime
 from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
@@ -807,27 +807,30 @@ def import_events(request, name):
 
 def create_template(request):
     print("doing it")
-    # data = json.loads(request.body)
-    # date_str = data["date"]
-
-    date_str = True
-    if date_str:
+    data = json.loads(request.body)
+    if data:
         # Parse the date string into a datetime object
-        input_date = datetime.now()#parse_date(date_str)
+        input_date = parse_datetime(data)
+        # input_date = input_date.date()
 
         if input_date:
-            # Calculate the start of the week (Monday) and end of the week (Sunday)
-            start_of_week = input_date - timedelta(days=input_date.weekday())
+            # Calculate the start of the week (Sunday 00:00:00)
+            start_of_week = input_date - timedelta(days=input_date.weekday()+1)
+            start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            # Calculate the end of the week (Saturday 23:59:59)
             end_of_week = start_of_week + timedelta(days=6)
+            end_of_week = end_of_week.replace(hour=23, minute=59, second=59)
 
             # Filter events for the week containing the input_date
             events_for_week = Events.objects.filter(
                 start__gte=start_of_week,
                 start__lte=end_of_week
             )
-
+            print(start_of_week, end_of_week)
             print(events_for_week)
         else:
             print("Invalid date format")
     # j = Events.objects.all().filter(start__gte="2024-10-06 00:00:00").filter(start__lte="2024-10-12 00:00:00")
     # print(j)
+    return HttpResponse()
