@@ -49,6 +49,7 @@ def get_events(request):  # pylint: disable=unused-argument
                 "project_title": event.projectId.title if event.projectId else None,
             }
         )
+        print(event)
     return JsonResponse({"data": events})
 
 
@@ -835,7 +836,7 @@ def create_template(request):
                 title="Template for week ending " + str(end_of_week.strftime("%A")) + " " + str(end_of_week.date()))
             newtemplatetosaveto.save()
             for event in events_for_week:
-                day = event.start + timedelta(days=1)
+                day = event.start + timedelta(hours=13, minutes=1, seconds=0)
                 j = TemplateEvents(
                     title=event.title,
                     start=event.start.time(),
@@ -864,14 +865,12 @@ def get_events_from_template_title(request):
         # Calculate the start of the week (Sunday 00:00:00)
         start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
         start_of_week = start_of_week.replace(hour=11, minute=0, second=0, microsecond=0)
-
-        # Calculate the end of the week (Saturday 23:59:59)
-        end_of_week = start_of_week + timedelta(days=7)
-        end_of_week = end_of_week.replace(hour=10, minute=59, second=59)
+        start_of_week += timedelta(hours=12, minutes=59, seconds=59)
 
     if True:
         for template in template_events_gotten:
             start = datetime.combine(start_of_week.date(), template.start)
+
             end = datetime.combine(start_of_week.date(), template.end)
             match template.day:
                 case "Sunday":
@@ -895,6 +894,9 @@ def get_events_from_template_title(request):
                 case "Saturday":
                     start += timedelta(days=6)
                     end += timedelta(days=6)
+            print(start.strftime("%A"))
+            if template.title == "Test Event":
+                print(start, end)
             j = Events(
                 title=template.title,
                 start=start,
