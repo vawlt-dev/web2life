@@ -417,7 +417,7 @@ export const AppCalendar =
                             name='end'
                             defaultValue=
                             {
-                                events.length > 0 &&events[events.length - 1].end ?
+                                events.length > 0 && events[events.length - 1].end ?
                                 GMTToISO(events[events.length - 1].end) :
                                 null
                             }
