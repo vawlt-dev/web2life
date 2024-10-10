@@ -39,6 +39,7 @@ urlpatterns = [
     path("getPreferences/", views.get_preferences),
     path("setPreferences/", views.set_preferences),
     path("createTemplate/", views.create_template),
+    path("getEventsFromTemplateTitle/", views.get_events_from_template_title),
     # OAuth Paths
     ##########################################
     # Google OAuth paths

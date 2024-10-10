@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import django.db
 import django.db.models
 import django.db.models.utils
+import pytz
 import requests
 import django.middleware.csrf
 
@@ -30,7 +31,7 @@ from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
 
 # from . import filter as filtering
-from .models import Events, TemplateEvents
+from .models import Events, TemplateEvents, Template
 from .models import Project
 
 
@@ -816,12 +817,12 @@ def create_template(request):
 
         if input_date:
             # Calculate the start of the week (Sunday 00:00:00)
-            start_of_week = input_date - timedelta(days=input_date.weekday()+1)
-            start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+            start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
+            start_of_week = start_of_week.replace(hour=11, minute=0, second=0, microsecond=0)
 
             # Calculate the end of the week (Saturday 23:59:59)
-            end_of_week = start_of_week + timedelta(days=6)
-            end_of_week = end_of_week.replace(hour=23, minute=59, second=59)
+            end_of_week = start_of_week + timedelta(days=7)
+            end_of_week = end_of_week.replace(hour=10, minute=59, second=59)
 
             # Filter events for the week containing the input_date
             events_for_week = Events.objects.filter(
@@ -830,18 +831,76 @@ def create_template(request):
             )
             print(start_of_week, end_of_week)
             print(events_for_week)
+            newtemplatetosaveto = Template(
+                title="Template for week ending " + str(end_of_week.strftime("%A")) + " " + str(end_of_week.date()))
+            newtemplatetosaveto.save()
             for event in events_for_week:
+                day = event.start + timedelta(days=1)
                 j = TemplateEvents(
                     title=event.title,
-                    start=event.start,
-                    end=event.end,
-                    day=event.start.strftime("%A"),
+                    start=event.start.time(),
+                    end=event.end.time(),
+                    day=day.strftime("%A"),
                     billable=event.billable,
                     projectId=event.projectId,
+                    templateId=newtemplatetosaveto
                 )
                 j.save()
         else:
             print("Invalid date format")
     # j = Events.objects.all().filter(start__gte="2024-10-06 00:00:00").filter(start__lte="2024-10-12 00:00:00")
     # print(j)
+    return HttpResponse()
+
+
+def get_events_from_template_title(request):
+    # data = json.loads(request.body)
+    data = "Template for week ending Saturday 2024-10-12"
+    template_to_get_from = Template.objects.filter(title=data).last()
+    template_events_gotten = TemplateEvents.objects.all().filter(templateId=template_to_get_from.id)
+    print(template_events_gotten)
+    input_date = datetime.now()
+    if input_date:
+        # Calculate the start of the week (Sunday 00:00:00)
+        start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
+        start_of_week = start_of_week.replace(hour=11, minute=0, second=0, microsecond=0)
+
+        # Calculate the end of the week (Saturday 23:59:59)
+        end_of_week = start_of_week + timedelta(days=7)
+        end_of_week = end_of_week.replace(hour=10, minute=59, second=59)
+
+    if True:
+        for template in template_events_gotten:
+            start = datetime.combine(start_of_week.date(), template.start)
+            end = datetime.combine(start_of_week.date(), template.end)
+            match template.day:
+                case "Sunday":
+                    start += timedelta(days=0)
+                    end += timedelta(days=0)
+                case "Monday":
+                    start += timedelta(days=1)
+                    end += timedelta(days=1)
+                case "Tuesday":
+                    start += timedelta(days=2)
+                    end += timedelta(days=2)
+                case "Wednesday":
+                    start += timedelta(days=3)
+                    end += timedelta(days=3)
+                case "Thursday":
+                    start += timedelta(days=4)
+                    end += timedelta(days=4)
+                case "Friday":
+                    start += timedelta(days=5)
+                    end += timedelta(days=5)
+                case "Saturday":
+                    start += timedelta(days=6)
+                    end += timedelta(days=6)
+            j = Events(
+                title=template.title,
+                start=start,
+                end=end,
+                projectId=template.projectId,
+            )
+            j.save()
+
     return HttpResponse()
