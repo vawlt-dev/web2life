@@ -10,6 +10,7 @@ import django.db.models.utils
 import requests
 import django.middleware.csrf
 
+from django.utils.dateparse import parse_date
 from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
@@ -31,6 +32,7 @@ from . import prefs as user_prefs
 # from . import filter as filtering
 from .models import Events
 from .models import Project
+
 
 def get_events(request):  # pylint: disable=unused-argument
     events = []
@@ -161,9 +163,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
+                    time.get("start") == data["start"]
+                    and time.get("end") == data["end"]
+                    and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -542,6 +544,7 @@ def github_callback(request):
         print(f"Error during GitHub OAuth callback: {e}")
         return JsonResponse({"error": str(e)}, status=400)
 
+
 ###########################
 #### GITLAB FUNCTIONS #####
 ###########################
@@ -566,6 +569,7 @@ def gitlab_callback(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
 
 ###########################
 ##### SLACK FUNCTIONS #####
@@ -778,6 +782,7 @@ def get_preferences(request):  # pylint: disable=unused-argument
         return JsonResponse(prefs, status=500)
     return JsonResponse(prefs)
 
+
 def connect_source(request, name):
     try:
         source = EVENT_SOURCES[name]
@@ -786,6 +791,7 @@ def connect_source(request, name):
         print(f"connect_source: {e}")
     return HttpResponse()
 
+
 def import_events(request, name):
     try:
         source = EVENT_SOURCES[name]
@@ -793,8 +799,35 @@ def import_events(request, name):
         event_dict = []
         for e in events:
             event_dict.append(model_to_dict(e))
-        
+
         return JsonResponse({"data": event_dict})
     except Exception as e:
         return JsonResponse({"error": f"{e}"})
 
+
+def create_template(request):
+    print("doing it")
+    # data = json.loads(request.body)
+    # date_str = data["date"]
+
+    date_str = True
+    if date_str:
+        # Parse the date string into a datetime object
+        input_date = datetime.now()#parse_date(date_str)
+
+        if input_date:
+            # Calculate the start of the week (Monday) and end of the week (Sunday)
+            start_of_week = input_date - timedelta(days=input_date.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+
+            # Filter events for the week containing the input_date
+            events_for_week = Events.objects.filter(
+                start__gte=start_of_week,
+                start__lte=end_of_week
+            )
+
+            print(events_for_week)
+        else:
+            print("Invalid date format")
+    # j = Events.objects.all().filter(start__gte="2024-10-06 00:00:00").filter(start__lte="2024-10-12 00:00:00")
+    # print(j)

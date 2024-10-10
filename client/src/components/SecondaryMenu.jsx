@@ -108,7 +108,7 @@ export const SecondaryMenu = (
                     Save as Template 
                 </label>
                 <div id={styles.addEventButton}>
-                    <button onClick={() => calendarFunctions.saveTemplate()}>+</button>
+                    <button onClick={() => webFunctions.createTemplate()}>+</button>
                 </div>
             </div>
 

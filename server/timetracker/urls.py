@@ -38,6 +38,7 @@ urlpatterns = [
     path("get_user_by_id/", views.get_user_by_id),
     path("getPreferences/", views.get_preferences),
     path("setPreferences/", views.set_preferences),
+    path("createTemplate/", views.create_template),
     # OAuth Paths
     ##########################################
     # Google OAuth paths

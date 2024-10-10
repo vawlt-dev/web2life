@@ -99,7 +99,7 @@ export const App = () =>
         }
     });
 
-    const createTemplate = async (events) =>
+    const createTemplate = async () =>
     {
         await fetch("https://127.0.0.1:8000/createTemplate/", //change this to the correct URL
         {
@@ -108,7 +108,7 @@ export const App = () =>
             {
                 "X-CSRFToken": CSRFToken
             },
-            body: JSON.stringify(events)
+            body: JSON.stringify(date)
         })
     }
 
@@ -530,33 +530,6 @@ export const App = () =>
         )
         setDate(tempDate)
     }
-    const saveTemplate = () => 
-    {
-        let weekdays = [];
-        const now = new Date();        
-        const dayOfWeek = now.getDay();        
-        const startOfWeek = new Date(now);
-
-        startOfWeek.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-        
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 4);
-        
-        let currentDate = new Date(startOfWeek);
-        while (currentDate <= endOfWeek) 
-        {
-            weekdays.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        const filteredEvents = events.filter(event => 
-        {
-            const eventDate = new Date(event.start);
-            return eventDate >= startOfWeek && eventDate <= endOfWeek;
-        });
-
-        console.log(filteredEvents); //should be equal to the number of events on the currentmost weekview
-        createTemplate(filteredEvents);
-    };
 
     //wrapper objects so we don't pass down 20 different props 
     const webFunctions = 
@@ -568,7 +541,8 @@ export const App = () =>
         patchEvent,
         patchProject,
         deleteEvent,
-        deleteProject
+        deleteProject,
+        createTemplate
     }
     let addEventFromSecondaryMenu;
     const calendarFunctions = 
@@ -580,7 +554,6 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
         openSettings,
-        saveTemplate
     }
     const filteringFunctions = 
     {
