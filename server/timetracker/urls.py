@@ -22,24 +22,24 @@ from django.views.generic.base import RedirectView
 from . import views
 
 urlpatterns = [
-    path("getEvents/", views.get_events),
-    path("setEvent/", views.set_event),
-    path("patchEvent/", views.patch_event),
-    path("clearEvents/", views.clear_events),
-    path("deleteEvent/", views.delete_event),
+    path("events/get", views.get_events),
+    path("events/set", views.set_event),
+    path("events/patch", views.patch_event),
+    path("events/clear", views.clear_events),
+    path("event/delete", views.delete_event),
     path("getCsrfToken/", views.get_csrf_token),
-    path("getProjects/", views.get_projects),
-    path("addProject/", views.add_project),
-    path("deleteProject/", views.delete_project),
+    path("projects/get", views.get_projects),
+    path("projects/add", views.add_project),
+    path("projects/delete", views.delete_project),
     path("manifest.json/", views.serve_manifest),
     path("filter-events/", views.filter_events),
     path("set_user/", views.set_user),
     path("get_users/", views.get_users),
     path("get_user_by_id/", views.get_user_by_id),
-    path("getPreferences/", views.get_preferences),
-    path("setPreferences/", views.set_preferences),
-    path("createTemplate/", views.create_template),
-    path("getEventsFromTemplateTitle/", views.get_events_from_template_title),
+    path("prefs/get", views.get_preferences),
+    path("prefs/set", views.set_preferences),
+    path("template/create", views.create_template),
+    path("template/show", views.show_current_template),
     # OAuth Paths
     ##########################################
     # Google OAuth paths
@@ -53,20 +53,20 @@ urlpatterns = [
     path("oauth/getOutlookMessages", views.get_outlook_messages),
     path("oauth/getMicrosoftCalendarEvents", views.get_microsoft_calendar_events),
     # Github OAuth paths
-    #path("oauth/connect/github", views.github_connect_oauth),
+    # path("oauth/connect/github", views.github_connect_oauth),
     path("oauth/callback/github", views.github_callback),
-    #path("oauth/getGithubEvents", views.get_github_events),
+    # path("oauth/getGithubEvents", views.get_github_events),
     # Gitlab OAuth paths
-    #path("oauth/connect/gitlab", views.gitlab_connect_oauth),
+    # path("oauth/connect/gitlab", views.gitlab_connect_oauth),
     path("oauth/callback/gitlab", views.gitlab_callback),
-    #path("oauth/getGitlabEvents", views.get_gitlab_events),
+    # path("oauth/getGitlabEvents", views.get_gitlab_events),
     # Slack OAuth paths
     path("oauth/connect/slack", views.slack_connect_oauth),
     path("oauth/callback/slack", views.slack_callback),
     path("oauth/getSlackEvents/", views.get_slack_events),
-	# Custom event sources
-	re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
-	re_path(r"^import-events/(?P<name>.*)$", views.import_events),
+    # Custom event sources
+    re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
+    re_path(r"^import-events/(?P<name>.*)$", views.import_events),
     ########################################
     re_path(r"^favicon\.ico$", views.serve_ico),
     re_path(r"^static/(?P<path>.*)$", views.serve_static),

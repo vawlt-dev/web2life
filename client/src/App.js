@@ -8,6 +8,7 @@ import { Toolbar } from "./components/Toolbar";
 
 import { momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
+import 'moment/locale/en-gb';
 import { SettingsModal } from "./components/SettingsModal";
 
 export const App = () =>
@@ -101,14 +102,18 @@ export const App = () =>
 
     const createTemplate = async () =>
     {
-        await fetch("https://127.0.0.1:8000/createTemplate/", //change this to the correct URL
+        const data = 
         {
+            date: date,
+            view: view
+        }
+        await fetch("https://127.0.0.1:8000/template/create",{
             method: "POST",
             headers:
             {
                 "X-CSRFToken": CSRFToken
             },
-            body: JSON.stringify(date)
+            body: JSON.stringify(data)
         })
     }
 
@@ -120,7 +125,7 @@ export const App = () =>
             //allSettled instead of Promise.all() - resolves regardless if one or more responses are bad
             const results = await Promise.allSettled(
             [
-                fetch("/getEvents").then(res => res.ok ? res.json() : []),
+                fetch("/events/get").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then(res => res.ok ? res.json() : []),
                 fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then(res => res.ok ? res.json() : []),
@@ -217,11 +222,12 @@ export const App = () =>
     }
     useEffect(() =>
     {
-        console.log(notifications)
-    }, [notifications])
+        console.log(events)
+    }, [events])
+
     const getPreferences = async () =>
     {
-        await fetch("/getPreferences").then(res =>
+        await fetch("/prefs/get").then(res =>
         {
             if(res.ok)
             {
@@ -265,7 +271,7 @@ export const App = () =>
     }, [userPreferences])
     const setPreferences = async (data) => 
     {
-        await fetch("/setPreferences/",
+        await fetch("/prefs/set",
         {
             method: 'POST',
             headers:
@@ -286,7 +292,7 @@ export const App = () =>
   
     const getProjects = () =>
     {
-        fetch("/getProjects").then( res =>
+        fetch("/projects/get").then( res =>
         {
             if(res.ok)
             {
@@ -302,7 +308,7 @@ export const App = () =>
         //append '/' to posts otherwise will reset to a GET request
         try 
         {
-            fetch("/setEvent/",
+            fetch("/events/set",
             {
                 method: "POST", 
                 headers: 
@@ -336,7 +342,7 @@ export const App = () =>
         {
             project: project
         }
-        fetch("/addProject/",
+        fetch("/projects/add",
         {
             method: "POST",
             headers:
@@ -367,7 +373,7 @@ export const App = () =>
             originalEvent: originalEvent,
             newEvent: newEvent
         }
-        fetch("patchEvent/",
+        fetch("events/patch",
         {
             method: "PATCH",
             headers:
@@ -390,14 +396,14 @@ export const App = () =>
             getEvents()
         })
     }
-    const patchProject = async (originalProject, newProject) =>
+    /* const patchProject = async (originalProject, newProject) =>
     {
 
-    }
+    } */
     const deleteEvent = async (update) =>
     {
         const data = { id: update }
-        fetch("deleteEvent/",
+        fetch("events/delete",
         {
             method: "POST",
             headers:
@@ -421,7 +427,7 @@ export const App = () =>
     const deleteProject = async(update) =>
     {
         const data = { title: update }
-        fetch("deleteProject/",
+        fetch("projects/delete",
         {
             method: "POST",
             headers:
@@ -531,6 +537,7 @@ export const App = () =>
         setDate(tempDate)
     }
 
+
     //wrapper objects so we don't pass down 20 different props 
     const webFunctions = 
     {
@@ -539,9 +546,10 @@ export const App = () =>
         putEvent,
         putProject,
         patchEvent,
-        patchProject,
+        //patchProject,
         deleteEvent,
-        deleteProject
+        deleteProject,
+
     }
     let addEventFromSecondaryMenu;
     const calendarFunctions = 
@@ -553,7 +561,7 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
         openSettings,
-        createTemplate
+        createTemplate,
     }
     const filteringFunctions = 
     {

@@ -563,12 +563,17 @@ export const AppCalendar =
                 }
                 step={15}
                 slotPropGetter={() => {return {'data-testid': "slot"} }}
-                onNavigate={(date) => calendarFunctions.setDate(date)}
+                
+                onNavigate={(date) => 
+                {
+                    calendarFunctions.setDate(date);
+                    console.log(date)
+                }}
+                
                 onView={(view) => calendarFunctions.setView(view)}
                 dayLayoutAlgorithm={'overlap'}
                 resizable
                 selectable
-                
                 allDayAccessor={() => { return false }}
                 startAccessor={(event) => 
                 {
