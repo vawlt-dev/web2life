@@ -219,69 +219,82 @@ export const App = () =>
     {
         console.log(notifications)
     }, [notifications])
-    const getPreferences = async () =>
+    
+    const getPreferences = async () => 
     {
-        await fetch("/getPreferences").then(res =>
+        try 
         {
-            if(res.ok)
+            const res = await fetch("/getPreferences");
+            if (res.ok) 
             {
-                res.json().then(data =>
+                await res.json().then(data =>
                 {
-                    setUserPreferences
-                    (
-                        {
-                            ...data,
-                            githubrepos: data.githubrepos || [],
-                            gitlabrepos: data.gitlabrepos || [],
-                        }
-                    )
+                    setUserPreferences(
+                    {
+                        ...data,
+                        githubrepos: data.githubrepos || [],
+                        gitlabrepos: data.gitlabrepos || [],
+                    })
 
-                    if (data.localColour || 
+                    if (
+                        data.localColour ||
                         data.googleColour ||
                         data.microsoftColour ||
                         data.githubColour ||
                         data.gitlabColour ||
-                        data.slackColour) 
+                        data.slackColour
+                    ) 
                     {
-                        setColours(
-                        {
-                            local: data.localColour || "#274da5",   
-                            google: data.googleColour || "#2775a5",
-                            microsoft: data.microsoftColour || "#27a596",
-                            github: data.githubColour || "#42368b",
-                            gitlab: data.gitlabColour || "#e34124",
-                            slack: data.slackColour || "#481449",
+                        setColours({
+                        local: data.localColour || "#274da5",
+                        google: data.googleColour || "#2775a5",
+                        microsoft: data.microsoftColour || "#27a596",
+                        github: data.githubColour || "#42368b",
+                        gitlab: data.gitlabColour || "#e34124",
+                        slack: data.slackColour || "#481449",
                         });
                     }
-                
-                })
-            } 
-        });
-        
-    }
+                });
+            }
+        } 
+        catch (err)
+        {
+            console.error("Failed to fetch preferences:", err);
+        }
+    };
     useEffect(() =>
     {
         console.log(userPreferences)
     }, [userPreferences])
     const setPreferences = async (data) => 
     {
-        await fetch("/setPreferences/",
+        console.log(data)
+        try 
         {
-            method: 'POST',
-            headers:
+            const token = await getCSRFToken();
+            await fetch("/setPreferences/", 
             {
-                'X-CSRFToken': CSRFToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).then((res) =>
+                method: 'POST',
+                headers: 
+                {
+                    'X-CSRFToken': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(res =>
+            {
+                if (res.ok) 
+                {
+                    getPreferences();
+                } 
+            })
+            
+        } 
+        catch (err) 
         {
-            if(res.ok)
-            {
-                getPreferences();
-            }
-        })    
-    }
+            console.error("Error setting preferences:", err);
+        }
+    };
 
   
     const getProjects = () =>
@@ -560,20 +573,43 @@ export const App = () =>
         activeEvents,
         setActiveEvents,
     }
+    const getCSRFToken = async () => 
+    {
+        try 
+        {
+            const response = await fetch("/getCsrfToken/", 
+            {
+                method: 'GET'
+            });
 
+            if (response.ok) 
+            {
+                const data = await response.json();
+                if (data['csrf-token']) {
+                    setCSRFToken(data['csrf-token']);
+                    return data['csrf-token'];
+                } 
+                else 
+                {
+                    throw new Error("CSRF token not found in response");
+                }
+            } 
+            else 
+            {
+                throw new Error("Failed to fetch CSRF token");
+            }
+        }
+        catch (error) 
+        {
+            console.error("Error fetching CSRF token:", error);
+        }
+    };
     //ON PAGE LOAD FUNCTION
     useEffect(() =>
     {
         //set CSRF token for database modification
-        fetch("/getCsrfToken",
-        {
-            method: 'GET'
-        })
-        .then(res => res.json().then(data =>
-        {
-            setCSRFToken(data['csrf-token'])
-        }))
-
+        
+        getCSRFToken();
         getEvents();
         getProjects();  
         getPreferences();

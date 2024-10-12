@@ -12,6 +12,13 @@ const DragAndDropCalendar = withDragAndDrop(Calendar)
         1) Add delete method for the projects list
         2) Add delete method for (local) events
 */
+const hexToRgb = (colour) =>
+{
+    let r = parseInt(colour.slice(1, 3), 16);
+    let g = parseInt(colour.slice(3, 5), 16);
+    let b = parseInt(colour.slice(5, 7), 16);
+    return { r, g, b };
+}
 
 const createEvent = (id, 
                      title, 
@@ -120,6 +127,10 @@ export const AppCalendar =
         }
     }, [calendarFunctions.view])
 
+    useEffect(() =>
+    {
+        console.log(colours)
+    },[colours])
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
     const selectRef = useRef(null);
@@ -592,27 +603,32 @@ export const AppCalendar =
                 onDoubleClickEvent={(info) => editEvent(info)}
                 eventPropGetter={(event) => 
                 {       
-                    let backgroundColor = ''    
+                    console.log(event)
+                    console.log(colours)
+                    let backgroundColor = colours[event.source || 'localEvents'] || colours.local;
+                    let labelColour = 'black';
 
-                    switch(event.source)
+                    if (backgroundColor) 
                     {
-                        case 'google':
-                            backgroundColor = colours.google;
-                            break
-                        case 'microsoft':
-                            backgroundColor = colours.microsoft;
-                            break
-                        default:
-                            backgroundColor = colours.local;
-                            break;
-                    }            
+                        const { r, g, b } = hexToRgb(backgroundColor);
+                        
+                        if (r > 128 && g > 128 && b > 128) 
+                        {
+                            labelColour = 'black';
+                        } 
+                        else 
+                        {
+                            labelColour = 'white';
+                        }
+                    }
+
                     return {
                         className: styles.event,
-                        style:
+                        style: 
                         {
+                            color: labelColour,
                             backgroundColor: backgroundColor,
                         }
-                        
                     };
                 }}
                 resources=

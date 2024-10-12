@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from 'react'
+import { React, useState, useEffect, useRef } from 'react'
 import styles from "./SettingsModal.module.css"
 
 export const SettingsModal = ({settingsOpen,
@@ -15,10 +15,38 @@ export const SettingsModal = ({settingsOpen,
         localStorage.setItem('theme', lightMode);
         window.dispatchEvent(new CustomEvent("themeChange", { detail: lightMode }));
     }, [lightMode]);
-    useEffect(() =>
+    
+    const debounce = (callback, delay) =>
     {
-        console.log(preferences)
-    }, [preferences])
+        let timer;
+        return function(...args)
+        {
+            if(timer)
+            {
+                clearTimeout(timer);
+            }
+            timer = setTimeout(() => {
+                callback.apply(this, args);
+            }, delay);
+        }
+    }
+    const debouncedSetPreferences = useRef(
+        debounce((key, color) => 
+        {
+            setColours(prevColours => ({...prevColours, [key]: color}));
+            setPreferences({ [`${key}Colour`]: color });
+        }, 500)
+    ).current;
+    useEffect(() => 
+    {
+        return () => 
+        {
+            if (debouncedSetPreferences.cancel) 
+            {
+                debouncedSetPreferences.cancel();
+            }
+        };
+    }, [debouncedSetPreferences]);
 
     return (
         
@@ -32,9 +60,6 @@ export const SettingsModal = ({settingsOpen,
                 <label>Settings</label>
             </div>
 
-            {
-                // needa find a way to set colour other the onchange listener: sends tens of requests with each colour change
-            }
             <div id={styles.generalSettingsWrap}>
                 <label> General Settings </label>
                 <div id={styles.eventColourListWrap}>
@@ -44,10 +69,8 @@ export const SettingsModal = ({settingsOpen,
                         <input type='color' value={colours.local} 
                         onChange={(e) => 
                         {
-                            setColours({...colours, local: e.target.value});
-                            setPreferences({"localColour": e.target.value})
+                            debouncedSetPreferences("local", e.target.value)
                         }}
-                        onMouseUp={(e) => setPreferences({ localColour: e.target.value })}
                         />
                     </div>
                     <div>
@@ -55,8 +78,7 @@ export const SettingsModal = ({settingsOpen,
                         <input type='color' value={colours.google}
                         onChange={(e) => 
                         {
-                            setColours({...colours, google: e.target.value});
-                            setPreferences({"googleColour": e.target.value})
+                            debouncedSetPreferences("google", e.target.value)
                         }}
                         />
                     </div>
@@ -65,8 +87,7 @@ export const SettingsModal = ({settingsOpen,
                         <input type='color' value={colours.microsoft}
                         onChange={(e) => 
                         {
-                            setColours({...colours, microsoft: e.target.value});
-                            setPreferences({"microsoftColour": e.target.value})
+                            debouncedSetPreferences("microsoft", e.target.value)
                         }}
                         />
                     </div>
@@ -75,8 +96,7 @@ export const SettingsModal = ({settingsOpen,
                         <input type='color' value={colours.github}
                         onChange={(e) => 
                         {
-                            setColours({...colours, github: e.target.value});
-                            setPreferences({"githubColour": e.target.value})
+                            debouncedSetPreferences("github", e.target.value)
                         }}
                         />
                     </div>
@@ -85,8 +105,7 @@ export const SettingsModal = ({settingsOpen,
                         <input type='color' value={colours.gitlab}
                         onChange={(e) => 
                         {
-                            setColours({...colours, gitlab: e.target.value});
-                            setPreferences({"gitlabColour": e.target.value})
+                            debouncedSetPreferences("gitlab", e.target.value)
                         }}
                         />
                     </div>
@@ -94,8 +113,7 @@ export const SettingsModal = ({settingsOpen,
                         <label>Slack Events</label>
                         <input type='color' value={colours.slack} onChange={(e) => 
                         {
-                            setColours({...colours, slack: e.target.value});
-                            setPreferences({"slackColour": e.target.value})
+                            debouncedSetPreferences("slack", e.target.value)
                         }}
                         />
                         

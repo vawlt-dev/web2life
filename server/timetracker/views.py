@@ -719,6 +719,7 @@ def get_users(request):  # pylint: disable=unused-argument
 
 
 def set_preferences(request):
+    print("a")
     try:
         if request.content_type != "application/json":
             return HttpResponse(
