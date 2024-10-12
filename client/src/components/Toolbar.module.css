@@ -26,27 +26,35 @@ img
     padding-right: 10px;
     transition: filter ease 200ms
 }
+#menuWrap
+{
+    display: flex;
+    gap: 50px;
+}
 
-
-#toolbarLeftButtonWrap
+#navigationWrap
 {
     display: inline-flex;
-    gap: 20px;    
+    gap: 12px;    
     
 }
-#toolbarLeftButtonWrap > button
+#navigationWrap > button,
+#viewsWrapper > button
 {
     background-color: transparent;
     color: var(--textColor);
     font-family: "Inter";
     font-size: 15px;
-    border: 2px solid var(--borderColor);
     padding: 6px 10px 6px 10px;
-    border-radius: 6px;
     transition: all ease 350ms;
     cursor: pointer;
 }
-#toolbarLeftButtonWrap > button:hover
+#navigationWrap > button
+{
+    border-radius: 6px;
+    border: 2px solid var(--borderColor);
+}
+#navigationWrap > button:hover
 {
     border-color: var(--textColor);
 }
@@ -60,208 +68,41 @@ img
     transition: color ease 500ms;
 }
 
-#dropDownWrapper
+#viewsWrapper
 {
-    user-select: none;
-    z-index: 4;
-}
-
-#dropDownButton
-{
-    cursor: pointer;
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+#viewsWrapper > button
+{
     border: 0;
-    font-size: 20px;
-    gap: 10px;
-    border: 2px solid var(--borderColor);
-    padding: 10px;
-    border-radius: 5px;
+    border-bottom: 2px solid var(--textColor);
+}
+
+
+#leftMenuWrap
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+#leftMenuWrap > button
+{
+    border: 0;
+    border-bottom: 2px solid var(--borderColor);
+    transition: all ease 350ms;
     background-color: transparent;
     color: var(--textColor);
-    transition: color ease 500ms,
-                border-color ease 350ms;
     font-family: "Inter";
-    font-weight: 300;
-    
+    font-size: 15px;
+    cursor: pointer;
 }
-#dropDownButton:hover
+#leftMenuWrap > button:hover
 {
     border-color: var(--textColor);
-    
-}
-#dropDownButton > div > svg
-{
-    stroke: var(--textColor);
-    transition: transform ease 500ms,
-                background-color ease 500ms,
-                stroke ease 500ms;
-                
-}
-#dropDownButton > div > svg.active
-{
-    transform: rotateX(-180deg);
-}
-#dropDownMenu
-{
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    width: 100px;
-    
-    
-    gap: 10px;
-    padding: 15px 8px 15px 8px;
-    top: 55px;
-    transform: translateY(0px);
-    
-    background-color: white;
-    border-radius: 10px;
-    border: 2px solid rgb(201, 201, 201);
-    list-style: none;
-    
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity ease 500ms,
-                transform ease 500ms,
-                visibility ease 0ms 500ms;
-z-index: 222;
-}
-
-#dropDownMenu::before, #dropDownMenu.active::before
-{
-    background-color: white;
-    transform: rotate(45deg);
-    content: '';
-    position: absolute;
-    top: -5px;
-    height: 10px;
-    width: 10px;
-    opacity: 1;
-}
-
-
-#dropDownMenu.active
-{
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(6px);
-    transition: opacity ease 500ms,
-                transform cubic-bezier(.24,1.31,.66,1.5) 500ms ;
-                z-index: 22222;
-}
-#dropDownMenu > li > button
-{
-    
-    width: 100%;
-    border: 2px solid gray;
-    border-radius: 4px;
-    padding: 6px;
-    font-family: "Inter";
-    cursor: pointer;
-}
-
-
-#hamburgerMenu
-{
-    padding-left: 20px;
-    margin-right: 20px;
-    cursor: pointer;
-}
-#hamburgerMenu > svg > rect, 
-#hamburgerMenu > svg > line
-{
-    stroke: var(--textColor);
-    transition: all ease 500ms;
-}
-#hamburgerMenuDropdown
-{
-    opacity: 0;
-    height: 0;
-    display: flex;
-    flex-direction: column;
-    visibility: hidden;
-    pointer-events: none;
-    position: absolute;
-    left: 5px;
-    top: 5%;
-    border: 2px solid gray;
-}
-#hamburgerMenuDropdown.active::before
-{
-    background-color: white;
-    transform: rotate(45deg);
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: 25px;
-    height: 10px;
-    width: 10px;
-    opacity: 1;
-}
-#hamburgerMenuDropdown.active
-{
-    visibility:visible;
-    opacity: 1;
-    width: unset;
-    height: 300px;
-    
-    background-color: white;
-    width: 225px;
-    height: 180px;
-    border-radius: 6px;
-    align-items: center;
-    justify-content: space-evenly;
-    z-index: 999999999;
-    pointer-events: all;
-
-    transition: opacity ease-in-out 350ms 55ms, width 350ms 0ms, height 250ms 0ms, display 1ms 0ms;
-}
-#hamburgerMenuDropdown > #OAuthGrid 
-{
-    display: flex;
-    padding: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 6px;
-}
-#hamburgerMenuDropdown > #OAuthGrid button
-{
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1;
-    border: 2px solid rgb(161, 161, 161);
-    height: 60px;
-    border-radius: 6px;
-    transition: all ease 350ms;
-}
-
-
-#hamburgerMenuDropdown > #OAuthGrid button:hover,
-#settingsWrap > button:hover
-{
-    background-color: gray;
-    
-    transform: perspective(40px) translateZ(2px);
-}
-#hamburgerMenuDropdown > #OAuthGrid label
-{
-    color: black;
-    text-align: center;
-    width: 100%;
-    margin-bottom: 6px;
-    font-size: 18px;
-}
-#hamburgerMenuDropdown > #OAuthGrid button > img
-{
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    height: 40px;
-    filter: none;
-    width: 40px;
 }
 
 #settingsSVG
@@ -271,5 +112,73 @@ z-index: 222;
     stroke: rgb(128, 128, 128, 0.5);
     stroke-width: 20px;
     min-width:30px;
-    margin-right: 20px;
+    margin-left: 20px;
+}
+#OAuthGrid::before
+{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(180,180,180);
+    content: '';
+    top: -5px;
+    left: 50%;
+    rotate: 45deg;
+}
+#OAuthGrid
+{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    z-index: 99999999;
+    top: 60px;
+    left: 4px;
+    padding: 16px;
+    background-color: rgb(220,220,220);
+    border-radius: 18px;
+    gap: 6px;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: all ease 350ms;
+}
+
+#OAuthGrid.active
+{
+    opacity: 1;
+    pointer-events: all;
+}
+
+
+#OAuthGrid > button
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 225px;
+    height: 50px;
+    background-color: rgb(255,255,255);
+    border: 2px solid rgb(200,200,200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all ease 350ms;
+}
+#OAuthGrid > button:hover
+{
+    background-color: rgb(175, 175, 175);
+}
+#OAuthGrid > button > label
+{
+    padding: 0;
+    font-family: "Inter";
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+#OAuthGrid > button > img
+{    
+    filter: none;
+    width: 20px;
+
 }

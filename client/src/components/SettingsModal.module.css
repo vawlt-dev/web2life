@@ -28,7 +28,7 @@
 {
     display: flex;
     gap: 40px;
-    padding: 12px;
+    padding: 20px;
 }
 #topWrap > button
 {
@@ -48,13 +48,13 @@
 {
     fill: var(--textColor);
     transition: fill ease 300ms;
-    width: 18px;
+    width: 14px;
 }
 #topWrap > label
 {
     font-weight: 300;
     font-size: 22px;
-    line-height: 1.3;    
+    line-height: 1.5;    
 }
 
 
@@ -106,22 +106,23 @@
     gap: 12px;
     width: 200px;
 }
-#eventColourListWrap > div > input[type="color"]::-webkit-color-swatch 
+#eventColourListWrap > div > input[type="color"]::-webkit-color-swatch
 {
-    border-width: 2px;
-    border-radius: 50%;    
+    border-width: 1px;
+    border-radius: 50%;
     border-color: rgba(128, 128, 128, 0.3);
 }
 #eventColourListWrap > div > input[type="color"]::-webkit-color-swatch-wrapper 
 {
-    padding: 0;
+    padding: 0px;
+    border-width: 0px;
 }
 #eventColourListWrap > div > input[type="color"]
 {
     background-color: transparent;
-    border: 0;
-    padding: 0;
-    border-radius: 50%;
+    padding: 0px;
+    border-width: 0px;
+    
     block-size: 30px;
     inline-size: 30px;
     appearance: none !important;

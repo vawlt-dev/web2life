@@ -16,7 +16,7 @@
     text-align: center;
     cursor: pointer;
     
-    
+    margin-bottom: 12px;
     border: 0;
     transition: background-color ease 250ms,
                 color ease 250ms;
@@ -300,4 +300,9 @@ div[role="button"].event > div[class="rbc-event-content"]
     text-align: center;
     font-size: 16px;
     padding-top: 6px;
+}
+.noSelect
+{
+    pointer-events: none;
+    cursor:not-allowed;
 }

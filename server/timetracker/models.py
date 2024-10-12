@@ -4,7 +4,8 @@ from django.db import models
 
 
 class Project(models.Model):
-    '''A project added by the user that groups events'''
+    """A project added by the user that groups events"""
+
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=64, unique=True)
 
@@ -14,7 +15,8 @@ class Project(models.Model):
 
 # @NOTE(Jamie D): These codes are what is stored in the DB so don't change them
 class EventOrigin(Enum):
-    '''Currently unused but might be used later'''
+    """Currently unused but might be used later"""
+
     USER = 0
     GOOGLE_GMAIL = 1
     GITHUB = 2
@@ -24,12 +26,12 @@ class EventOrigin(Enum):
 
 
 class Events(models.Model):
-    '''An event presented to the user in the calendar UI'''
+    """An event presented to the user in the calendar UI"""
+
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, default="")
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
-    billable = models.BooleanField(default=True)
     allDay = models.BooleanField(default=False, null=True)
     description = models.CharField(max_length=500)
     projectId = models.ForeignKey(
@@ -44,8 +46,8 @@ class Events(models.Model):
 
 
 def get_or_add_project_from_name(name):
-    '''Try to find a project matching the specified name. 
-    If the project does not exist, it is created and added to the database'''
+    """Try to find a project matching the specified name.
+    If the project does not exist, it is created and added to the database"""
     try:
         project = Project.objects.get(title=name)
         return project
@@ -74,10 +76,7 @@ class TemplateEvents(models.Model):
         Project, on_delete=models.CASCADE, default=None, null=True
     )
     templateId = models.ForeignKey(
-        Template,
-        on_delete=models.CASCADE,
-        default=None,
-        null=True
+        Template, on_delete=models.CASCADE, default=None, null=True
     )
 
     def __str__(self):

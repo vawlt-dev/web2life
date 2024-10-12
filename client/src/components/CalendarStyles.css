@@ -149,7 +149,6 @@ main
     top: 2px;
     background: linear-gradient(90deg, transparent 50%, var(--borderColor));
 }
-
 .rbc-time-gutter.rbc-time-column > .rbc-timeslot-group > .rbc-time-slot:not(:nth-child(1))
 {
     display: none;

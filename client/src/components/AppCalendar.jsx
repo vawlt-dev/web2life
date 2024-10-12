@@ -73,6 +73,53 @@ export const AppCalendar =
 {    
     
     const [editModalActive, setEditModalActive] = useState(false);
+    const [ctrlPressed, setCtrlPressed] = useState(false);
+
+    //key listener for the CTRL key
+    useEffect(() =>
+    {
+        const ctrlDown = (e) =>
+        {
+            if(e.key === 'Control')
+            {
+                // stops event from bubbling up to the calendar listeners
+                // otherwise the drag would be broken
+                e.stopImmediatePropagation();
+                setCtrlPressed(true);
+            }
+        }
+        const ctrlUp = (e) =>
+        {
+            if(e.key === 'Control')
+            {
+                e.stopImmediatePropagation();
+                setCtrlPressed(false);
+            }
+        }
+
+        window.addEventListener('keydown', ctrlDown, {capture:true})
+        window.addEventListener('keyup', ctrlUp, {capture:true})
+
+        return () =>
+        {
+            window.removeEventListener('keydown', ctrlDown);
+            window.removeEventListener('keyup', ctrlUp);
+        }
+    }, [])
+
+    //unselectable right column in day view
+    useEffect(() =>
+    {
+        if(calendarFunctions.view === Views.DAY)
+        {
+            const slots  = document.querySelectorAll('.rbc-day-slot.rbc-time-column');
+            if(slots.length > 1)
+            {
+                slots[1].classList.add(styles.noSelect)
+            }
+        }
+    }, [calendarFunctions.view])
+
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
     const selectRef = useRef(null);
@@ -255,17 +302,49 @@ export const AppCalendar =
             end: info.end,
             allDay: event.allDay
         }
-        let newEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
-        setEvents( prevEvents =>
+        if(ctrlPressed)
         {
-            const updatedEvents = prevEvents.filter(e => 
-            {   
-                return e.id !== event.id
-            });
-            return [...updatedEvents, newEvent]
-        }) 
-        
-        webFunctions.patchEvent(event, data);
+            console.log(info)
+            const newEvent = createEvent
+            (
+                null,
+                info.event.title,
+                info.event.start,
+                info.event.end,
+                info.event.project,
+                info.event.allDay,
+                info.event.resourceId,
+                true
+            )
+            const data = 
+            {
+                title: info.event.title,
+                project: info.event.project,
+                description: info.event.description,
+                start: info.start,
+                end: info.end,
+                allDay: info.event.allDay,
+            }    
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
+
+            //prevents 3 temp events spawning and looking gross on calendar
+            setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
+            webFunctions.putEvent(data);
+        }
+        else
+        {
+            let newEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
+            setEvents( prevEvents =>
+            {
+                const updatedEvents = prevEvents.filter(e => 
+                {   
+                    return e.id !== event.id
+                });
+                return [...updatedEvents, newEvent]
+            }) 
+            
+            webFunctions.patchEvent(event, data);
+        }
     }
 
     const handleEventClick = (info) =>
@@ -491,11 +570,28 @@ export const AppCalendar =
                 onSelectEvent={(info) => { handleEventClick(info)}}
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
+
+                onDragStart={(e) =>
+                {
+                    if(ctrlPressed)
+                    {
+                        const copy = createEvent(
+                            e.event.id,
+                            e.event.title,
+                            e.event.start,
+                            e.event.end,
+                            e.event.project,
+                            e.event.allDay,
+                            e.event.resourceId,
+                            false
+                        );
+                        setEvents((prevEvents) => [...prevEvents, copy])
+                    }
+                }}
+
                 onDoubleClickEvent={(info) => editEvent(info)}
-                eventPropGetter={(event, start, end, isSelected) => 
+                eventPropGetter={(event) => 
                 {       
-                    //using css injection instead of adding the source as a classname
-                    //because we might wanna add a setting for changing event colours later
                     let backgroundColor = ''    
 
                     switch(event.source)

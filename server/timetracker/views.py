@@ -55,6 +55,7 @@ def get_events(request):  # pylint: disable=unused-argument
 
 @require_POST
 def set_event(request):
+    print(request.body)
     try:
         data = json.loads(request.body)
         project = None
@@ -63,7 +64,6 @@ def set_event(request):
         except:
             print("No project found, defaulting to null")
 
-        print(data["allDay"])
         event = Events(
             title=data["title"],
             description=data["description"],
@@ -72,6 +72,7 @@ def set_event(request):
             allDay=True if data["allDay"] == "on" else False,
             projectId=project,
         )
+
         event.save()
         return HttpResponse()
     except Exception as e:
@@ -81,7 +82,6 @@ def set_event(request):
 
 
 def get_event_by_id(request):
-    print(request)
     try:
         data = json.loads(request.body)
         event = Events.objects.get(id=data["id"])
@@ -165,9 +165,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                    time.get("start") == data["start"]
-                    and time.get("end") == data["end"]
-                    and time.get("allDay") == data["allDay"]
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -809,7 +809,6 @@ def import_events(request, name):
 
 def create_template(request):
     TemplateEvents.objects.all().delete()
-    print("doing it")
     data = json.loads(request.body)
     if data:
         # Parse the date string into a datetime object
@@ -819,7 +818,9 @@ def create_template(request):
         if input_date:
             # Calculate the start of the week (Sunday 00:00:00)
             start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-            start_of_week = start_of_week.replace(hour=11, minute=0, second=0, microsecond=0)
+            start_of_week = start_of_week.replace(
+                hour=11, minute=0, second=0, microsecond=0
+            )
 
             # Calculate the end of the week (Saturday 23:59:59)
             end_of_week = start_of_week + timedelta(days=7)
@@ -827,13 +828,14 @@ def create_template(request):
 
             # Filter events for the week containing the input_date
             events_for_week = Events.objects.filter(
-                start__gte=start_of_week,
-                start__lte=end_of_week
+                start__gte=start_of_week, start__lte=end_of_week
             )
-            print(start_of_week, end_of_week)
-            print(events_for_week)
             newtemplatetosaveto = Template(
-                title="Template for week ending " + str(end_of_week.strftime("%A")) + " " + str(end_of_week.date()))
+                title="Template for week ending "
+                + str(end_of_week.strftime("%A"))
+                + " "
+                + str(end_of_week.date())
+            )
             newtemplatetosaveto.save()
             for event in events_for_week:
                 day = event.start + timedelta(hours=13, minutes=1, seconds=0)
@@ -842,9 +844,8 @@ def create_template(request):
                     start=event.start.time(),
                     end=event.end.time(),
                     day=day.strftime("%A"),
-                    billable=event.billable,
                     projectId=event.projectId,
-                    templateId=newtemplatetosaveto
+                    templateId=newtemplatetosaveto,
                 )
                 j.save()
         else:
@@ -858,13 +859,17 @@ def get_events_from_template_title(request):
     # data = json.loads(request.body)
     data = "Template for week ending Saturday 2024-10-12"
     template_to_get_from = Template.objects.filter(title=data).last()
-    template_events_gotten = TemplateEvents.objects.all().filter(templateId=template_to_get_from.id)
+    template_events_gotten = TemplateEvents.objects.all().filter(
+        templateId=template_to_get_from.id
+    )
     print(template_events_gotten)
     input_date = datetime.now()
     if input_date:
         # Calculate the start of the week (Sunday 00:00:00)
         start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-        start_of_week = start_of_week.replace(hour=11, minute=0, second=0, microsecond=0)
+        start_of_week = start_of_week.replace(
+            hour=11, minute=0, second=0, microsecond=0
+        )
         start_of_week += timedelta(hours=12, minutes=59, seconds=59)
 
     if True:
