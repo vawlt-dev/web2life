@@ -617,6 +617,7 @@ export const AppCalendar =
                         }
                     };
                 }}
+                culture='en'
                 resources=
                 {
                     

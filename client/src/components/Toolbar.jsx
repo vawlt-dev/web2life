@@ -12,23 +12,57 @@ import gitlabLogo from "../resources/images/gitlab.png";
 export const Toolbar = ({ calendarFunctions }) => 
 {
     const oauthDropdownRef = useRef(null);
-
-    useEffect(() =>
+    const templatesDropdownRef = useRef(null);
+    const saveTemplateModalRef = useRef(null);
+    const loadTemplateModalRef = useRef(null);
+    
+    const toggleDropdown = (dropdown) => 
     {
-        const l = (e) =>
+        if (dropdown === "oauth") 
         {
-            if(e.target.id !== oauthDropdownRef.current.id)
+            if (oauthDropdownRef.current) 
             {
-                oauthDropdownRef.current.classList.remove(styles.active)
+                oauthDropdownRef.current.classList.toggle(styles.active);
+            }
+            if (templatesDropdownRef.current) 
+            {
+                templatesDropdownRef.current.classList.remove(styles.active);
+            }
+        } 
+        else if (dropdown === "templates") 
+        {
+            if (templatesDropdownRef.current) 
+            {
+                templatesDropdownRef.current.classList.toggle(styles.active);
+            }
+            if (oauthDropdownRef.current) 
+            {
+                oauthDropdownRef.current.classList.remove(styles.active);
             }
         }
-        window.addEventListener('click', l);
+    };
 
-        return () =>
-        {
-            window.removeEventListener('click', l);
-        }
-    })
+    useEffect(() => {
+        const l = (e) => {
+            if (
+                oauthDropdownRef.current &&
+                !oauthDropdownRef.current.contains(e.target)
+            ) {
+                oauthDropdownRef.current.classList.remove(styles.active);
+            }
+            if (
+                templatesDropdownRef.current &&
+                !templatesDropdownRef.current.contains(e.target)
+            ) {
+                templatesDropdownRef.current.classList.remove(styles.active);
+            }
+        };
+        window.addEventListener("click", l);
+
+        return () => {
+            window.removeEventListener("click", l);
+        };
+    }, []);
 
     const back = () => 
     {
@@ -99,15 +133,13 @@ export const Toolbar = ({ calendarFunctions }) =>
                     <button onClick={(e) =>
                     {
                         e.stopPropagation();
-                        if(oauthDropdownRef)
-                        {
-                            oauthDropdownRef.current.classList.contains(styles.active) ? 
-                            oauthDropdownRef.current.classList.remove(styles.active) :
-                            oauthDropdownRef.current.classList.add(styles.active) 
-
-                        }
+                        toggleDropdown("oauth")
                     }}>Accounts</button>
-                    <button>Templates</button>
+                    <button onClick={(e) =>
+                    {
+                        e.stopPropagation();
+                        toggleDropdown("templates")
+                    }}>Templates</button>
                     <button>Hours</button>
                 </div>
                 <div id={styles.navigationWrap}>
@@ -163,6 +195,63 @@ export const Toolbar = ({ calendarFunctions }) =>
                     <img src={gitlabLogo} alt="Gitlab" />
                     <label>Continue with Gitlab</label>
                 </button>
+            </div>
+
+            <div id={styles.templatesGrid} ref={templatesDropdownRef}>
+                <button onClick={() =>
+                {
+                    saveTemplateModalRef.current.classList.add(styles.active);
+                    templatesDropdownRef.current.classList.remove(styles.active)
+                }}>
+                    <label>Save as Template</label>
+                </button>
+                <button onClick={() =>
+                {
+                    loadTemplateModalRef.current.classList.add(styles.active)
+                    templatesDropdownRef.current.classList.remove(styles.active)
+                }}>
+                    <label>Load Template</label>
+                </button>
+            </div>
+            
+            <div id={styles.saveTemplateModal} ref={saveTemplateModalRef} onClick={(e) => 
+            {
+                if(e.target === saveTemplateModalRef.current)
+                {
+                    saveTemplateModalRef.current.classList.remove(styles.active)
+                }
+            }
+            }>
+                <form onSubmit={ (e) => 
+                {
+                    e.preventDefault();
+                    calendarFunctions.saveTemplate(e.target.templateName.value)
+                    saveTemplateModalRef.current.classList.remove(styles.active);
+                }}>
+                    <div>
+                        <label>Template Name</label>
+                        <input type="text" name="templateName" required/>
+                    </div>
+                    <div>
+                        <button type='button' onClick={() =>
+                        {
+                            saveTemplateModalRef.current.classList.remove(styles.active)
+                        }}
+                        >Cancel</button>
+                        <button>Accept</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id={styles.loadTemplateModal} ref={loadTemplateModalRef}>
+                <div>
+                    <select>
+                    </select>
+                    <div>
+                        <button onClick={() => loadTemplateModalRef.current.classList.remove(styles.active)}>Cancel</button>
+                        <button>Load Template</button>
+                    </div>
+                </div>
             </div>
 
             <div>

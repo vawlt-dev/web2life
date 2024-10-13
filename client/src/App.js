@@ -12,7 +12,15 @@ import { SettingsModal } from "./components/SettingsModal";
 
 export const App = () =>
 {
+    moment.updateLocale('en',
+    {
+        week:
+        {
+            dow: 1,
+        }
+    })
     const localizer = momentLocalizer(moment)
+    
     const [CSRFToken, setCSRFToken] = useState(null)
     const [initialLoad, setInitialLoad] = useState(true);
     const [progress, setProgress] = useState(
@@ -79,121 +87,288 @@ export const App = () =>
         }
         return true;
     });
-
-    const createTemplate = async () =>
+    ////////////
+    // EVENTS //
+    ////////////
+    const getEvents = async () => 
     {
-        await fetch("https://127.0.0.1:8000/createTemplate/", //change this to the correct URL
+        try {
+            setProgress({ loading: true, percent: 0 });
+
+            const results = await Promise.allSettled([
+                fetch("/getEvents").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/import-events/github").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/import-events/gitlab").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/oauth/getSlackEvents").then((res) => (res.ok ? res.json() : [])),
+            ]);
+
+            setProgress({ loading: true, percent: 50 });
+
+            const localEvents = results[0].status === "fulfilled" ? results[0].value?.data || [] : [];
+            const googleCalendarEvents = results[1].status === "fulfilled" ? results[1].value?.data || [] : [];
+            const gmailNotifications = results[2].status === "fulfilled" ? results[2].value?.data || [] : [];
+            const outlookNotifications = results[3].status === "fulfilled" ? results[3].value?.data || [] : [];
+            const microsoftCalendarEvents = results[4].status === "fulfilled" ? results[4].value?.data || [] : [];
+            const githubNotifications = results[5].status === "fulfilled" ? results[5].value?.data || [] : [];
+            const gitlabNotifications = results[6].status === "fulfilled" ? results[6].value?.data || [] : [];
+            const slackNotifications = results[7].status === "fulfilled" ? results[7].value?.data || [] : [];
+
+            const normalizeEventDates = (event) => ({
+                ...event,
+                start: event.start instanceof Date ? event.start : new Date(event.start),
+                end: event.end instanceof Date ? event.end : new Date(event.end),
+            });
+            
+            setEvents([
+                ...localEvents.map((event) => normalizeEventDates({
+                    ...event,
+                    resourceId: "localEvents",
+                })),
+                ...googleCalendarEvents.map((event) => normalizeEventDates({
+                    ...event,
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    resourceId: "importedEvents",
+                    source: "google",
+                })),
+                ...microsoftCalendarEvents.map((event) => normalizeEventDates({
+                    ...event,
+                    start: new Date(event.start_time),
+                    end: new Date(event.end_time),
+                    resourceId: "importedEvents",
+                    source: "microsoft",
+                })),
+                ...outlookNotifications.map((event) => normalizeEventDates({
+                    ...event,
+                    title: "Outlook Notification",
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    resourceId: "importedEvents",
+                    source: "microsoft",
+                })),
+                ...gitlabNotifications.map((event) => normalizeEventDates({
+                    ...event,
+                    title: "Gitlab Notification",
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    resourceId: "importedEvents",
+                    source: "gitlab",
+                })),
+                ...slackNotifications.map((event) => normalizeEventDates({
+                    ...event,
+                    title: "Slack Notification",
+                    start: new Date(Math.floor(parseFloat(event.time)) * 1000),
+                    end: new Date(Math.floor(parseFloat(event.time)) * 1000 + 3600000),
+                    resourceId: "importedEvents",
+                    source: "slack",
+                })),
+                ...githubNotifications.map((event) => normalizeEventDates({
+                    ...event,
+                    title: "Github Notification",
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    resourceId: "importedEvents",
+                    source: "github",
+                })),
+                ...gmailNotifications.map((notification) => normalizeEventDates({
+                    ...notification,
+                    title: "Google Notification",
+                    start: new Date(notification.date),
+                    end: new Date(new Date(notification.date).getTime() + 3600000),
+                    resourceId: "importedEvents",
+                    source: "google",
+                })),
+            ]);
+
+            setProgress({ loading: false, percent: 100 });
+            setInitialLoad(false);
+        } 
+        catch (e) 
+        {
+            console.log(e);
+        }
+    };
+
+    const putEvent = async (event) =>
+    {
+        try 
+        {
+            fetch("/setEvent/",
+            {
+                method: "POST", 
+                headers: 
+                {
+                    'X-CSRFToken': CSRFToken
+                },
+                body: JSON.stringify(event)
+            }).then(res =>
+            {
+                if(res.ok)
+                {
+                    console.log("Successfully posted data")
+                }
+                else
+                {
+                    console.log("Error with submitting custom event")
+                }
+            }).then(() =>
+            {
+                getEvents()
+            })
+        } 
+        catch (err) 
+        {
+            console.log(err)            
+        }
+    }
+
+    const patchEvent = async (originalEvent, newEvent) => 
+    {
+        const data = 
+        {
+            originalEvent: originalEvent,
+            newEvent: newEvent,
+        };
+
+        try 
+        {
+            const response = await fetch("patchEvent/", 
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": CSRFToken,
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) 
+            {
+                console.log("Successfully updated event time");
+            }
+            else 
+            {
+                console.error("Error updating event times, status:", response.status, response.statusText);
+                const errorText = await response.text();
+                console.error("Server response:", errorText);
+            }
+        } 
+        catch (err) 
+        {
+            console.error("Network error or request failed:", err);
+        } 
+        finally 
+        {
+            getEvents();
+        }
+    };
+
+    const deleteEvent = async (update) =>
+    {
+        const data = { id: update }
+        fetch("deleteEvent/",
+        {
+            method: "POST",
+            headers:
+            {
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully deleted event")
+            }
+            else
+            {
+                console.log("Error with deleting event")
+            }
+            getEvents();
+        })
+    }
+
+    //////////////
+    // PROJECTS //
+    //////////////
+    
+  
+    const getProjects = () =>
+    {
+        fetch("/getProjects").then( res =>
+        {
+            if(res.ok)
+            {
+                return res.json()
+            }
+        }).then(data =>
+        {
+            setProjects(data.data);
+        })
+    }
+    const putProject = (project) =>
+    {
+        const data = 
+        {
+            project: project
+        }
+        fetch("/addProject/",
         {
             method: "POST",
             headers:
             {
                 "X-CSRFToken": CSRFToken
             },
-            body: JSON.stringify(date)
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully added project")
+            }
+            else
+            {
+                console.log("Error adding project")
+            }
+        }).then(() =>
+        {
+            getProjects();
         })
     }
 
-    const getEvents = async () => {
-    try {
-        setProgress({ loading: true, percent: 0 });
 
-        const results = await Promise.allSettled([
-            fetch("/getEvents").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/import-events/github").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/import-events/gitlab").then((res) => (res.ok ? res.json() : [])),
-            fetch("https://127.0.0.1:8000/oauth/getSlackEvents").then((res) => (res.ok ? res.json() : [])),
-        ]);
-
-        setProgress({ loading: true, percent: 50 });
-
-        const localEvents = results[0].status === "fulfilled" ? results[0].value?.data || [] : [];
-        const googleCalendarEvents = results[1].status === "fulfilled" ? results[1].value?.data || [] : [];
-        const gmailNotifications = results[2].status === "fulfilled" ? results[2].value?.data || [] : [];
-        const outlookNotifications = results[3].status === "fulfilled" ? results[3].value?.data || [] : [];
-        const microsoftCalendarEvents = results[4].status === "fulfilled" ? results[4].value?.data || [] : [];
-        const githubNotifications = results[5].status === "fulfilled" ? results[5].value?.data || [] : [];
-        const gitlabNotifications = results[6].status === "fulfilled" ? results[6].value?.data || [] : [];
-        const slackNotifications = results[7].status === "fulfilled" ? results[7].value?.data || [] : [];
-
-        const normalizeEventDates = (event) => ({
-            ...event,
-            start: event.start instanceof Date ? event.start : new Date(event.start),
-            end: event.end instanceof Date ? event.end : new Date(event.end),
-        });
-        
-        setEvents([
-            ...localEvents.map((event) => normalizeEventDates({
-                ...event,
-                resourceId: "localEvents",
-            })),
-            ...googleCalendarEvents.map((event) => normalizeEventDates({
-                ...event,
-                start: new Date(event.start),
-                end: new Date(event.end),
-                resourceId: "importedEvents",
-                source: "google",
-            })),
-            ...microsoftCalendarEvents.map((event) => normalizeEventDates({
-                ...event,
-                start: new Date(event.start_time),
-                end: new Date(event.end_time),
-                resourceId: "importedEvents",
-                source: "microsoft",
-            })),
-            ...outlookNotifications.map((event) => normalizeEventDates({
-                ...event,
-                title: "Outlook Notification",
-                start: new Date(event.start),
-                end: new Date(event.end),
-                resourceId: "importedEvents",
-                source: "microsoft",
-            })),
-            ...gitlabNotifications.map((event) => normalizeEventDates({
-                ...event,
-                title: "Gitlab Notification",
-                start: new Date(event.start),
-                end: new Date(event.end),
-                resourceId: "importedEvents",
-                source: "gitlab",
-            })),
-            ...slackNotifications.map((event) => normalizeEventDates({
-                ...event,
-                title: "Slack Notification",
-                start: new Date(Math.floor(parseFloat(event.time)) * 1000),
-                end: new Date(Math.floor(parseFloat(event.time)) * 1000 + 3600000),
-                resourceId: "importedEvents",
-                source: "slack",
-            })),
-            ...githubNotifications.map((event) => normalizeEventDates({
-                ...event,
-                title: "Github Notification",
-                start: new Date(event.start),
-                end: new Date(event.end),
-                resourceId: "importedEvents",
-                source: "github",
-            })),
-            ...gmailNotifications.map((notification) => normalizeEventDates({
-                ...notification,
-                title: "Google Notification",
-                start: new Date(notification.date),
-                end: new Date(new Date(notification.date).getTime() + 3600000),
-                resourceId: "importedEvents",
-                source: "google",
-            })),
-        ]);
-
-        setProgress({ loading: false, percent: 100 });
-        setInitialLoad(false);
-    } 
-    catch (e) 
+    const deleteProject = async(update) =>
     {
-        console.log(e);
+        const data = { title: update }
+        fetch("deleteProject/",
+        {
+            method: "POST",
+            headers:
+            {
+                'X-CSRFToken': CSRFToken
+            },
+            body: JSON.stringify(data)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                console.log("Successfully removed project")
+            }
+            else
+            {
+                console.log("Error with removing project")
+            }
+            getProjects();
+        })
     }
-};
+
+    /////////////////
+    // PREFERENCES //
+    /////////////////
 
     const getPreferences = async () => 
     {
@@ -237,10 +412,7 @@ export const App = () =>
             console.error("Failed to fetch preferences:", err);
         }
     };
-    useEffect(() =>
-    {
-        console.log(userPreferences)
-    }, [userPreferences])
+    
     const setPreferences = async (data) => 
     {
         console.log(data)
@@ -271,163 +443,39 @@ export const App = () =>
         }
     };
 
-  
-    const getProjects = () =>
+    ///////////////
+    // TEMPLATES //
+    ///////////////
+    const saveTemplate = async () =>
     {
-        fetch("/getProjects").then( res =>
-        {
-            if(res.ok)
-            {
-                return res.json()
-            }
-        }).then(data =>
-        {
-            setProjects(data.data);
-        })
-    }
-    const putEvent = async (event) =>
-    {
-        //append '/' to posts otherwise will reset to a GET request
-        try 
-        {
-            fetch("/setEvent/",
-            {
-                method: "POST", 
-                headers: 
-                {
-                    'X-CSRFToken': CSRFToken
-                },
-                body: JSON.stringify(event)
-            }).then(res =>
-            {
-                if(res.ok)
-                {
-                    console.log("Successfully posted data")
-                }
-                else
-                {
-                    console.log("Error with submitting custom event")
-                }
-            }).then(() =>
-            {
-                getEvents()
-            })
-        } 
-        catch (err) 
-        {
-            console.log(err)            
-        }
-    }
-    const putProject = (project) =>
-    {
-        const data = 
-        {
-            project: project
-        }
-        fetch("/addProject/",
+        await fetch("/setTemplate/",
         {
             method: "POST",
             headers:
             {
-                "X-CSRFToken": CSRFToken
+                'X-CSRFToken': CSRFToken,
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({view: view})
         }).then(res =>
         {
             if(res.ok)
             {
-                console.log("Successfully added project")
+                console.log("Successfully saved template")
             }
             else
             {
-                console.log("Error adding project")
+                console.log("Error saving template")
             }
-        }).then(() =>
-        {
-            getProjects();
         })
     }
-
-    const patchEvent = async (originalEvent, newEvent) => {
-    const data = {
-        originalEvent: originalEvent,
-        newEvent: newEvent,
-    };
-
-    try {
-        const response = await fetch("patchEvent/", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": CSRFToken,
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (response.ok) {
-            console.log("Successfully updated event time");
-        } else {
-            console.error("Error updating event times, status:", response.status, response.statusText);
-            const errorText = await response.text();
-            console.error("Server response:", errorText);
-        }
-    } catch (error) {
-        console.error("Network error or request failed:", error);
-    } finally {
-        getEvents();
-    }
-};
-    const patchProject = async (originalProject, newProject) =>
+    const loadTemplate = () =>
     {
-
+    
     }
-    const deleteEvent = async (update) =>
+    const loadStandardTemplate = () =>
     {
-        const data = { id: update }
-        fetch("deleteEvent/",
-        {
-            method: "POST",
-            headers:
-            {
-                'X-CSRFToken': CSRFToken
-            },
-            body: JSON.stringify(data)
-        }).then(res =>
-        {
-            if(res.ok)
-            {
-                console.log("Successfully deleted event")
-            }
-            else
-            {
-                console.log("Error with deleting event")
-            }
-            getEvents();
-        })
-    }
-    const deleteProject = async(update) =>
-    {
-        const data = { title: update }
-        fetch("deleteProject/",
-        {
-            method: "POST",
-            headers:
-            {
-                'X-CSRFToken': CSRFToken
-            },
-            body: JSON.stringify(data)
-        }).then(res =>
-        {
-            if(res.ok)
-            {
-                console.log("Successfully removed project")
-            }
-            else
-            {
-                console.log("Error with removing project")
-            }
-            getProjects();
-        })
+        
     }
 
     const handleNavigate = (action) =>
@@ -526,7 +574,6 @@ export const App = () =>
         putEvent,
         putProject,
         patchEvent,
-        patchProject,
         deleteEvent,
         deleteProject
     }
@@ -540,7 +587,9 @@ export const App = () =>
         setView,
         addEventFromSecondaryMenu,
         openSettings,
-        createTemplate
+        saveTemplate,
+        loadTemplate,
+        loadStandardTemplate
     }
     const filteringFunctions = 
     {
@@ -581,8 +630,6 @@ export const App = () =>
     //ON PAGE LOAD FUNCTION
     useEffect(() =>
     {
-        //set CSRF token for database modification
-        
         getCSRFToken();
         getEvents();
         getProjects();  
@@ -611,6 +658,8 @@ export const App = () =>
         })
 
     }, [])
+
+    // Main render
     return (        
         
         <div id={styles.mainWrap}>

@@ -150,7 +150,8 @@ img
 }
 
 
-#OAuthGrid > button
+#OAuthGrid > button,
+#templatesGrid > button
 {
     display: flex;
     align-items: center;
@@ -163,10 +164,13 @@ img
     cursor: pointer;
     transition: all ease 350ms;
 }
+
+#templatesGrid > button:hover,
 #OAuthGrid > button:hover
 {
     background-color: rgb(175, 175, 175);
 }
+#templatesGrid > button > label,
 #OAuthGrid > button > label
 {
     padding: 0;
@@ -181,4 +185,128 @@ img
     filter: none;
     width: 20px;
 
+}
+
+#templatesGrid
+{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    z-index: 99999999;
+    top: 60px;
+    left: 110px;
+    padding: 16px;
+    background-color: rgb(220,220,220);
+    border-radius: 18px;
+    gap: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all ease 350ms;
+}
+#templatesGrid.active
+{
+    opacity: 1;
+    pointer-events: all;
+}
+
+#templatesGrid::before
+{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(180,180,180);
+    content: '';
+    top: -5px;
+    left: 50%;
+    rotate: 45deg;
+}
+#templatesGrid > button
+{
+    height: 40px;
+}
+#templatesGrid > button > label 
+{
+    font-size: 12px;
+}
+
+#saveTemplateModal,
+#loadTemplateModal
+{
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    bottom: 0;
+    width: 100%;
+    min-height: 100vh;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    pointer-events: none;
+    transition: all ease 350ms;
+}
+#saveTemplateModal.active,
+#loadTemplateModal.active
+{
+    pointer-events: all;
+    opacity: 1;
+}
+#saveTemplateModal > form,
+#loadTemplateModal > div
+{
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+    height: 60px;
+    border-radius: 6px;
+    background-color: white;
+    color: black;
+    padding: 18px;
+    justify-content: space-between;
+}
+#saveTemplateModal > form > div,
+#loadTemplateModal > div > div
+{
+    display: flex;
+    justify-content: space-between;
+}
+#saveTemplateModal > form > div > button,
+#loadTemplateModal > div > div > button
+{
+    background-color: transparent;
+    border: 0;
+    font-family: "Inter";
+    font-weight: 400;
+    border-radius: 6px;
+    color: white;
+    height: 25px;
+    font-size: 12px;
+    cursor: pointer;
+    background-color: rgb(47, 91, 172);
+}
+#saveTemplateModal > form > div > button:first-child,
+#loadTemplateModal > div > div > button:first-child
+{
+    background-color: red;
+}
+
+#saveTemplateModal > form > div > label
+{
+    font-weight: 500;
+}
+#saveTemplateModal > form > div > input
+{
+    border: 0;
+    outline: 2px solid rgba(128, 128, 128, 0.5);
+    border-radius: 6px;
+    padding: 0;
+    padding-inline: 6px;
+    height: 20px;
+    font-family: "Inter";
+    transition: all ease 350ms;
+}
+#saveTemplateModal > form > div > input:focus-visible
+{
+    outline: 2px solid gray;
 }
