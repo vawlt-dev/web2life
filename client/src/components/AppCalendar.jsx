@@ -127,10 +127,6 @@ export const AppCalendar =
         }
     }, [calendarFunctions.view])
 
-    useEffect(() =>
-    {
-        console.log(colours)
-    },[colours])
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
     const selectRef = useRef(null);
@@ -270,10 +266,7 @@ export const AppCalendar =
     }
     calendarFunctions.addEventFromSecondaryMenu = handleToolbarEventAdd;
 
-    const editEvent = (info) =>
-    {
-        console.log(info)
-    }
+
 
     const handleSubmit = (e) =>
     {
@@ -315,7 +308,6 @@ export const AppCalendar =
         }
         if(ctrlPressed)
         {
-            console.log(info)
             const newEvent = createEvent
             (
                 null,
@@ -344,17 +336,14 @@ export const AppCalendar =
         }
         else
         {
-            let newEvent = createEvent(event.id, event.title, info.start, info.end, event.allDay, null);
-            setEvents( prevEvents =>
-            {
-                const updatedEvents = prevEvents.filter(e => 
-                {   
-                    return e.id !== event.id
-                });
-                return [...updatedEvents, newEvent]
-            }) 
+            setEvents(prevEvents => {
+                const updatedEvents = prevEvents.map(e => 
+                e.id === event.id ? { ...e, start: info.start, end: info.end } : e
+                );
+                return updatedEvents;
+            });
             
-            webFunctions.patchEvent(event, data);
+            webFunctions.patchEvent(event, data)
         }
     }
 
@@ -600,11 +589,8 @@ export const AppCalendar =
                     }
                 }}
 
-                onDoubleClickEvent={(info) => editEvent(info)}
                 eventPropGetter={(event) => 
                 {       
-                    console.log(event)
-                    console.log(colours)
                     let backgroundColor = colours[event.source || 'localEvents'] || colours.local;
                     let labelColour = 'black';
 
@@ -649,20 +635,7 @@ export const AppCalendar =
                 {
                     {
                         header: (info) => CustomHeader(info),
-                        event: (info) => 
-                        {
-                            //console.log(info)
-                            return(
-                                <>
-                                    <>
-                                        {info.title}
-                                        {
-                                            info.event.project ? info.event.project : null
-                                        }
-                                    </>
-                                </>
-                            )
-                        },
+                        
                     }
                 }
                 timeslots={4}
@@ -684,11 +657,12 @@ export const AppCalendar =
                 allDayAccessor={() => { return false }}
                 startAccessor={(event) => 
                 {
-                    return handleAllDayEvent(event).start;
+                    
+                    return event.start;
                 }}
                 endAccessor={(event) => 
                 { 
-                    return handleAllDayEvent(event).end;
+                    return event.end;
                 }}
                 resizableAccessor={(event) => 
                 {
@@ -699,6 +673,7 @@ export const AppCalendar =
                     return event.resourceId === "localEvents";
                 }}
                 toolbar={null}
+                popup={true}
             />
         </main>
     )

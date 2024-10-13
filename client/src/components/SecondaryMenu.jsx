@@ -214,7 +214,7 @@ export const SecondaryMenu = (
                 </div>
             </div>
 
-            <div id={styles.notificationsWrap}>
+            {/* <div id={styles.notificationsWrap}>
                 <label>Notifications</label>
                 <div id={styles.notifications}>
                     {
@@ -283,7 +283,7 @@ export const SecondaryMenu = (
                         </div>
                     }
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }
