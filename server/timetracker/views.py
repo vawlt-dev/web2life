@@ -949,7 +949,6 @@ def create_template(request):
                 start=event.start,
                 end=event.end,
                 day=event_day,
-                billable=event.billable,
                 projectId=event.projectId,
                 templateId=new_template,
             )
