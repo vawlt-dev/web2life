@@ -1,6 +1,6 @@
 import { React, useState, useEffect, useRef } from 'react'
 import styles from "./SettingsModal.module.css"
-
+import info from '../resources/images/info.svg'
 export const SettingsModal = ({settingsOpen,
                                openSettings, 
                                preferences, 
@@ -226,6 +226,32 @@ export const SettingsModal = ({settingsOpen,
                             </div>
                         )
                     }
+                </div>
+            </div>            
+            
+            <div id={styles.statisticSettings}>
+                <label>Time Statistic Settings</label>
+                
+                <div>
+                    <label>
+                        Break Times 
+                    </label>
+                    <img alt='' src={info} onMouseOver={() =>
+                    {
+
+                    }}/>
+                    <div className={styles.tooltip}>
+                        <label>Hours outside of these times will be counted towards your final time statistics</label>
+                    </div>
+                    <div id={styles.breakWrap}>
+                        <label>From</label>
+                        <input type='time' value={"12:30"}/>
+                        <label>To</label>
+                        <input type='time' value={"13:00"}/>
+                    </div>
+                    <div>
+                        <label>Add Break</label>
+                    </div>
                 </div>
             </div>            
         </div>

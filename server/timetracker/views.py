@@ -165,9 +165,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                    time.get("start") == data["start"]
-                    and time.get("end") == data["end"]
-                    and time.get("allDay") == data["allDay"]
+                time.get("start") == data["start"]
+                and time.get("end") == data["end"]
+                and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -808,54 +808,6 @@ def import_events(request, name):
         return JsonResponse({"error": f"{e}"})
 
 
-def create_template_old(request):
-    TemplateEvents.objects.all().delete()
-    data = json.loads(request.body)
-    if data:
-        # Parse the date string into a datetime object
-        input_date = parse_datetime(data)
-        # input_date = input_date.date()
-
-        if input_date:
-            # Calculate the start of the week (Sunday 00:00:00)
-            start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-            start_of_week = start_of_week.replace(
-                hour=11, minute=0, second=0, microsecond=0
-            )
-
-            # Calculate the end of the week (Saturday 23:59:59)
-            end_of_week = start_of_week + timedelta(days=7)
-            end_of_week = end_of_week.replace(hour=10, minute=59, second=59)
-
-            # Filter events for the week containing the input_date
-            events_for_week = Events.objects.filter(
-                start__gte=start_of_week, start__lte=end_of_week
-            )
-            newtemplatetosaveto = Template(
-                title="Template for week ending "
-                      + str(end_of_week.strftime("%A"))
-                      + " "
-                      + str(end_of_week.date())
-            )
-            newtemplatetosaveto.save()
-            for event in events_for_week:
-                day = event.start + timedelta(hours=13, minutes=1, seconds=0)
-                j = TemplateEvents(
-                    title=event.title,
-                    start=event.start.time(),
-                    end=event.end.time(),
-                    day=day.strftime("%A"),
-                    projectId=event.projectId,
-                    templateId=newtemplatetosaveto,
-                )
-                j.save()
-        else:
-            print("Invalid date format")
-    # j = Events.objects.all().filter(start__gte="2024-10-06 00:00:00").filter(start__lte="2024-10-12 00:00:00")
-    # print(j)
-    return HttpResponse()
-
-
 def get_events_from_template_title(request):
     # data = json.loads(request.body)
     data = "Template for week ending Saturday 2024-10-12"
@@ -914,35 +866,38 @@ def get_events_from_template_title(request):
     return HttpResponse()
 
 
+from django.utils.timezone import make_aware, get_current_timezone
+
+from django.db.models import Q
+
+
 def create_template(request):
     try:
         data = json.loads(request.body)
-        date_str = data.get("date")  # ISO format input date
-        gmt = pytz.timezone("Etc/GMT-13")
+        view = data.get("view")  # ISO format input date
+        name = data.get("name")
+        date = datetime.fromisoformat(data.get("date"))
+        print(date)
 
-        input_date = datetime.fromisoformat(date_str)
-        input_date_utc = input_date.astimezone(pytz.UTC)
-        input_date_gmt = input_date_utc.astimezone(gmt)
-
-        monday = input_date_gmt - timedelta(days=input_date_gmt.weekday())
-        monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
-
-        sunday = monday + timedelta(days=6, hours=23, minutes=59, seconds=59)
+        if view == "week":
+            start = date - timedelta(days=date.weekday())
+            start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+            end = start + timedelta(days=7)
+        elif view == "day":
+            start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+            end = start + timedelta(days=1)
 
         events_for_week = Events.objects.filter(
-            start__gte=monday.astimezone(pytz.UTC), end__lte=sunday.astimezone(pytz.UTC)
+            (
+                Q(start__gte=start) & Q(start__lt=end)
+                | (Q(end__lt=start) & Q(end__gte=start))
+            )
         )
-
-        new_template = Template(
-            title="Template for week ending "
-                  + sunday.strftime("%A")
-                  + " "
-                  + str(sunday.date())
-        )
-        new_template.save()
+        template = Template(title=name)
+        template.save()
 
         for event in events_for_week:
-            event_day = event.start.astimezone(gmt).strftime("%A")
+            event_day = event.start
 
             template_event = TemplateEvents(
                 title=event.title,
@@ -950,7 +905,7 @@ def create_template(request):
                 end=event.end,
                 day=event_day,
                 projectId=event.projectId,
-                templateId=new_template,
+                templateId=template,
             )
             template_event.save()
 
