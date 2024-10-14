@@ -1014,6 +1014,7 @@ def show_current_template(request):
         j.save()
     return HttpResponse()
 
+
 def hours_in_week(request):
     try:
         data = json.loads(request.body)
@@ -1039,10 +1040,6 @@ def hours_in_week(request):
 
         hours = seconds / 3600
         return HttpResponse(hours)
-
-
-
-
     except ValueError:
         return HttpResponse("Invalid date format", status=400)
     except Exception as e:
