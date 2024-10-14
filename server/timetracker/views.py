@@ -808,7 +808,7 @@ def import_events(request, name):
         return JsonResponse({"error": f"{e}"})
 
 
-def create_template(request):
+def create_template_old(request):
     TemplateEvents.objects.all().delete()
     data = json.loads(request.body)
     if data:
@@ -914,7 +914,7 @@ def get_events_from_template_title(request):
     return HttpResponse()
 
 
-def create_template2(request):
+def create_template(request):
     try:
         data = json.loads(request.body)
         date_str = data.get("date")  # ISO format input date
@@ -1013,3 +1013,38 @@ def show_current_template(request):
         )
         j.save()
     return HttpResponse()
+
+def hours_in_week(request):
+    try:
+        data = json.loads(request.body)
+        date_str = data.get("date")  # ISO format input date
+        gmt = pytz.timezone("Etc/GMT-13")
+
+        input_date = datetime.fromisoformat(date_str)
+        input_date_utc = input_date.astimezone(pytz.UTC)
+        input_date_gmt = input_date_utc.astimezone(gmt)
+
+        monday = input_date_gmt - timedelta(days=input_date_gmt.weekday())
+        monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        sunday = monday + timedelta(days=6, hours=23, minutes=59, seconds=59)
+
+        events_for_week = Events.objects.filter(
+            start__gte=monday.astimezone(pytz.UTC), end__lte=sunday.astimezone(pytz.UTC)
+        )
+        seconds = 0
+        for event in events_for_week:
+            k = event.end - event.start
+            seconds += k.total_seconds()
+
+        hours = seconds / 3600
+        return HttpResponse(hours)
+
+
+
+
+    except ValueError:
+        return HttpResponse("Invalid date format", status=400)
+    except Exception as e:
+        print(f"Error: {e}")
+        return HttpResponse(f"An error occurred: {e}", status=500)
