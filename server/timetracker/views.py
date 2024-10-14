@@ -165,9 +165,9 @@ def delete_event_time(request):
             time
             for time in event.times
             if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
+                    time.get("start") == data["start"]
+                    and time.get("end") == data["end"]
+                    and time.get("allDay") == data["allDay"]
             )
         ]
         event.save()
@@ -833,9 +833,9 @@ def create_template(request):
             )
             newtemplatetosaveto = Template(
                 title="Template for week ending "
-                + str(end_of_week.strftime("%A"))
-                + " "
-                + str(end_of_week.date())
+                      + str(end_of_week.strftime("%A"))
+                      + " "
+                      + str(end_of_week.date())
             )
             newtemplatetosaveto.save()
             for event in events_for_week:
@@ -911,4 +911,105 @@ def get_events_from_template_title(request):
             )
             j.save()
 
+    return HttpResponse()
+
+
+def create_template2(request):
+    try:
+        data = json.loads(request.body)
+        date_str = data.get("date")  # ISO format input date
+        gmt = pytz.timezone("Etc/GMT-13")
+
+        input_date = datetime.fromisoformat(date_str)
+        input_date_utc = input_date.astimezone(pytz.UTC)
+        input_date_gmt = input_date_utc.astimezone(gmt)
+
+        monday = input_date_gmt - timedelta(days=input_date_gmt.weekday())
+        monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        sunday = monday + timedelta(days=6, hours=23, minutes=59, seconds=59)
+
+        events_for_week = Events.objects.filter(
+            start__gte=monday.astimezone(pytz.UTC), end__lte=sunday.astimezone(pytz.UTC)
+        )
+
+        new_template = Template(
+            title="Template for week ending "
+                  + sunday.strftime("%A")
+                  + " "
+                  + str(sunday.date())
+        )
+        new_template.save()
+
+        for event in events_for_week:
+            event_day = event.start.astimezone(gmt).strftime("%A")
+
+            template_event = TemplateEvents(
+                title=event.title,
+                start=event.start,
+                end=event.end,
+                day=event_day,
+                billable=event.billable,
+                projectId=event.projectId,
+                templateId=new_template,
+            )
+            template_event.save()
+
+        return HttpResponse("Template and events created successfully")
+
+    except ValueError:
+        return HttpResponse("Invalid date format", status=400)
+    except Exception as e:
+        print(f"Error: {e}")
+        return HttpResponse(f"An error occurred: {e}", status=500)
+
+
+def show_current_template(request):
+    data = "Template for week ending Sunday 2024-10-13"
+    template_to_get_from = Template.objects.filter(title=data).last()
+    template_events = TemplateEvents.objects.all().filter(
+        templateId=template_to_get_from.id
+    )
+    ending = datetime.strptime(
+        re.search(r"(\d{4}-\d{2}-\d{2})", data).group(1), "%Y-%m-%d"
+    )
+    starting = ending - timedelta(days=ending.weekday() + 1)
+    for event in template_events:
+        start = starting.replace(
+            hour=event.start.hour, minute=event.start.minute, second=event.start.second
+        )
+        end = starting.replace(
+            hour=event.end.hour, minute=event.end.minute, second=event.end.second
+        )
+        print(start)
+        print(end)
+        day_offset = 0
+        match event.day:
+            case "Tuesday":
+                day_offset = 1
+            case "Wednesday":
+                day_offset = 2
+            case "Thursday":
+                day_offset = 3
+            case "Friday":
+                day_offset = 5
+            case "Saturday":
+                day_offset = 6
+            case "Sunday":
+                day_offset = 7
+
+        start += timedelta(days=day_offset)
+        end += timedelta(days=day_offset)
+        if end < start:
+            end += timedelta(days=1)
+        print(
+            f"Event: {event.title}, Start: {start}, End: {end}, Day: {start.strftime('%A')}"
+        )
+        j = Events(
+            title=event.title,
+            start=start,
+            end=end,
+            projectId=event.projectId,
+        )
+        j.save()
     return HttpResponse()
