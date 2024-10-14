@@ -1038,7 +1038,7 @@ def hours_in_week(request):
             seconds += k.total_seconds()
 
         hours = seconds / 3600
-        return HttpResponse(hours)
+        return JsonResponse({"hours": hours})
     except ValueError:
         return HttpResponse("Invalid date format", status=400)
     except Exception as e:
