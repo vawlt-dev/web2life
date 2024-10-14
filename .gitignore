@@ -2,3 +2,4 @@ __pycache__
 client/build
 *.env
 .env
+.sqlite3
