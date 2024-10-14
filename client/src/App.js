@@ -446,8 +446,14 @@ export const App = () =>
     ///////////////
     // TEMPLATES //
     ///////////////
-    const saveTemplate = async () =>
+    const saveTemplate = async (name) =>
     {
+        const data =
+        {
+            view: view,
+            date: date,
+            name: name
+        }
         await fetch("/setTemplate/",
         {
             method: "POST",
@@ -456,7 +462,7 @@ export const App = () =>
                 'X-CSRFToken': CSRFToken,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({view: view})
+            body: JSON.stringify(data)
         }).then(res =>
         {
             if(res.ok)

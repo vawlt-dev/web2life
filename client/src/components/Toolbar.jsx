@@ -258,7 +258,6 @@ export const Toolbar = ({ calendarFunctions }) =>
                 <img src={logo} alt="" />
             </div>
 
-            <div></div>
         </header>
     );
 };
