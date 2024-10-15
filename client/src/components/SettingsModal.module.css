@@ -374,22 +374,28 @@
     font-family: "Inter";
     border-radius: 6px;
     padding: 6px;
-    border: 2px solid white;
+    border: 2px solid var(--textColor);
     width: 100%;
     cursor: pointer;
     transition: all ease 350ms;
 }
-.break
+#break > form
 {
     margin: 6px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     width: 100%;
     margin-left: 20px;
     font-size: 14px;
-    align-items: center;
 }
-.break > input[type='time']
+#break > form > div:first-child
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+#break > form > div:first-child > input[type='time']
 {
     width: 100px;
     text-align: center;
@@ -403,7 +409,7 @@
     appearance: none;
     
 }
-.break > input[type='time']::-webkit-calendar-picker-indicator
+#break > form > div:first-child > input[type='time']::-webkit-calendar-picker-indicator
 {
     filter: var(--logoInvert);
 }

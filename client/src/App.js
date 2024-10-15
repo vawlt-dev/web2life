@@ -20,7 +20,7 @@ export const App = () =>
         }
     })
     const localizer = momentLocalizer(moment)
-    
+    const [breakTime, setBreakTime] = useState(null);    
     const [CSRFToken, setCSRFToken] = useState(null)
     const [initialLoad, setInitialLoad] = useState(true);
     const [progress, setProgress] = useState(
@@ -42,6 +42,7 @@ export const App = () =>
     ) 
 
     const [events, setEvents] = useState([]);
+    const [templates, setTemplates] = useState(null)
     const [activeEvents, setActiveEvents] = useState
     (
         {
@@ -59,6 +60,7 @@ export const App = () =>
     const [settingsOpen, openSettings] = useState(false);
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
+    const [hours, setHours] = useState(0);
     const calRef = useRef(null);
 
     const filteredEvents = events.filter(event => 
@@ -192,6 +194,93 @@ export const App = () =>
             console.log(e);
         }
     };
+
+    useEffect(() => 
+    {
+        //hour calculations
+        if (events.length === 0) return;
+
+        let start, end;
+
+        switch (view) 
+        {
+            case Views.WEEK:
+                start = new Date(date);
+                start.setDate(start.getDate() - start.getDay() + 1);
+                start.setHours(0, 0, 0, 0);
+
+                end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                break;
+
+            case Views.DAY:
+                start = new Date(date);
+                start.setHours(0, 0, 0, 0);
+
+                end = new Date(date);
+                end.setHours(23, 59, 59, 999);
+                break;
+
+            case Views.MONTH:
+                start = new Date(date.getFullYear(), date.getMonth(), 1);
+                start.setHours(0, 0, 0, 0);
+
+                end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                end.setHours(23, 59, 59, 999);
+                break;
+
+            default:
+                return;
+        }
+
+        const filteredEvents = events.filter((event) => 
+        {
+            const eventStart = new Date(event.start);
+            return eventStart >= start && eventStart <= end;
+        });
+
+        if (filteredEvents.length === 0) 
+        {
+            setHours(0);
+            return;
+        }
+
+        const sorted = filteredEvents
+            .map((event) => ({
+                start: new Date(event.start),
+                end: new Date(event.end),
+            }))
+            .sort((a, b) => a.start - b.start);
+
+        const merged = [];
+        let current = sorted[0];
+
+        for (let i = 1; i < sorted.length; i++) 
+        {
+            const event = sorted[i];
+
+            if (event.start <= current.end) 
+            {
+                current.end = new Date(Math.max(current.end, event.end));
+            } 
+            else 
+            {
+                merged.push(current);
+                current = event;
+            }
+        }
+        merged.push(current);
+
+        const totalMinutes = merged.reduce((total, range) => 
+        {
+            const durationMinutes = (range.end - range.start) / (1000 * 60);
+            return total + durationMinutes;
+        }, 0);
+
+        setHours((totalMinutes / 60).toFixed(2));
+    }, [events, view, date]);
+
 
     const putEvent = async (event) =>
     {
@@ -396,13 +485,20 @@ export const App = () =>
                     ) 
                     {
                         setColours({
-                        local: data.localColour || "#274da5",
-                        google: data.googleColour || "#2775a5",
-                        microsoft: data.microsoftColour || "#27a596",
-                        github: data.githubColour || "#42368b",
-                        gitlab: data.gitlabColour || "#e34124",
-                        slack: data.slackColour || "#481449",
+                            local: data.localColour || "#274da5",
+                            google: data.googleColour || "#2775a5",
+                            microsoft: data.microsoftColour || "#27a596",
+                            github: data.githubColour || "#42368b",
+                            gitlab: data.gitlabColour || "#e34124",
+                            slack: data.slackColour || "#481449",
                         });
+                    }
+                    if(data.break)
+                    {
+                        setBreakTime({
+                            start: data.break.from,
+                            end: data.break.to
+                        })
                     }
                 });
             }
@@ -475,15 +571,56 @@ export const App = () =>
             }
         })
     }
-    const loadTemplate = () =>
+    const loadTemplate = async (template) =>
     {
+        await fetch("/loadTemplate/",
+        {
+            method: "POST",
+            headers: 
+            {
+                "Content-Type": 'application/json',
+                "X-CSRFToken": CSRFToken
+            },
+            body: JSON.stringify(template)
+        }).then(res =>
+        {
+            if(res.ok)
+            {
+                res.json().then(data =>
+                {
+                    setEvents(data.data);
+                    console.log("Loaded template successfully")
+                })
+            }
+            else
+            {
+                console.log("Error loading template")
+            }
+        })
+    }
     
-    }
-    const loadStandardTemplate = () =>
+    const getTemplates = async () =>
     {
-        
-    }
+        await fetch("/getTemplates").then(res =>
+        {
+            if(res.ok)
+            {
+                res.json().then(data =>
+                {
+                    setTemplates(data.data);
+                })
 
+            }
+            else
+            {
+                console.log("Error getting templates")
+            }
+        })
+    }
+    useEffect(() =>
+    {
+        console.log(templates)
+    }, [templates])
     const handleNavigate = (action) =>
     {
         let tempDate = new Date(date);
@@ -590,12 +727,12 @@ export const App = () =>
         setDate,
         date,
         view,
+        hours,
         setView,
         addEventFromSecondaryMenu,
         openSettings,
         saveTemplate,
         loadTemplate,
-        loadStandardTemplate
     }
     const filteringFunctions = 
     {
@@ -638,6 +775,7 @@ export const App = () =>
     {
         getCSRFToken();
         getEvents();
+        getTemplates();
         getProjects();  
         getPreferences();
         window.addEventListener('themeChange', (e) =>
@@ -679,7 +817,7 @@ export const App = () =>
                 setColours={setColours}
             />
 
-            <Toolbar calendarFunctions={calendarFunctions}/>
+            <Toolbar calendarFunctions={calendarFunctions} templates={templates}/>
             <div id={styles.calendarWrap}>
                 <SecondaryMenu 
                     localizer={localizer} 

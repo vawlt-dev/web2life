@@ -9,7 +9,7 @@ import slackLogo from "../resources/images/slack.png";
 import gitlabLogo from "../resources/images/gitlab.png";
 
 
-export const Toolbar = ({ calendarFunctions }) => 
+export const Toolbar = ({ calendarFunctions, templates }) => 
 {
     const oauthDropdownRef = useRef(null);
     const templatesDropdownRef = useRef(null);
@@ -17,6 +17,7 @@ export const Toolbar = ({ calendarFunctions }) =>
 
     const saveTemplateModalRef = useRef(null);
     const loadTemplateModalRef = useRef(null);
+    const selectTemplateRef = useRef(null);
     
     const toggleDropdown = (dropdown) => 
     {
@@ -252,7 +253,7 @@ export const Toolbar = ({ calendarFunctions }) =>
             
             <div id={styles.hoursGrid} ref={hoursDropdownRef}>
                 <label>
-                    Hours for Total 
+                    Total Hours for
                     {
                         calendarFunctions.view === Views.WEEK ? 
                         " Week" : 
@@ -262,11 +263,12 @@ export const Toolbar = ({ calendarFunctions }) =>
                 </label>
                 <label>
                     {
-                        //calendarFunctions.hours
+                        `${calendarFunctions.hours} ` ? `${calendarFunctions.hours} ` : "0 "
                     }
+                    {" "}
                     Hour
                     {
-                        //hours < 2 ? "s" : null
+                        (calendarFunctions.hours === 0 || calendarFunctions.hours > 1) ? "s" : null
                     }
                 </label>
                 <button></button>
@@ -303,11 +305,25 @@ export const Toolbar = ({ calendarFunctions }) =>
 
             <div id={styles.loadTemplateModal} ref={loadTemplateModalRef}>
                 <div>
-                    <select>
-                    </select>
+                    {
+                        templates && templates.length > 0 ?
+                        <select ref={selectTemplateRef}>
+                            {
+                                templates.map((template, index) =>(
+                                    <option key={index} value={template.id}>{template.title}</option>
+                                ))
+                            }
+                        </select>
+                        :
+                        <>No Templates yet</>
+                    }
                     <div>
                         <button onClick={() => loadTemplateModalRef.current.classList.remove(styles.active)}>Cancel</button>
-                        <button>Load Template</button>
+                        <button onClick={(e) =>
+                        {
+                            e.preventDefault();
+                            calendarFunctions.loadTemplate(selectTemplateRef.current.value)
+                        }}>Load Template</button>
                     </div>
                 </div>
             </div>

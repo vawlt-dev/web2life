@@ -9,6 +9,10 @@ export const SettingsModal = ({settingsOpen,
                                setColours}) => 
 {
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
+
+    const [fromTime, setFromTime] = useState("12:30");
+    const [toTime, setToTime] = useState("13:00");
+
     const breakLabelRef = useRef(null);
     const breakWrapRef = useRef(null);
     useEffect(() => 
@@ -258,19 +262,51 @@ export const SettingsModal = ({settingsOpen,
                     </div>
 
                     <div id={styles.breakWrap} ref={breakWrapRef}>
-                        <div className={styles.break}>
-                            <label>From</label>
-                            <input type='time' value={"12:30"}/>
-                            <label>To</label>
-                            <input type='time' value={"13:00"}/>
+                        <div id={styles.break}>
+                            <form onSubmit=
+                            {
+                                (e) => 
+                                {
+                                    e.preventDefault()
+                                    console.log(fromTime, toTime)
+                                    setPreferences(
+                                    {
+                                        "break":
+                                        {
+                                            from: fromTime, 
+                                            to: toTime
+                                        }
+                                    })
+                                    
+                                }
+                            }>
+                                <div>
+                                    <label>From</label>
+                                    <input type='time' value={fromTime} name='from' onChange={(e) => setFromTime(e.target.value)}
+                                        onBlur={() =>
+                                        {
+                                            if(toTime < fromTime)
+                                            {
+                                                setToTime(fromTime);
+                                            }
+                                        }}/>
+                                    <label>To</label>
+                                    <input type='time' value={toTime} name='to' onChange={(e) => setToTime(e.target.value)}
+                                        onBlur={() =>
+                                        {
+                                            if(toTime < fromTime)
+                                            {
+                                                setToTime(fromTime);
+                                            }
+                                        }}/>
+                                </div>
+                                <div id={styles.addButtonWrap}>
+                                    <button>Save Break Time</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    <div id={styles.addButtonWrap}>
-                        <button onClick={() =>
-                        {
-                            
-                        }}>Add Break</button>
-                    </div>
+
                 </div>            
             </div>
         </div>

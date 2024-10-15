@@ -305,15 +305,17 @@ def get_gmail_messages(request):
             if exception is None:
                 headers = response["payload"]["headers"]
                 date_str = next(
-                        header["value"]
-                        for header in headers
-                        if header["name"] == "Date"
-                    )
-                
+                    header["value"] for header in headers if header["name"] == "Date"
+                )
+
                 try:
-                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z").isoformat()
+                    date = datetime.strptime(
+                        date_str, "%a, %d %b %Y %H:%M:%S %Z"
+                    ).isoformat()
                 except ValueError:
-                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z").isoformat()
+                    date = datetime.strptime(
+                        date_str, "%a, %d %b %Y %H:%M:%S %z"
+                    ).isoformat()
 
                 info = {
                     "date": date,
@@ -326,7 +328,7 @@ def get_gmail_messages(request):
                         header["value"] for header in headers if header["name"] == "To"
                     ),
                 }
-                
+
                 message_list.append(info)
             else:
                 print(f"Error with request {request_id}: {exception}")
@@ -354,7 +356,7 @@ def get_gmail_messages(request):
             translated_dict.append(model_to_dict(e))
 
         return JsonResponse({"data": translated_dict})
-        #return JsonResponse({"data": message_list})
+        # return JsonResponse({"data": message_list})
 
     except Exception as e:
         traceback.print_exc()
@@ -734,7 +736,6 @@ def get_users(request):  # pylint: disable=unused-argument
 
 
 def set_preferences(request):
-    print("a")
     try:
         if request.content_type != "application/json":
             return HttpResponse(
@@ -776,6 +777,14 @@ def set_preferences(request):
         prefs["gitlabrepos"] = prefs.get("gitlabrepos", []) + data.get(
             "gitlabrepos", []
         )
+
+        if "break" in data:
+            break_data = data["break"]
+            if "from" in break_data and "to" in break_data:
+                prefs["break"] = {
+                    "from": break_data["from"],
+                    "to": break_data["to"],
+                }
 
         prefs.update(
             {
@@ -917,6 +926,7 @@ def create_template(request):
                 start=event.start,
                 end=event.end,
                 day=event_day,
+                description=event.description,
                 projectId=event.projectId,
                 templateId=template,
             )
@@ -931,55 +941,46 @@ def create_template(request):
         return HttpResponse(f"An error occurred: {e}", status=500)
 
 
-def show_current_template(request):
-    data = "Template for week ending Sunday 2024-10-13"
-    template_to_get_from = Template.objects.filter(title=data).last()
-    template_events = TemplateEvents.objects.all().filter(
-        templateId=template_to_get_from.id
-    )
-    ending = datetime.strptime(
-        re.search(r"(\d{4}-\d{2}-\d{2})", data).group(1), "%Y-%m-%d"
-    )
-    starting = ending - timedelta(days=ending.weekday() + 1)
-    for event in template_events:
-        start = starting.replace(
-            hour=event.start.hour, minute=event.start.minute, second=event.start.second
+def get_templates(request):
+    templates = []
+    for template in Template.objects.all():
+        templates.append(
+            {
+                "id": template.id,
+                "title": template.title,
+            }
         )
-        end = starting.replace(
-            hour=event.end.hour, minute=event.end.minute, second=event.end.second
-        )
-        print(start)
-        print(end)
-        day_offset = 0
-        match event.day:
-            case "Tuesday":
-                day_offset = 1
-            case "Wednesday":
-                day_offset = 2
-            case "Thursday":
-                day_offset = 3
-            case "Friday":
-                day_offset = 5
-            case "Saturday":
-                day_offset = 6
-            case "Sunday":
-                day_offset = 7
+    print(templates)
+    return JsonResponse({"data": templates})
 
-        start += timedelta(days=day_offset)
-        end += timedelta(days=day_offset)
-        if end < start:
-            end += timedelta(days=1)
-        print(
-            f"Event: {event.title}, Start: {start}, End: {end}, Day: {start.strftime('%A')}"
-        )
-        j = Events(
-            title=event.title,
-            start=start,
-            end=end,
-            projectId=event.projectId,
-        )
-        j.save()
-    return HttpResponse()
+
+def load_template(request):
+    try:
+        data = json.loads(request.body)
+
+        try:
+            template = Template.objects.get(id=data)
+        except Exception as e:
+            return JsonResponse({"error": "Template doesn't exist"}, status=404)
+
+        t_events = TemplateEvents.objects.filter(templateId=template)
+
+        events = [
+            {
+                "id": event.id,
+                "title": event.title,
+                "start": event.start,
+                "end": event.end,
+                "day": event.day,
+                "description": event.description,
+                "projectId": event.projectId,
+            }
+            for event in t_events
+        ]
+    except Exception as e:
+        print("Exception occurred: ", str(e))
+        return HttpResponse()
+    pass
 
 
 def hours_in_week(request):

@@ -33,7 +33,7 @@ class Events(models.Model):
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
     allDay = models.BooleanField(default=False, null=True)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=500, default="")
     projectId = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
@@ -74,6 +74,7 @@ class TemplateEvents(models.Model):
     start = models.TimeField(null=True)
     end = models.TimeField(null=True)
     day = models.CharField(max_length=9, default="")
+    description = models.CharField(max_length=500, default="")
     projectId = models.ForeignKey(
         Project, on_delete=models.CASCADE, default=None, null=True
     )
