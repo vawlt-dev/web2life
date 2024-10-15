@@ -26,8 +26,6 @@ def import_events_from_project(headers, project_id, user):
         headers=headers,
     ).json()
 
-    print(push_events)
-
     events = []
     for event in push_events:
         push_data = event.get("push_data", {})
@@ -39,7 +37,7 @@ def import_events_from_project(headers, project_id, user):
                 "message": push_data.get("message"),
             }
         )
-        
+
     return events
 
 class GitLabEventSource(EventSource):

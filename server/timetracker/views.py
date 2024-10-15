@@ -469,7 +469,7 @@ def get_outlook_messages(request):
             email_data = response.json().get("value", [])
             emails = [
                 {
-                    "time_sent": email.get("sentDateTime"),
+                    "date": email.get("sentDateTime"),
                     "recipient": email.get("toRecipients", [{}])[0]
                     .get("emailAddress", {})
                     .get("address"),
