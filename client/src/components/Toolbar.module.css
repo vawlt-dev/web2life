@@ -125,7 +125,9 @@ img
     left: 50%;
     rotate: 45deg;
 }
-#OAuthGrid
+#OAuthGrid,
+#templatesGrid,
+#hoursGrid
 {
     display: flex;
     flex-direction: column;
@@ -137,7 +139,6 @@ img
     background-color: rgb(220,220,220);
     border-radius: 18px;
     gap: 6px;
-
     opacity: 0;
     pointer-events: none;
     transition: all ease 350ms;
@@ -193,19 +194,7 @@ img
 
 #templatesGrid
 {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    z-index: 99999999;
-    top: 60px;
-    left: 110px;
-    padding: 16px;
-    background-color: rgb(220,220,220);
-    border-radius: 18px;
-    gap: 6px;
-    opacity: 0;
-    pointer-events: none;
-    transition: all ease 350ms;
+    left: 110px;   
 }
 
 
@@ -249,6 +238,7 @@ img
     color: black;
     text-align: center;
 }
+
 
 #hoursGrid > button
 {

@@ -30,6 +30,10 @@ export const Toolbar = ({ calendarFunctions }) =>
             {
                 templatesDropdownRef.current.classList.remove(styles.active);
             }
+            if(hoursDropdownRef.current)
+            {
+                hoursDropdownRef.current.classList.remove(styles.active)
+            }
         } 
         else if (dropdown === "templates") 
         {
@@ -40,6 +44,10 @@ export const Toolbar = ({ calendarFunctions }) =>
             if (oauthDropdownRef.current) 
             {
                 oauthDropdownRef.current.classList.remove(styles.active);
+            }
+            if(hoursDropdownRef.current)
+            {
+                hoursDropdownRef.current.classList.remove(styles.active)
             }
         }
         else
@@ -73,6 +81,13 @@ export const Toolbar = ({ calendarFunctions }) =>
             ) {
                 templatesDropdownRef.current.classList.remove(styles.active);
             }
+            if (
+                hoursDropdownRef.current &&
+                !hoursDropdownRef.current.contains(e.target)
+            ) {
+                hoursDropdownRef.current.classList.remove(styles.active);
+            }
+
         };
         window.addEventListener("click", l);
 
