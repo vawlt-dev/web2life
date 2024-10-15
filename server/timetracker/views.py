@@ -29,6 +29,7 @@ from requests_oauthlib import OAuth2Session
 
 from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
+from . import event_translation
 
 # from . import filter as filtering
 from .models import Events, TemplateEvents, Template
@@ -303,12 +304,19 @@ def get_gmail_messages(request):
         def handle_message_request(request_id, response, exception):
             if exception is None:
                 headers = response["payload"]["headers"]
-                info = {
-                    "date": next(
+                date_str = next(
                         header["value"]
                         for header in headers
                         if header["name"] == "Date"
-                    ),
+                    )
+                
+                try:
+                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z").isoformat()
+                except ValueError:
+                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z").isoformat()
+
+                info = {
+                    "date": date,
                     "subject": next(
                         header["value"]
                         for header in headers
@@ -318,6 +326,7 @@ def get_gmail_messages(request):
                         header["value"] for header in headers if header["name"] == "To"
                     ),
                 }
+                
                 message_list.append(info)
             else:
                 print(f"Error with request {request_id}: {exception}")
@@ -339,7 +348,13 @@ def get_gmail_messages(request):
 
         batch.execute()
 
-        return JsonResponse({"data": message_list})
+        translated = event_translation.translate_email_events(message_list)
+        translated_dict = []
+        for e in translated:
+            translated_dict.append(model_to_dict(e))
+
+        return JsonResponse({"data": translated_dict})
+        #return JsonResponse({"data": message_list})
 
     except Exception as e:
         traceback.print_exc()
@@ -469,7 +484,7 @@ def get_outlook_messages(request):
             email_data = response.json().get("value", [])
             emails = [
                 {
-                    "time_sent": email.get("sentDateTime"),
+                    "date": email.get("sentDateTime"),
                     "recipient": email.get("toRecipients", [{}])[0]
                     .get("emailAddress", {})
                     .get("address"),
@@ -991,7 +1006,7 @@ def hours_in_week(request):
             seconds += k.total_seconds()
 
         hours = seconds / 3600
-        return HttpResponse(hours)
+        return JsonResponse({"hours": hours})
     except ValueError:
         return HttpResponse("Invalid date format", status=400)
     except Exception as e:

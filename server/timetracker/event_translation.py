@@ -7,12 +7,15 @@ import dateutil
 from .models import Events
 from . import models
 
+def extract_date_hour(date):
+    return int(date.timestamp() / 3600)
+
 # @NOTE(Jamie D)
 # Returns an array of Event objects. Commits that happen within the same 1-hour
 # time frame are grouped into one event called something like
 # "Pushed <no. commits> commits to <respository>".
 # Data should be an array of events that came from
-# Github. @TODO: Only works on PushEvent for now
+# Github.
 def translate_github_events(data) -> list:
     # repository name -> (hour -> commit count) >:(
     commit_count_map = defaultdict(lambda: defaultdict(int))
@@ -21,8 +24,7 @@ def translate_github_events(data) -> list:
 
     for e in data:
         time = dateutil.parser.isoparse(e["time"])
-        ts = time.astimezone(timezone).timestamp()
-        hour = int(ts / 3600)
+        hour = extract_date_hour(time.astimezone(timezone))
         commit_count_map[e["repo"]][hour] += 1
         try:
             message = e["message"]
@@ -79,3 +81,46 @@ def google_email_create_events(data):
         ) + datetime.timedelta(hours=0.5)
         e.title = email["subject"]
     return e
+
+def group_email_events(data):
+    # Group email subjects and recipients by hour
+    desc_map = defaultdict(lambda: [])
+
+    for email in data:
+        date = dateutil.parser.isoparse(email["date"])
+        subject = email["subject"]
+        recipient = email["recipient"]
+        hour = extract_date_hour(date)
+        desc_map[hour].append(email)
+
+    result = []
+    for d in desc_map.values():
+        result.append(d)
+
+    return result
+
+def translate_email_events(data):
+    groups = group_email_events(data)
+    result = []
+
+    for g in groups:
+        description = ""
+        first_email = g[0]
+        date = dateutil.parser.isoparse(first_email["date"])
+        hour = extract_date_hour(date)
+        
+        for email in g:
+            description += email['subject']
+        
+        event = Events(
+            title = f"Sent {len(g)} emails",
+            description = g,
+            start = datetime.datetime.fromtimestamp(hour * 3600),
+            end = datetime.datetime.fromtimestamp((hour + 1) * 3600),
+            allDay = False,
+            projectId = models.get_or_add_project_from_name("Sent Emails"),
+        )
+
+        result.append(event)
+
+    return result

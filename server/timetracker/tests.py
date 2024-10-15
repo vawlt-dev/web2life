@@ -45,3 +45,35 @@ class EventTranslationTest(TestCase):
 
         self.assertEqual(events[0].title, "Pushed 3 commits to my/repo")
         self.assertEqual(events[1].title, "Pushed 2 commits to my/repo")
+
+    def test_email_grouping(self):
+        now = datetime.datetime.now().timestamp()
+
+        data = [
+            {
+                "subject": "a",
+                "date": datetime.datetime.fromtimestamp(now).isoformat(),
+                "recipient": "john.smith@email.com",
+            },
+            {
+                "subject": "b",
+                "date": datetime.datetime.fromtimestamp(now+3600).isoformat(),
+                "recipient": "person@email.com",
+            },
+            {
+                "subject": "c",
+                "date": datetime.datetime.fromtimestamp(now+3600).isoformat(),
+                "recipient": "jane.doe@email.com",
+            },
+            {
+                "subject": "d",
+                "date": datetime.datetime.fromtimestamp(now+7200).isoformat(),
+                "recipient": "jane.doe@email.com",
+            },
+        ]
+
+        result = event_translation.group_email_events(data)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result[0]), 1)
+        self.assertEqual(len(result[1]), 2)
+        self.assertEqual(len(result[2]), 1)

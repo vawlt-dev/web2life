@@ -13,7 +13,6 @@ def get_user_events_for_repo(session, user, repo):
         response = session.get(
             f"https://api.github.com/repos/{repo}/commits?author={user}"
         ).json()
-        print(response)
         events = []
         for event in response:
             commit = event["commit"]
@@ -44,13 +43,16 @@ class GithubEventSource(EventSource):
 
     def import_events(self, request):
         prefs = user_prefs.load()
-        if "error" in prefs:
+
+        if 'error' in prefs or 'githubrepos' not in prefs or len(prefs['githubrepos']) == 0:
+            print("Error importing GitHub events: GitHub repositories not configured in settings")
             return []
 
         token = request.session.get("github_oauth_token")
         if not token:
             print("No GitHub session token")
             return []
+
         github_session = OAuth2Session(client_id=settings.GITHUB_CLIENT_ID, token=token)
         events = []
         user = prefs["githubusername"]
@@ -59,5 +61,4 @@ class GithubEventSource(EventSource):
 
         # Translate events
         translated = event_translation.translate_github_events(events)
-        print(translated)
         return translated

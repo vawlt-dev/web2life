@@ -174,11 +174,11 @@ export const App = () =>
                     resourceId: "importedEvents",
                     source: "github",
                 })),
-                ...gmailNotifications.map((notification) => normalizeEventDates({
-                    ...notification,
-                    title: "Google Notification",
-                    start: new Date(notification.date),
-                    end: new Date(new Date(notification.date).getTime() + 3600000),
+                ...gmailNotifications.map((event) => normalizeEventDates({
+                    ...event,
+                    //title: "Google Notification",
+                    //start: new Date(notification.date),
+                    //end: new Date(new Date(notification.date).getTime() + 3600000),
                     resourceId: "importedEvents",
                     source: "google",
                 })),
