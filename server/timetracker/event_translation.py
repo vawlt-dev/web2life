@@ -99,7 +99,7 @@ def group_email_events(data):
 
     return result
 
-def translate_gmail_events(data):
+def translate_email_events(data):
     groups = group_email_events(data)
     result = []
 

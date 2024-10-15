@@ -73,7 +73,6 @@ class EventTranslationTest(TestCase):
         ]
 
         result = event_translation.group_email_events(data)
-        #print(result)
         self.assertEqual(len(result), 3)
         self.assertEqual(len(result[0]), 1)
         self.assertEqual(len(result[1]), 2)

@@ -29,6 +29,7 @@ from requests_oauthlib import OAuth2Session
 
 from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
+from . import event_translation
 
 # from . import filter as filtering
 from .models import Events, TemplateEvents, Template
@@ -339,7 +340,13 @@ def get_gmail_messages(request):
 
         batch.execute()
 
-        return JsonResponse({"data": message_list})
+        translated = event_translation.translate_email_events(message_list)
+        translated_dict = []
+        for e in translated:
+            translated_dict.append(model_to_dict(translated))
+
+        return JsonResponse({"data": translated_dict})
+        #return JsonResponse({"data": message_list})
 
     except Exception as e:
         traceback.print_exc()
