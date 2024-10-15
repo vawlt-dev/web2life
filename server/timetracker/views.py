@@ -891,6 +891,7 @@ def get_events_from_template_title(request):
 
 
 from django.db.models import Q
+from django.utils import timezone
 
 
 def create_template(request):
@@ -919,13 +920,14 @@ def create_template(request):
         template.save()
 
         for event in events_for_week:
-            event_day = event.start
-
+            print(event.start)
+            print(event.end)
+            print("**************")
+        for event in events_for_week:
             template_event = TemplateEvents(
                 title=event.title,
                 start=event.start,
                 end=event.end,
-                day=event_day,
                 description=event.description,
                 projectId=event.projectId,
                 templateId=template,
@@ -957,30 +959,69 @@ def get_templates(request):
 def load_template(request):
     try:
         data = json.loads(request.body)
+        template = data.get("template")
+        view = data.get("view")
+        date = data.get("date")
+
+        date = datetime.fromisoformat(date)
 
         try:
-            template = Template.objects.get(id=data)
-        except Exception as e:
+            template = Template.objects.get(id=template)
+        except Template.DoesNotExist:
             return JsonResponse({"error": "Template doesn't exist"}, status=404)
 
         t_events = TemplateEvents.objects.filter(templateId=template)
 
-        events = [
-            {
-                "id": event.id,
-                "title": event.title,
-                "start": event.start,
-                "end": event.end,
-                "day": event.day,
-                "description": event.description,
-                "projectId": event.projectId,
-            }
-            for event in t_events
-        ]
+        if view == "week":
+            target_week_start = date - timedelta(days=date.weekday())
+        elif view == "day":
+            target_week_start = date
+        else:
+            return HttpResponse("Invalid view type", status=400)
+
+        if not t_events.exists():
+            return JsonResponse(
+                {"error": "No events found in the template"}, status=404
+            )
+
+        week_start = min(t_events, key=lambda e: e.start).start
+        week_start = week_start - timedelta(days=week_start.weekday())
+        events = []
+
+        for event in t_events:
+            event_day_offset = event.start.weekday() - week_start.weekday()
+
+            new_start = (target_week_start + timedelta(days=event_day_offset)).replace(
+                hour=event.start.hour,
+                minute=event.start.minute,
+                second=event.start.second,
+                microsecond=event.start.microsecond,
+            )
+            new_end = (target_week_start + timedelta(days=event_day_offset)).replace(
+                hour=event.end.hour,
+                minute=event.end.minute,
+                second=event.end.second,
+                microsecond=event.end.microsecond,
+            )
+
+            events.append(
+                {
+                    "id": event.id,
+                    "title": event.title,
+                    "start": new_start,
+                    "end": new_end,
+                    "description": event.description,
+                    "projectId": event.projectId.id if event.projectId else None,
+                }
+            )
+
+        return JsonResponse({"data": events})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
         print("Exception occurred: ", str(e))
-        return HttpResponse()
-    pass
+        return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
 def hours_in_week(request):
