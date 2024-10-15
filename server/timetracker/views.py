@@ -304,12 +304,19 @@ def get_gmail_messages(request):
         def handle_message_request(request_id, response, exception):
             if exception is None:
                 headers = response["payload"]["headers"]
-                info = {
-                    "date": next(
+                date_str = next(
                         header["value"]
                         for header in headers
                         if header["name"] == "Date"
-                    ),
+                    )
+                
+                try:
+                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z").isoformat()
+                except ValueError:
+                    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z").isoformat()
+
+                info = {
+                    "date": date,
                     "subject": next(
                         header["value"]
                         for header in headers
@@ -319,6 +326,7 @@ def get_gmail_messages(request):
                         header["value"] for header in headers if header["name"] == "To"
                     ),
                 }
+                
                 message_list.append(info)
             else:
                 print(f"Error with request {request_id}: {exception}")
@@ -343,7 +351,7 @@ def get_gmail_messages(request):
         translated = event_translation.translate_email_events(message_list)
         translated_dict = []
         for e in translated:
-            translated_dict.append(model_to_dict(translated))
+            translated_dict.append(model_to_dict(e))
 
         return JsonResponse({"data": translated_dict})
         #return JsonResponse({"data": message_list})
