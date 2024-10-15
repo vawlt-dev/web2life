@@ -143,7 +143,9 @@ img
     transition: all ease 350ms;
 }
 
-#OAuthGrid.active
+#OAuthGrid.active,
+#templatesGrid.active,
+#hoursGrid.active
 {
     opacity: 1;
     pointer-events: all;
@@ -151,7 +153,8 @@ img
 
 
 #OAuthGrid > button,
-#templatesGrid > button
+#templatesGrid > button,
+#hoursGrid > button
 {
     display: flex;
     align-items: center;
@@ -166,7 +169,8 @@ img
 }
 
 #templatesGrid > button:hover,
-#OAuthGrid > button:hover
+#OAuthGrid > button:hover,
+#hoursGrid > button:hover
 {
     background-color: rgb(175, 175, 175);
 }
@@ -203,13 +207,11 @@ img
     pointer-events: none;
     transition: all ease 350ms;
 }
-#templatesGrid.active
-{
-    opacity: 1;
-    pointer-events: all;
-}
 
-#templatesGrid::before
+
+
+#templatesGrid::before,
+#hoursGrid::before
 {
     position: absolute;
     width: 10px;
@@ -229,6 +231,29 @@ img
     font-size: 12px;
 }
 
+#hoursGrid
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: rgb(220,220,220);
+    border-radius: 18px;
+    z-index: 999999999999;
+    padding: 16px;
+    position: absolute;
+    top: 60px;
+    left: 200px;
+}
+#hoursGrid > label
+{
+    color: black;
+    text-align: center;
+}
+
+#hoursGrid > button
+{
+    height: 40px;
+}
 #saveTemplateModal,
 #loadTemplateModal
 {

@@ -13,6 +13,8 @@ export const Toolbar = ({ calendarFunctions }) =>
 {
     const oauthDropdownRef = useRef(null);
     const templatesDropdownRef = useRef(null);
+    const hoursDropdownRef = useRef(null);
+
     const saveTemplateModalRef = useRef(null);
     const loadTemplateModalRef = useRef(null);
     
@@ -38,6 +40,21 @@ export const Toolbar = ({ calendarFunctions }) =>
             if (oauthDropdownRef.current) 
             {
                 oauthDropdownRef.current.classList.remove(styles.active);
+            }
+        }
+        else
+        {
+            if(oauthDropdownRef.current)
+            {
+                oauthDropdownRef.current.classList.remove(styles.active);
+            }
+            if (templatesDropdownRef.current) 
+            {
+                templatesDropdownRef.current.classList.remove(styles.active);
+            }
+            if(hoursDropdownRef.current)
+            {
+                hoursDropdownRef.current.classList.toggle(styles.active)
             }
         }
     };
@@ -140,7 +157,11 @@ export const Toolbar = ({ calendarFunctions }) =>
                         e.stopPropagation();
                         toggleDropdown("templates")
                     }}>Templates</button>
-                    <button>Hours</button>
+                    <button onClick={(e) =>
+                    {
+                        e.stopPropagation();
+                        toggleDropdown("hours")
+                    }}>Hours</button>
                 </div>
                 <div id={styles.navigationWrap}>
                     <button onClick={goToToday}>Today</button>
@@ -214,6 +235,28 @@ export const Toolbar = ({ calendarFunctions }) =>
                 </button>
             </div>
             
+            <div id={styles.hoursGrid} ref={hoursDropdownRef}>
+                <label>
+                    Hours for Total 
+                    {
+                        calendarFunctions.view === Views.WEEK ? 
+                        " Week" : 
+                        calendarFunctions.view === Views.DAY ? 
+                        " Day": " Month"
+                    }:
+                </label>
+                <label>
+                    {
+                        //calendarFunctions.hours
+                    }
+                    Hour
+                    {
+                        //hours < 2 ? "s" : null
+                    }
+                </label>
+                <button></button>
+            </div>
+
             <div id={styles.saveTemplateModal} ref={saveTemplateModalRef} onClick={(e) => 
             {
                 if(e.target === saveTemplateModalRef.current)
@@ -253,6 +296,8 @@ export const Toolbar = ({ calendarFunctions }) =>
                     </div>
                 </div>
             </div>
+
+           
 
             <div>
                 <img src={logo} alt="" />
