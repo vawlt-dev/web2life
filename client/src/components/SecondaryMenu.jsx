@@ -103,15 +103,6 @@ export const SecondaryMenu = (
                     <button onClick={() => calendarFunctions.addEventFromSecondaryMenu()}>+</button>
                 </div>
             </div>
-            <div id={styles.addEventWrap}>
-                <label>
-                    Save as Template 
-                </label>
-                <div id={styles.addEventButton}>
-                    <button onClick={() => calendarFunctions.createTemplate()}>+</button>
-                </div>
-            </div>
-
 
             <div id={styles.secondaryCalendarWrap}>
                 <Calendar 

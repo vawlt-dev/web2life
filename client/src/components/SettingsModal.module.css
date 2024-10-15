@@ -6,7 +6,7 @@
 #settingsModal
 {
     opacity: 0;
-    position: absolute;    
+    position: fixed;    
     display: flex;
     flex-direction: column;
     pointer-events: none;
@@ -16,7 +16,7 @@
 {
     opacity: 1;
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     background-color: var(--primaryColor);
     z-index: 9999;
     pointer-events: all;
@@ -59,7 +59,8 @@
 
 
 #generalSettingsWrap,
-#oauthSettingsWrap
+#oauthSettingsWrap,
+#statisticSettingsWrap
 {
     display: flex;
     flex-direction: column;
@@ -69,7 +70,8 @@
 }
 
 #generalSettingsWrap > label,
-#oauthSettingsWrap > label
+#oauthSettingsWrap > label,
+#statisticSettingsWrap > label
 {
     font-size: 20px;
     text-decoration: underline;
@@ -188,7 +190,8 @@
 }
 
 #githubSettings, 
-#gitlabSettings
+#gitlabSettings,
+#statisticSettings
 {
     display: flex;
     flex-direction: column;
@@ -307,4 +310,105 @@
     border-bottom-right-radius: 6px;
     font-family: "Inter";
     cursor: pointer;
+}
+#statisticSettingsWrap
+{
+    margin-top: 20px;
+}
+#breakLabelWrap
+{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 30px;
+}
+#breakLabelWrap > label
+{
+    text-decoration: underline;
+}
+#tooltip
+{
+    display: flex;
+    align-items: center;
+}
+#tooltip > img
+{
+    width: 20px;
+    height: 20px;
+}
+#tooltip > label
+{
+    position: relative;
+
+    display: inline-block;
+    background-color: rgb(50, 50, 50);
+    width: 125px;
+    font-size: 12px;
+    height: fit-content;
+    padding: 6px;
+    border-radius: 12px;
+    text-align: center;
+    opacity: 0;
+    transition: all ease 350ms;
+}
+#tooltip > label.active
+{
+    opacity: 1;
+}
+#tooltip > label::before
+{
+    position: absolute;
+    background-color: rgb(50, 50, 50);
+    left: -7.5px;
+    rotate: 45deg;
+    top: 25px;
+    content:'';
+    width: 15px;
+    height: 15px;
+}
+
+#addButtonWrap > button
+{
+    background-color: rgb(47, 91, 172);    
+    color: white;
+    font-family: "Inter";
+    border-radius: 6px;
+    padding: 6px;
+    border: 2px solid white;
+    width: 100%;
+    cursor: pointer;
+    transition: all ease 350ms;
+}
+.break
+{
+    margin: 6px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-left: 20px;
+    font-size: 14px;
+    align-items: center;
+}
+.break > input[type='time']
+{
+    width: 100px;
+    text-align: center;
+    padding: 0;
+    border: 0;
+    border: 2px solid var(--textColor);
+    border-radius: 6px;
+    font-family: "Inter";
+    color: var(--textColor);
+    background-color: transparent;
+    appearance: none;
+    
+}
+.break > input[type='time']::-webkit-calendar-picker-indicator
+{
+    filter: var(--logoInvert);
+}
+
+#addButtonWrap > button:hover
+{
+    background-color: rgba(34, 98, 158, 0.164);
 }

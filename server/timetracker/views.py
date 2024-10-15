@@ -866,8 +866,6 @@ def get_events_from_template_title(request):
     return HttpResponse()
 
 
-from django.utils.timezone import make_aware, get_current_timezone
-
 from django.db.models import Q
 
 

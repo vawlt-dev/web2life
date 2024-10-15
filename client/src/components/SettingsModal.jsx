@@ -9,7 +9,8 @@ export const SettingsModal = ({settingsOpen,
                                setColours}) => 
 {
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
-
+    const breakLabelRef = useRef(null);
+    const breakWrapRef = useRef(null);
     useEffect(() => 
     {
         localStorage.setItem('theme', lightMode);
@@ -228,32 +229,50 @@ export const SettingsModal = ({settingsOpen,
                     }
                 </div>
             </div>            
-            
-            <div id={styles.statisticSettings}>
+            <div id={styles.statisticSettingsWrap}>
                 <label>Time Statistic Settings</label>
-                
-                <div>
-                    <label>
-                        Break Times 
-                    </label>
-                    <img alt='' src={info} onMouseOver={() =>
-                    {
+                <div id={styles.statisticSettings}>
+                    <div id={styles.breakLabelWrap}>
+                        <label>
+                            Break Times 
+                        </label>
+                        <div id={styles.tooltip}>
+                            <img alt='' src={info} onMouseOver={() =>
+                            {
+                                if(breakLabelRef)
+                                {
+                                    breakLabelRef.current.classList.add(styles.active);
+                                }
+                            }}
+                            onMouseLeave={() =>
+                            {
+                                if(breakLabelRef)
+                                {
+                                    breakLabelRef.current.classList.remove(styles.active)
+                                }
+                            }}/>
+                            <label ref={breakLabelRef}>
+                                Hours outside of these times will be counted towards your final time statistics
+                            </label>
+                        </div>
+                    </div>
 
-                    }}/>
-                    <div className={styles.tooltip}>
-                        <label>Hours outside of these times will be counted towards your final time statistics</label>
+                    <div id={styles.breakWrap} ref={breakWrapRef}>
+                        <div className={styles.break}>
+                            <label>From</label>
+                            <input type='time' value={"12:30"}/>
+                            <label>To</label>
+                            <input type='time' value={"13:00"}/>
+                        </div>
                     </div>
-                    <div id={styles.breakWrap}>
-                        <label>From</label>
-                        <input type='time' value={"12:30"}/>
-                        <label>To</label>
-                        <input type='time' value={"13:00"}/>
+                    <div id={styles.addButtonWrap}>
+                        <button onClick={() =>
+                        {
+                            
+                        }}>Add Break</button>
                     </div>
-                    <div>
-                        <label>Add Break</label>
-                    </div>
-                </div>
-            </div>            
+                </div>            
+            </div>
         </div>
         
     )
