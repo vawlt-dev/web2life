@@ -1,9 +1,10 @@
 import datetime
-from django.test import TestCase
+from django.test import TestCase, Client
 from . import event_translation
 
 class EventTranslationTest(TestCase):
     def setUp(self):
+        self.client = Client()
         pass
 
     # @NOTE(Jamie D): This test will break if the title format
@@ -41,7 +42,6 @@ class EventTranslationTest(TestCase):
             },
         ]
         events = event_translation.translate_github_events(data)
-        print(events)
 
         self.assertEqual(events[0].title, "Pushed 3 commits to my/repo")
         self.assertEqual(events[1].title, "Pushed 2 commits to my/repo")
@@ -77,3 +77,18 @@ class EventTranslationTest(TestCase):
         self.assertEqual(len(result[0]), 1)
         self.assertEqual(len(result[1]), 2)
         self.assertEqual(len(result[2]), 1)
+    
+    def test_endpoints(self):
+        def assert_response(r):
+            if r.status_code != 301 and r.status_code != 200:
+                raise AssertionError("Invalid response status code")
+
+        def test_endpoint(uri):
+            response = self.client.get(uri)
+            assert_response(response)
+        test_endpoint("/")
+        test_endpoint("/getEvents/")
+        test_endpoint("/getProjects/")
+        test_endpoint("/getTemplates/")
+        test_endpoint("/favicon.ico")
+        test_endpoint("/manifest.json")

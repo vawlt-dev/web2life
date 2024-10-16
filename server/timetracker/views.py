@@ -701,7 +701,7 @@ def serve_static(request, path):
     if full_path.is_file():
         return serve(request, path, settings.STATIC_SOURCE)
 
-    return views.default.page_not_found(request, FileNotFoundError())
+    return views.defaults.page_not_found(request, FileNotFoundError())
 
 
 def get_csrf_token(request):
