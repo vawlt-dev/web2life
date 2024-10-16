@@ -290,7 +290,7 @@ def get_gmail_messages(request):
         gmail = build("gmail", "v1", credentials=credentials)
 
         one_month_ago = datetime.now() - timedelta(days=30)
-        query = f"after:{one_month_ago.strftime('%Y/%m/%d')}"
+        query = f"after:{one_month_ago.strftime('%Y/%m/%d')} from:me"
 
         # IMPORTANT
         # maxResults cannot exceed 30 if you're using a free Google API due to rate limits
