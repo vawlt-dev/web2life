@@ -154,7 +154,7 @@ export const App = () =>
                 })),
                 ...gitlabNotifications.map((event) => normalizeEventDates({
                     ...event,
-                    title: "Gitlab Notification",
+                    //title: "Gitlab Notification",
                     start: new Date(event.start),
                     end: new Date(event.end),
                     resourceId: "importedEvents",
@@ -170,7 +170,7 @@ export const App = () =>
                 })),
                 ...githubNotifications.map((event) => normalizeEventDates({
                     ...event,
-                    title: "Github Notification",
+                    //title: "Github Notification",
                     start: new Date(event.start),
                     end: new Date(event.end),
                     resourceId: "importedEvents",

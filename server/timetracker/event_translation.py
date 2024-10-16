@@ -20,11 +20,11 @@ def translate_github_events(data) -> list:
     # repository name -> (hour -> commit count) >:(
     commit_count_map = defaultdict(lambda: defaultdict(int))
     description_map = defaultdict(lambda: defaultdict(str))
-    timezone = datetime.timezone(datetime.timedelta(hours=13, minutes=0))
+    #timezone = datetime.timezone(datetime.timedelta(hours=13, minutes=0))
 
     for e in data:
         time = dateutil.parser.isoparse(e["time"])
-        hour = extract_date_hour(time.astimezone(timezone))
+        hour = extract_date_hour(time)
         commit_count_map[e["repo"]][hour] += 1
         try:
             message = e["message"]
