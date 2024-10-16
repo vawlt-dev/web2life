@@ -804,8 +804,10 @@ def set_preferences(request):
 
 
 def get_preferences(request):  # pylint: disable=unused-argument
-    prefs = user_prefs.load()
+    prefs, error = user_prefs.load()
     if "error" in prefs:
+        if error is FileNotFoundError:
+            return JsonResponse(prefs)
         return JsonResponse(prefs, status=500)
     return JsonResponse(prefs)
 

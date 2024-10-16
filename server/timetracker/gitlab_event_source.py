@@ -65,7 +65,7 @@ class GitLabEventSource(EventSource):
         access_token = request.session["gitlab_token"]["access_token"]
         headers = {"Authorization": f"Bearer {access_token}"}
 
-        prefs = user_prefs.load()
+        prefs, _ = user_prefs.load()
 
         if 'error' in prefs or 'gitlabrepos' not in prefs or len(prefs['gitlabrepos']) == 0:
             print("Error importing GitLab events: GitLab repositories not configured in settings")

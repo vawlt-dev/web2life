@@ -79,16 +79,18 @@ class EventTranslationTest(TestCase):
         self.assertEqual(len(result[2]), 1)
     
     def test_endpoints(self):
-        def assert_response(r):
-            if r.status_code != 301 and r.status_code != 200:
-                raise AssertionError("Invalid response status code")
+        def assert_response(r, valid_codes):
+            if r.status_code != 200 and r.status_code not in valid_codes:
+                raise AssertionError(f"Invalid response status code {r.status_code}")
 
-        def test_endpoint(uri):
+        def test_endpoint(uri, valid_codes=[]):
             response = self.client.get(uri)
-            assert_response(response)
+            assert_response(response, valid_codes)
+
         test_endpoint("/")
         test_endpoint("/getEvents/")
         test_endpoint("/getProjects/")
         test_endpoint("/getTemplates/")
-        test_endpoint("/favicon.ico")
-        test_endpoint("/manifest.json")
+        test_endpoint("/favicon.ico", [301])
+        test_endpoint("/manifest.json", [301])
+        test_endpoint("/getPreferences/")

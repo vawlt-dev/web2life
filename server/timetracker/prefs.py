@@ -4,11 +4,11 @@ from django.conf import settings
 def load():
     try:
         with open(settings.PREFS_PATH, "r") as file:
-            return json.load(file)
-    except json.JSONDecodeError:
-        return {"error": "Failed to decode preferences"}
+            return json.load(file), None
+    except json.JSONDecodeError as e:
+        return {"error": "Failed to decode preferences"}, e
     except Exception as e:
-        return {"error": f"{e}"}
+        return {"error": f"{e}"}, e
 
 
 def save(data):

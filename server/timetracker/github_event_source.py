@@ -42,7 +42,7 @@ class GithubEventSource(EventSource):
         return redirect(auth_url)
 
     def import_events(self, request):
-        prefs = user_prefs.load()
+        prefs, _ = user_prefs.load()
 
         if 'error' in prefs or 'githubrepos' not in prefs or len(prefs['githubrepos']) == 0:
             print("Error importing GitHub events: GitHub repositories not configured in settings")
