@@ -83,6 +83,8 @@ class EventTranslationTest(TestCase):
         event_translation.translate_email_events(data)
     
     def test_endpoints(self):
+        now = datetime.datetime.now()
+
         def assert_response(r, valid_codes):
             if r.status_code not in valid_codes:
                 print(r.content)
@@ -94,6 +96,10 @@ class EventTranslationTest(TestCase):
 
         def test_endpoint_https(uri, valid_codes=[200]):
             response = self.client.get(uri, **{'wsgi.url_scheme': 'https'})
+            assert_response(response, valid_codes)
+
+        def test_post(uri, data, valid_codes=[200]):
+            response = self.client.post(uri, json.dumps(data), content_type="application/json")
             assert_response(response, valid_codes)
 
         test_endpoint("/")
@@ -112,11 +118,50 @@ class EventTranslationTest(TestCase):
         test_endpoint_https("/oauth/connect/slack", [200, 302])
         test_endpoint_https("/connect-source/github", [200, 302])
         test_endpoint_https("/connect-source/gitlab", [200, 302])
-        response = self.client.post("/setPreferences/", json.dumps({"githubusername": "joe"}),
-                                    content_type="application/json")
-        assert_response(response, [200])
+        test_post("/setPreferences/", {"githubusername": "joe"})
         response = self.client.post("/setPreferences/", json.dumps({"githubusername": "joe"}),
                                     content_type="text/html")
         assert_response(response, [400])
+
+        test_endpoint("/clearEvents/")
+
+        dummy_event = {
+            "title": "My Event",
+            "description": "Some things",
+            "start": now.isoformat(),
+            "end": (now + datetime.timedelta(hours=2)).isoformat(),
+            "allDay": "off",
+            "project": "My Project",
+        }
+
+        test_post("/setEvent/", dummy_event)
+
+
+
+        test_post("/setEvent/", dummy_event)
+
+        test_post("/addProject/", {
+            "project": "Project added by /addProject/"
+        })
+
+        test_post("/patchEvent/", {
+            "originalEvent": {
+                "id": 0
+            },
+            "newEvent": {
+                "title": "My Event (With Changes)",
+                "description": "Some things that changed",
+                "start": now.isoformat(),
+                "end": (now + datetime.timedelta(hours=2)).isoformat(),
+                "allDay": "off",
+                "project": "My Project",
+            },
+        })
         
-        
+        test_post("/deleteEvent/", {
+            "id": 0,
+        })
+
+        test_post("/deleteProject/", {
+            "project": 0,
+        })

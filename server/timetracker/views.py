@@ -131,46 +131,46 @@ def patch_event(request):
     return HttpResponse()
 
 
-def update_event_times(request):
-    try:
-        data = json.loads(request.body)
-        event = Events.objects.get(id=data["originalEvent"]["id"])
-        new_event = data["newEvent"]
-        new_start = new_event.get("start")
-        new_end = new_event.get("end")
-        new_all_day = new_event.get("allDay")
+# def update_event_times(request):
+#     try:
+#         data = json.loads(request.body)
+#         event = Events.objects.get(id=data["originalEvent"]["id"])
+#         new_event = data["newEvent"]
+#         new_start = new_event.get("start")
+#         new_end = new_event.get("end")
+#         new_all_day = new_event.get("allDay")
 
-        event.start = new_start
-        event.end = new_end
-        event.allDay = new_all_day
-        event.save()
-    except Exception as e:
-        print(e)
-    return HttpResponse()
+#         event.start = new_start
+#         event.end = new_end
+#         event.allDay = new_all_day
+#         event.save()
+#     except Exception as e:
+#         print(e)
+#     return HttpResponse()
 
 
-def delete_event_time(request):
-    try:
-        data = json.loads(request.body)
-        event = Events.objects.get(id=data["id"])
+# def delete_event_time(request):
+#     try:
+#         data = json.loads(request.body)
+#         event = Events.objects.get(id=data["id"])
 
-        event.times = [
-            # no idea how this works but it does
-            # can't directly delete the time, so have to
-            # re-create the times array with the time to delete
-            # filtered out
-            time
-            for time in event.times
-            if not (
-                time.get("start") == data["start"]
-                and time.get("end") == data["end"]
-                and time.get("allDay") == data["allDay"]
-            )
-        ]
-        event.save()
-    except Exception as e:
-        print(e)
-    return HttpResponse()
+#         event.times = [
+#             # no idea how this works but it does
+#             # can't directly delete the time, so have to
+#             # re-create the times array with the time to delete
+#             # filtered out
+#             time
+#             for time in event.times
+#             if not (
+#                 time.get("start") == data["start"]
+#                 and time.get("end") == data["end"]
+#                 and time.get("allDay") == data["allDay"]
+#             )
+#         ]
+#         event.save()
+#     except Exception as e:
+#         print(e)
+#     return HttpResponse()
 
 
 def delete_event(request):
@@ -395,59 +395,59 @@ def connect_source(request, name):
     return HttpResponse()
 
 def get_events_from_template_title(request):
-    # data = json.loads(request.body)
-    data = "Template for week ending Saturday 2024-10-12"
-    template_to_get_from = Template.objects.filter(title=data).last()
-    template_events_gotten = TemplateEvents.objects.all().filter(
-        templateId=template_to_get_from.id
-    )
-    print(template_events_gotten)
-    input_date = datetime.now()
-    if input_date:
-        # Calculate the start of the week (Sunday 00:00:00)
-        start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-        start_of_week = start_of_week.replace(
-            hour=11, minute=0, second=0, microsecond=0
-        )
-        start_of_week += timedelta(hours=12, minutes=59, seconds=59)
+    # # data = json.loads(request.body)
+    # data = "Template for week ending Saturday 2024-10-12"
+    # template_to_get_from = Template.objects.filter(title=data).last()
+    # template_events_gotten = TemplateEvents.objects.all().filter(
+    #     templateId=template_to_get_from.id
+    # )
+    # print(template_events_gotten)
+    # input_date = datetime.now()
+    # if input_date:
+    #     # Calculate the start of the week (Sunday 00:00:00)
+    #     start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
+    #     start_of_week = start_of_week.replace(
+    #         hour=11, minute=0, second=0, microsecond=0
+    #     )
+    #     start_of_week += timedelta(hours=12, minutes=59, seconds=59)
 
-    if True:
-        for template in template_events_gotten:
-            start = datetime.combine(start_of_week.date(), template.start)
+    # if True:
+    #     for template in template_events_gotten:
+    #         start = datetime.combine(start_of_week.date(), template.start)
 
-            end = datetime.combine(start_of_week.date(), template.end)
-            match template.day:
-                case "Sunday":
-                    start += timedelta(days=0)
-                    end += timedelta(days=0)
-                case "Monday":
-                    start += timedelta(days=1)
-                    end += timedelta(days=1)
-                case "Tuesday":
-                    start += timedelta(days=2)
-                    end += timedelta(days=2)
-                case "Wednesday":
-                    start += timedelta(days=3)
-                    end += timedelta(days=3)
-                case "Thursday":
-                    start += timedelta(days=4)
-                    end += timedelta(days=4)
-                case "Friday":
-                    start += timedelta(days=5)
-                    end += timedelta(days=5)
-                case "Saturday":
-                    start += timedelta(days=6)
-                    end += timedelta(days=6)
-            print(start.strftime("%A"))
-            if template.title == "Test Event":
-                print(start, end)
-            j = Events(
-                title=template.title,
-                start=start,
-                end=end,
-                projectId=template.projectId,
-            )
-            j.save()
+    #         end = datetime.combine(start_of_week.date(), template.end)
+    #         match template.day:
+    #             case "Sunday":
+    #                 start += timedelta(days=0)
+    #                 end += timedelta(days=0)
+    #             case "Monday":
+    #                 start += timedelta(days=1)
+    #                 end += timedelta(days=1)
+    #             case "Tuesday":
+    #                 start += timedelta(days=2)
+    #                 end += timedelta(days=2)
+    #             case "Wednesday":
+    #                 start += timedelta(days=3)
+    #                 end += timedelta(days=3)
+    #             case "Thursday":
+    #                 start += timedelta(days=4)
+    #                 end += timedelta(days=4)
+    #             case "Friday":
+    #                 start += timedelta(days=5)
+    #                 end += timedelta(days=5)
+    #             case "Saturday":
+    #                 start += timedelta(days=6)
+    #                 end += timedelta(days=6)
+    #         print(start.strftime("%A"))
+    #         if template.title == "Test Event":
+    #             print(start, end)
+    #         j = Events(
+    #             title=template.title,
+    #             start=start,
+    #             end=end,
+    #             projectId=template.projectId,
+    #         )
+    #         j.save()
 
     return HttpResponse()
 
@@ -503,7 +503,6 @@ def create_template(request):
     except Exception as e:
         print(f"Error: {e}")
         return HttpResponse(f"An error occurred: {e}", status=500)
-
 
 def get_templates(request):
     templates = []
@@ -584,7 +583,6 @@ def load_template(request):
     except Exception as e:
         print("Exception occurred: ", str(e))
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
-
 
 def hours_in_week(request):
     try:
