@@ -1,4 +1,5 @@
 import datetime
+import json
 from django.test import TestCase, Client
 from . import event_translation
 
@@ -77,20 +78,45 @@ class EventTranslationTest(TestCase):
         self.assertEqual(len(result[0]), 1)
         self.assertEqual(len(result[1]), 2)
         self.assertEqual(len(result[2]), 1)
+
+        # Make sure this doesn't raise an exception
+        event_translation.translate_email_events(data)
     
     def test_endpoints(self):
         def assert_response(r, valid_codes):
-            if r.status_code != 200 and r.status_code not in valid_codes:
+            if r.status_code not in valid_codes:
+                print(r.content)
                 raise AssertionError(f"Invalid response status code {r.status_code}")
 
-        def test_endpoint(uri, valid_codes=[]):
+        def test_endpoint(uri, valid_codes=[200]):
             response = self.client.get(uri)
+            assert_response(response, valid_codes)
+
+        def test_endpoint_https(uri, valid_codes=[200]):
+            response = self.client.get(uri, **{'wsgi.url_scheme': 'https'})
             assert_response(response, valid_codes)
 
         test_endpoint("/")
         test_endpoint("/getEvents/")
         test_endpoint("/getProjects/")
         test_endpoint("/getTemplates/")
-        test_endpoint("/favicon.ico", [301])
-        test_endpoint("/manifest.json", [301])
+        test_endpoint("/favicon.ico", [200, 301])
+        test_endpoint("/manifest.json", [200, 301])
         test_endpoint("/getPreferences/")
+        # Set preferences should return a 400 error because no JSON data is provided
+        test_endpoint("/setPreferences/", [400])
+        test_endpoint("/getCsrfToken/")
+        test_endpoint("/static/this_file_doesnt_exist.js", [404])
+        test_endpoint_https("/oauth/connect/google/", [200, 302])
+        test_endpoint_https("/oauth/connect/microsoft", [200, 302])
+        test_endpoint_https("/oauth/connect/slack", [200, 302])
+        test_endpoint_https("/connect-source/github", [200, 302])
+        test_endpoint_https("/connect-source/gitlab", [200, 302])
+        response = self.client.post("/setPreferences/", json.dumps({"githubusername": "joe"}),
+                                    content_type="application/json")
+        assert_response(response, [200])
+        response = self.client.post("/setPreferences/", json.dumps({"githubusername": "joe"}),
+                                    content_type="text/html")
+        assert_response(response, [400])
+        
+        

@@ -722,19 +722,6 @@ def serve_ico(request):
     # return HttpResponse(data)
     return serve(request, path, document_root=settings.FRONTEND_BUILD_PATH)
 
-
-def set_user(request):  # pylint: disable=unused-argument
-    return None
-
-
-def get_user_by_id(request):  # pylint: disable=unused-argument
-    return None
-
-
-def get_users(request):  # pylint: disable=unused-argument
-    return None
-
-
 def set_preferences(request):
     try:
         if request.content_type != "application/json":

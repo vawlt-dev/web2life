@@ -54,33 +54,33 @@ def translate_github_events(data) -> list:
 
     return events
 
-def translate_slack_event(data):
-    try:
-        if data["type"] == "message":
-            return Events(
-                title=f"Message from {data['user']} in {data['channel']}",
-                # @TODO: What format is 'ts' in ?
-                start=datetime.datetime.now(),
-                end=datetime.datetime.now(),
-                description=data["text"],
-                task="Messaging",
-                allDay=False,
-            )
-        logging.debug(f"Unknown Slack event type {data['type']}")
-        return None
-    except:
-        return None
+# def translate_slack_event(data):
+#     try:
+#         if data["type"] == "message":
+#             return Events(
+#                 title=f"Message from {data['user']} in {data['channel']}",
+#                 # @TODO: What format is 'ts' in ?
+#                 start=datetime.datetime.now(),
+#                 end=datetime.datetime.now(),
+#                 description=data["text"],
+#                 task="Messaging",
+#                 allDay=False,
+#             )
+#         logging.debug(f"Unknown Slack event type {data['type']}")
+#         return None
+#     except:
+#         return None
 
 
-def google_email_create_events(data):
-    for email in data:
-        e = None
-        e.start = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z")
-        e.end = datetime.datetime.strptime(
-            email["date"], "%a, %d %b %Y %H:%M:%S %z"
-        ) + datetime.timedelta(hours=0.5)
-        e.title = email["subject"]
-    return e
+# def google_email_create_events(data):
+#     for email in data:
+#         e = None
+#         e.start = datetime.datetime.strptime(email["date"], "%a, %d %b %Y %H:%M:%S %z")
+#         e.end = datetime.datetime.strptime(
+#             email["date"], "%a, %d %b %Y %H:%M:%S %z"
+#         ) + datetime.timedelta(hours=0.5)
+#         e.title = email["subject"]
+#     return e
 
 def group_email_events(data):
     # Group email subjects and recipients by hour

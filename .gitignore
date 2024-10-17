@@ -3,3 +3,4 @@ client/build
 *.env
 .env
 *.sqlite3
+.coverage
