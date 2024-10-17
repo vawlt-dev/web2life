@@ -1,12 +1,16 @@
+import os
 import json
 from django.conf import settings
 
 def load():
+    if not os.path.exists(settings.PREFS_PATH):
+        return {"error": "File not found"}, FileNotFoundError()
+
     try:
         with open(settings.PREFS_PATH, "r") as file:
             return json.load(file), None
     except json.JSONDecodeError as e:
-        return {"error": "Failed to decode preferences"}, e
+        return {"error": "Failed to decode preferences"}, e  
     except Exception as e:
         return {"error": f"{e}"}, e
 

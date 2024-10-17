@@ -802,15 +802,11 @@ def set_preferences(request):
         print(e)
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
-
 def get_preferences(request):  # pylint: disable=unused-argument
     prefs, error = user_prefs.load()
-    if "error" in prefs:
-        if error is FileNotFoundError:
-            return JsonResponse(prefs)
-        return JsonResponse(prefs, status=500)
-    return JsonResponse(prefs)
-
+    if error is None or isinstance(error, FileNotFoundError):
+        return JsonResponse(prefs, status=200)
+    return JsonResponse(prefs, status=500)
 
 def connect_source(request, name):
     try:
