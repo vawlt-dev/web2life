@@ -17,7 +17,8 @@ def extract_date_hour(date: datetime.datetime):
 # Data should be an array of events that came from
 # Github.
 def translate_github_events(data) -> list:
-    '''Creates and returns a list of Event objects from 
+    '''
+    Creates and returns a list of Event objects from 
     Git commit JSON data. The data should contain fields:
     "time": The time of the event in ISO 8601 format.
     "repo": The repository which the commit occured in.
@@ -104,7 +105,8 @@ def group_email_events(data):
     return result
 
 def translate_email_events(data):
-    '''Translate list of email event JSON data to a list of Events objects.
+    '''
+    Translate list of email event JSON data to a list of Events objects.
     The JSON data must have:
     "date": The date an time the email was received.
     "subject": The subject line of the email.

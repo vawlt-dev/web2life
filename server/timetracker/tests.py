@@ -3,14 +3,14 @@ import json
 from django.test import TestCase, Client
 from . import event_translation
 
-class EventTranslationTest(TestCase):
+class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
     def setUp(self):
         self.client = Client()
-        pass
 
     # @NOTE(Jamie D): This test will break if the title format
     # from translate_github_events is changed
     def test_github_event_translation(self):
+        '''Test grouping of Git events'''
         repo_name = "my/repo"
         now = datetime.datetime.now().timestamp()
         data = [
@@ -48,6 +48,7 @@ class EventTranslationTest(TestCase):
         self.assertEqual(events[1].title, "Pushed 2 commits to my/repo")
 
     def test_email_grouping(self):
+        '''Test grouping of email events'''
         now = datetime.datetime.now().timestamp()
 
         data = [
@@ -81,8 +82,13 @@ class EventTranslationTest(TestCase):
 
         # Make sure this doesn't raise an exception
         event_translation.translate_email_events(data)
-    
+
     def test_endpoints(self):
+        '''
+        Test endpoints that don't need authorisation.
+        Authorised endpoints (third party event fetching)
+        must be tested manually.
+        '''
         now = datetime.datetime.now()
 
         def assert_response(r, valid_codes):
@@ -90,15 +96,21 @@ class EventTranslationTest(TestCase):
                 print(r.content)
                 raise AssertionError(f"Invalid response status code {r.status_code}")
 
-        def test_endpoint(uri, valid_codes=[200]):
+        def test_endpoint(uri, valid_codes=None):
+            if valid_codes is None:
+                valid_codes = [200]
             response = self.client.get(uri)
             assert_response(response, valid_codes)
 
-        def test_endpoint_https(uri, valid_codes=[200]):
+        def test_endpoint_https(uri, valid_codes=None):
+            if valid_codes is None:
+                valid_codes = [200]
             response = self.client.get(uri, **{'wsgi.url_scheme': 'https'})
             assert_response(response, valid_codes)
 
-        def test_post(uri, data, valid_codes=[200]):
+        def test_post(uri, data, valid_codes=None):
+            if valid_codes is None:
+                valid_codes = [200]
             response = self.client.post(uri, json.dumps(data), content_type="application/json")
             assert_response(response, valid_codes)
 
@@ -136,10 +148,6 @@ class EventTranslationTest(TestCase):
 
         test_post("/setEvent/", dummy_event)
 
-
-
-        test_post("/setEvent/", dummy_event)
-
         test_post("/addProject/", {
             "project": "Project added by /addProject/"
         })
@@ -157,7 +165,7 @@ class EventTranslationTest(TestCase):
                 "project": "My Project",
             },
         })
-        
+
         test_post("/deleteEvent/", {
             "id": 0,
         })
