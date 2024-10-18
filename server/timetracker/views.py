@@ -387,7 +387,7 @@ def connect_source(request, name):
         print(f"connect_source: {e}")
     return HttpResponse()
 
-def get_events_from_template_title(request): #pylint disable=unused-argument
+def get_events_from_template_title(request): #pylint: disable=unused-argument
     # data = json.loads(request.body)
     data = "Template for week ending Saturday 2024-10-12"
     template_to_get_from = Template.objects.filter(title=data).last()
