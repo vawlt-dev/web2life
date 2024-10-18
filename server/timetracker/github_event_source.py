@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.http import JsonResponse
 
 from requests_oauthlib import OAuth2Session
 
@@ -9,6 +8,7 @@ from . import prefs as user_prefs
 from . import event_translation
 
 def get_user_events_for_repo(session, user, repo):
+    '''Get all commits of a user to a given repository (e.g. my/repo)'''
     try:
         response = session.get(
             f"https://api.github.com/repos/{repo}/commits?author={user}"
@@ -30,7 +30,11 @@ def get_user_events_for_repo(session, user, repo):
         return []
 
 class GithubEventSource(EventSource):
-    def connect(self, request): #pylint: disable=unused-arguments
+    '''
+    Implementation of EventSource for GitHub.
+    Takes commits of user to repositories specified in preferences.
+    '''
+    def connect(self, request): #pylint: disable=unused-argument
         github_session = OAuth2Session(
             client_id=settings.GITHUB_CLIENT_ID,
             redirect_uri=settings.GITHUB_CALLBACK,
