@@ -16,8 +16,9 @@ from pathlib import Path
 import mimetypes
 from django.utils._os import safe_join
 
-
 dotenv.load_dotenv()
+
+REQUEST_TIMEOUT_S = 10
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

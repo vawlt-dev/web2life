@@ -1,33 +1,28 @@
 import datetime
 import json
 import os
-import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
 import django.db
 import django.db.models
 import django.db.models.utils
 import pytz
-import requests
 import django.middleware.csrf
 
-from django.utils.dateparse import parse_date, parse_datetime
+from django.db.models import Q
+from django.utils import timezone
 from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
-from django.forms.models import model_to_dict
 from django.conf import settings
 from django.shortcuts import redirect
-
+from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 
 from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
-from . import event_translation
-
-# from . import filter as filtering
 from .models import Events, TemplateEvents, Template
 from .models import Project
 
@@ -206,7 +201,6 @@ def delete_project(request):
 #### GOOGLE FUNCTIONS #####
 ###########################
 
-from google_auth_oauthlib.flow import Flow
 def google_connect_oauth(request):  # pylint: disable=unused-argument
     flow = Flow.from_client_config(
         {
@@ -450,11 +444,6 @@ def get_events_from_template_title(request):
     #         j.save()
 
     return HttpResponse()
-
-
-from django.db.models import Q
-from django.utils import timezone
-
 
 def create_template(request):
     try:
