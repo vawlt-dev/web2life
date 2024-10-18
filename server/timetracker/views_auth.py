@@ -1,19 +1,21 @@
 import datetime
-import requests
 import traceback
 import json
 from datetime import timedelta
 from datetime import datetime
+
+import requests
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from .event_source_list import EVENT_SOURCES
 from django.forms.models import model_to_dict
-from googleapiclient.http import BatchHttpRequest
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import Flow
 from django.shortcuts import redirect
+from googleapiclient.http import BatchHttpRequest
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
+
+from .event_source_list import EVENT_SOURCES
 from . import event_translation
 
 def import_events(request, name):
@@ -253,7 +255,8 @@ def get_outlook_messages(request):
     try:
         headers = {"Authorization": f"Bearer {credentials_info['access_token']}"}
         response = requests.get(
-            "https://graph.microsoft.com/v1.0/me/messages", headers=headers
+            "https://graph.microsoft.com/v1.0/me/messages", headers=headers,
+            timeout=settings.REQUEST_TIMEOUT_S
         )
 
         if response.status_code == 200:
@@ -289,7 +292,8 @@ def get_microsoft_calendar_events(request):
         headers = {"Authorization": f"Bearer {access_token}"}
 
         response = requests.get(
-            "https://graph.microsoft.com/v1.0/me/events", headers=headers
+            "https://graph.microsoft.com/v1.0/me/events", headers=headers,
+            timeout=settings.REQUEST_TIMEOUT_S,
         )
 
         if response.status_code != 200:
@@ -329,7 +333,7 @@ def gitlab_callback(request):
             "redirect_uri": settings.GITLAB_CALLBACK,
             "code_verifier": verifier,
         }
-        token = requests.post(token_url, data=params).json()
+        token = requests.post(token_url, data=params, timeout=settings.REQUEST_TIMEOUT_S).json()
 
         request.session["gitlab_token"] = token
         print(json.dumps(token))
@@ -373,7 +377,8 @@ def get_slack_events(request):
 
     try:
         response = requests.get(
-            "https://slack.com/api/conversations.list", headers=headers
+            "https://slack.com/api/conversations.list", headers=headers,
+            timeout=settings.REQUEST_TIMEOUT_S
         )
         channel_info = response.json().get("channels", [])
 
@@ -392,6 +397,7 @@ def get_slack_events(request):
                 "https://slack.com/api/conversations.history",
                 headers=headers,
                 params={"channel": channel["channel_id"]},
+                timeout=settings.REQUEST_TIMEOUT_S,
             )
             message_list = response.json().get("messages", [])
 

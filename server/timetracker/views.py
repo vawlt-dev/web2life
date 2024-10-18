@@ -3,14 +3,13 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+
+import pytz
+import django.middleware.csrf
 import django.db
 import django.db.models
 import django.db.models.utils
-import pytz
-import django.middleware.csrf
-
 from django.db.models import Q
-from django.utils import timezone
 from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
@@ -362,7 +361,7 @@ def set_preferences(request):
             {
                 key: value
                 for key, value in data.items()
-                if key != "githubrepos" and key != "gitlabrepos"
+                if key not in ('githubrepos', 'gitlabrepos')
             }
         )
         user_prefs.save(prefs)
@@ -388,60 +387,59 @@ def connect_source(request, name):
         print(f"connect_source: {e}")
     return HttpResponse()
 
-def get_events_from_template_title(request):
-    # # data = json.loads(request.body)
-    # data = "Template for week ending Saturday 2024-10-12"
-    # template_to_get_from = Template.objects.filter(title=data).last()
-    # template_events_gotten = TemplateEvents.objects.all().filter(
-    #     templateId=template_to_get_from.id
-    # )
-    # print(template_events_gotten)
-    # input_date = datetime.now()
-    # if input_date:
-    #     # Calculate the start of the week (Sunday 00:00:00)
-    #     start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-    #     start_of_week = start_of_week.replace(
-    #         hour=11, minute=0, second=0, microsecond=0
-    #     )
-    #     start_of_week += timedelta(hours=12, minutes=59, seconds=59)
+def get_events_from_template_title(request): #pylint disable=unused-argument
+    # data = json.loads(request.body)
+    data = "Template for week ending Saturday 2024-10-12"
+    template_to_get_from = Template.objects.filter(title=data).last()
+    template_events_gotten = TemplateEvents.objects.all().filter(
+        templateId=template_to_get_from.id
+    )
+    print(template_events_gotten)
+    input_date = datetime.now()
+    if input_date:
+        # Calculate the start of the week (Sunday 00:00:00)
+        start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
+        start_of_week = start_of_week.replace(
+            hour=11, minute=0, second=0, microsecond=0
+        )
+        start_of_week += timedelta(hours=12, minutes=59, seconds=59)
 
-    # if True:
-    #     for template in template_events_gotten:
-    #         start = datetime.combine(start_of_week.date(), template.start)
+    for template in template_events_gotten:
+        start = datetime.combine(start_of_week.date(), template.start)
 
-    #         end = datetime.combine(start_of_week.date(), template.end)
-    #         match template.day:
-    #             case "Sunday":
-    #                 start += timedelta(days=0)
-    #                 end += timedelta(days=0)
-    #             case "Monday":
-    #                 start += timedelta(days=1)
-    #                 end += timedelta(days=1)
-    #             case "Tuesday":
-    #                 start += timedelta(days=2)
-    #                 end += timedelta(days=2)
-    #             case "Wednesday":
-    #                 start += timedelta(days=3)
-    #                 end += timedelta(days=3)
-    #             case "Thursday":
-    #                 start += timedelta(days=4)
-    #                 end += timedelta(days=4)
-    #             case "Friday":
-    #                 start += timedelta(days=5)
-    #                 end += timedelta(days=5)
-    #             case "Saturday":
-    #                 start += timedelta(days=6)
-    #                 end += timedelta(days=6)
-    #         print(start.strftime("%A"))
-    #         if template.title == "Test Event":
-    #             print(start, end)
-    #         j = Events(
-    #             title=template.title,
-    #             start=start,
-    #             end=end,
-    #             projectId=template.projectId,
-    #         )
-    #         j.save()
+        end = datetime.combine(start_of_week.date(), template.end)
+        match template.day:
+            case "Sunday":
+                start += timedelta(days=0)
+                end += timedelta(days=0)
+            case "Monday":
+                start += timedelta(days=1)
+                end += timedelta(days=1)
+            case "Tuesday":
+                start += timedelta(days=2)
+                end += timedelta(days=2)
+            case "Wednesday":
+                start += timedelta(days=3)
+                end += timedelta(days=3)
+            case "Thursday":
+                start += timedelta(days=4)
+                end += timedelta(days=4)
+            case "Friday":
+                start += timedelta(days=5)
+                end += timedelta(days=5)
+            case "Saturday":
+                start += timedelta(days=6)
+                end += timedelta(days=6)
+        print(start.strftime("%A"))
+        if template.title == "Test Event":
+            print(start, end)
+        j = Events(
+            title=template.title,
+            start=start,
+            end=end,
+            projectId=template.projectId,
+        )
+        j.save()
 
     return HttpResponse()
 
@@ -460,6 +458,8 @@ def create_template(request):
         elif view == "day":
             start = date.replace(hour=0, minute=0, second=0, microsecond=0)
             end = start + timedelta(days=1)
+        else:
+            return HttpResponse("Invalid view", status=400)
 
         events_for_week = Events.objects.filter(
             (
@@ -493,7 +493,7 @@ def create_template(request):
         print(f"Error: {e}")
         return HttpResponse(f"An error occurred: {e}", status=500)
 
-def get_templates(request):
+def get_templates(request): # pylint: disable=unused-argument
     templates = []
     for template in Template.objects.all():
         templates.append(
