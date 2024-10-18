@@ -1,4 +1,3 @@
-import logging
 import datetime
 from collections import defaultdict
 
@@ -7,7 +6,8 @@ import dateutil
 from .models import Events
 from . import models
 
-def extract_date_hour(date):
+def extract_date_hour(date: datetime.datetime):
+    '''Get hours since epoch from a datetime object'''
     return int(date.timestamp() / 3600)
 
 # @NOTE(Jamie D)
@@ -17,6 +17,12 @@ def extract_date_hour(date):
 # Data should be an array of events that came from
 # Github.
 def translate_github_events(data) -> list:
+    '''Creates and returns a list of Event objects from 
+    Git commit JSON data. The data should contain fields:
+    "time": The time of the event in ISO 8601 format.
+    "repo": The repository which the commit occured in.
+    "message": The commit message.
+    '''
     # repository name -> (hour -> commit count) >:(
     commit_count_map = defaultdict(lambda: defaultdict(int))
     description_map = defaultdict(lambda: defaultdict(str))
@@ -26,15 +32,14 @@ def translate_github_events(data) -> list:
         time = dateutil.parser.isoparse(e["time"])
         hour = extract_date_hour(time)
         commit_count_map[e["repo"]][hour] += 1
-        try:
-            message = e["message"]
-            if (
-                len(message) + len(description_map[e["repo"]][hour])
-                <= models.Events._meta.get_field("description").max_length
-            ):
-                description_map[e["repo"]][hour] += "\n- " + e["message"]
-        except:
-            pass
+        if "repo" not in e or "message" not in e or "time" not in e:
+            continue
+        message = e["message"]
+        if (
+            len(message) + len(description_map[e["repo"]][hour])
+            <= models.Events._meta.get_field("description").max_length  #pylint: disable=protected-access disable=no-member
+        ):
+            description_map[e["repo"]][hour] += "\n- " + e["message"]
 
     events = []
 
@@ -83,13 +88,12 @@ def translate_github_events(data) -> list:
 #     return e
 
 def group_email_events(data):
-    # Group email subjects and recipients by hour
+    '''Group email subjects and recipients by hour'''
+
     desc_map = defaultdict(lambda: [])
 
     for email in data:
         date = dateutil.parser.isoparse(email["date"])
-        subject = email["subject"]
-        recipient = email["recipient"]
         hour = extract_date_hour(date)
         desc_map[hour].append(email)
 
@@ -100,6 +104,11 @@ def group_email_events(data):
     return result
 
 def translate_email_events(data):
+    '''Translate list of email event JSON data to a list of Events objects.
+    The JSON data must have:
+    "date": The date an time the email was received.
+    "subject": The subject line of the email.
+    '''
     groups = group_email_events(data)
     result = []
 
@@ -108,10 +117,10 @@ def translate_email_events(data):
         first_email = g[0]
         date = dateutil.parser.isoparse(first_email["date"])
         hour = extract_date_hour(date)
-        
+
         for email in g:
             description += email['subject']
-        
+
         event = Events(
             title = f"Sent {len(g)} emails",
             description = g,
