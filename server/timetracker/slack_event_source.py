@@ -12,7 +12,7 @@ from . import event_translation
 from .models import Events
 
 # How many seconds per group of messages
-# 20 minutes
+# 60 minutes
 SECONDS_PER_CHUNK = 60*60
 
 def group_slack_events(data, user_id):

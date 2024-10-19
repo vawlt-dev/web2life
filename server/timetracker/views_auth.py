@@ -16,7 +16,7 @@ import jwt
 from .event_source_list import EVENT_SOURCES
 
 def import_events(request, name):
-    #try:
+    try:
         source = EVENT_SOURCES[name]
         events = source.import_events(request)
         event_dict = []
@@ -25,8 +25,8 @@ def import_events(request, name):
             event_dict.append(model_to_dict(e))
 
         return JsonResponse({"data": event_dict})
-    #except Exception as e:
-    #    return JsonResponse({"error": f"An error occurred while importing events: {e}"})
+    except Exception as e:
+        return JsonResponse({"error": f"An error occurred while importing events: {e}"})
 
 #======================================================================================
 # Google
