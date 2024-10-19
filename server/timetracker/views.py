@@ -194,9 +194,11 @@ def delete_project(request):
     except:
         return HttpResponse()
 
+
 ###########################
 #### SERVER FUNCTIONS #####
 ###########################
+
 
 def index(request):
     print("Serve index")
@@ -230,6 +232,7 @@ def serve_ico(request):
     #    data = file.read()
     # return HttpResponse(data)
     return serve(request, path, document_root=settings.FRONTEND_BUILD_PATH)
+
 
 def set_preferences(request):
     try:
@@ -286,7 +289,7 @@ def set_preferences(request):
             {
                 key: value
                 for key, value in data.items()
-                if key not in ('githubrepos', 'gitlabrepos')
+                if key not in ("githubrepos", "gitlabrepos")
             }
         )
         user_prefs.save(prefs)
@@ -298,11 +301,13 @@ def set_preferences(request):
         print(e)
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+
 def get_preferences(request):  # pylint: disable=unused-argument
     prefs, error = user_prefs.load()
     if error is None or isinstance(error, FileNotFoundError):
         return JsonResponse(prefs, status=200)
     return JsonResponse(prefs, status=500)
+
 
 def connect_source(request, name):
     try:
@@ -312,7 +317,8 @@ def connect_source(request, name):
         print(f"connect_source: {e}")
     return HttpResponse()
 
-def get_events_from_template_title(request): #pylint: disable=unused-argument
+
+def get_events_from_template_title(request):  # pylint: disable=unused-argument
     # data = json.loads(request.body)
     data = "Template for week ending Saturday 2024-10-12"
     template_to_get_from = Template.objects.filter(title=data).last()
@@ -368,6 +374,7 @@ def get_events_from_template_title(request): #pylint: disable=unused-argument
 
     return HttpResponse()
 
+
 def create_template(request):
     try:
         data = json.loads(request.body)
@@ -418,7 +425,8 @@ def create_template(request):
         print(f"Error: {e}")
         return HttpResponse(f"An error occurred: {e}", status=500)
 
-def get_templates(request): # pylint: disable=unused-argument
+
+def get_templates(request):  # pylint: disable=unused-argument
     templates = []
     for template in Template.objects.all():
         templates.append(
@@ -434,6 +442,7 @@ def get_templates(request): # pylint: disable=unused-argument
 def load_template(request):
     try:
         data = json.loads(request.body)
+        print(data)
         template = data.get("template")
         view = data.get("view")
         date = data.get("date")
@@ -498,6 +507,8 @@ def load_template(request):
         print("Exception occurred: ", str(e))
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+
+# not needed currently, hours sorted by frontend
 def hours_in_week(request):
     try:
         data = json.loads(request.body)

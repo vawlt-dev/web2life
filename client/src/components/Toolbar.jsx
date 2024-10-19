@@ -290,7 +290,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                 }}>
                     <div>
                         <label>Template Name</label>
-                        <input type="text" name="templateName" required/>
+                        <input type="text" name="templateName" placeholder="Template Name" required/>
                     </div>
                     <div>
                         <button type='button' onClick={() =>

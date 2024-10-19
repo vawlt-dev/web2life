@@ -575,6 +575,12 @@ export const App = () =>
     }
     const loadTemplate = async (template) =>
     {
+        const data = 
+        {
+            "template": template,
+            "view": view,
+            "date": date
+        }
         await fetch("/loadTemplate/",
         {
             method: "POST",
@@ -583,14 +589,35 @@ export const App = () =>
                 "Content-Type": 'application/json',
                 "X-CSRFToken": CSRFToken
             },
-            body: JSON.stringify(template)
+            body: JSON.stringify(data)
         }).then(res =>
         {
             if(res.ok)
             {
                 res.json().then(data =>
                 {
-                    setEvents(data.data);
+                    console.log(data.data)
+                    setEvents(prevEvents =>
+                    [
+                        /*
+                            purge all template events before adding on new ones
+                            could be extended to clear only current view by using a switch on the view - ie
+                            view == "week": clear events between range(date.monday, date.sunday), etc                        
+                        */
+
+                        //this works for now
+                        ...prevEvents.filter(e => !e.templateEvent),
+                        ...data.data.map((event) =>
+                        (
+                            {
+                                //convert from utc to local date obj
+                                ...event,
+                                templateEvent: true,
+                                start: new Date(event.start),
+                                end: new Date(event.end),
+                            }
+                        ))
+                    ])
                     console.log("Loaded template successfully")
                 })
             }
