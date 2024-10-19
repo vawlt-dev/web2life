@@ -9,19 +9,24 @@ from django.shortcuts import redirect
 from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 
+import slack_sdk
+import slack_sdk.oauth
+import jwt
+
 from .event_source_list import EVENT_SOURCES
 
 def import_events(request, name):
-    try:
+    #try:
         source = EVENT_SOURCES[name]
         events = source.import_events(request)
         event_dict = []
+        
         for e in events:
             event_dict.append(model_to_dict(e))
 
         return JsonResponse({"data": event_dict})
-    except Exception as e:
-        return JsonResponse({"error": f"{e}"})
+    #except Exception as e:
+    #    return JsonResponse({"error": f"An error occurred while importing events: {e}"})
 
 #======================================================================================
 # Google
@@ -133,25 +138,28 @@ def gitlab_callback(request):
 # Slack
 #======================================================================================
 def slack_callback(request):
-    slack = OAuth2Session(
-        client_id=settings.SLACK_CLIENT_ID,
-        state=request.session.get("slack_state"),
-        redirect_uri=settings.SLACK_CALLBACK,
-    )
-
-    try:
-        token = slack.fetch_token(
-            "https://slack.com/api/oauth.v2.access",
-            client_secret=settings.SLACK_SECRET,
-            authorization_response=request.build_absolute_uri(),
-        )
-
-        request.session["slack_token"] = token
-
+    if "code" not in request.GET:
         return redirect("/")
+    client = slack_sdk.WebClient()
+    code = request.GET["code"]
+    response = client.oauth_v2_access(
+        client_id=settings.SLACK_CLIENT_ID,
+        client_secret=settings.SLACK_SECRET,
+        code=code,
+    )
+    installer = response.get("authed_user")
+    user_id = installer.get("id")
+    print(f"Slack user ID: {user_id}")
 
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+    request.session["slack_token"] = response.get("access_token")
+    request.session["slack_user_id"] = user_id
+
+    return redirect("/")
+    
+
+def slack_scope_callback(request):
+    request.session["slack_token"] = request.GET["access_token"]
+    return redirect("/")
 
 #======================================================================================
 # GitHub

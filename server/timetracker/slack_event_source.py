@@ -1,6 +1,8 @@
 import requests
 import datetime
 
+import slack_sdk
+import slack_sdk.oauth
 from requests_oauthlib import OAuth2Session
 from .event_source import EventSource
 from django.conf import settings
@@ -9,41 +11,50 @@ from django.shortcuts import redirect
 from . import event_translation
 from .models import Events
 
-def group_slack_events(data):
+# How many seconds per group of messages
+# 20 minutes
+SECONDS_PER_CHUNK = 60*60
+
+def group_slack_events(data, user_id):
     groups = {}
 
     for msg in data:
+        if msg["user"] != user_id:
+            continue
+        print(msg)
         time = datetime.datetime.fromtimestamp(float(msg["time"]))
-        hour = event_translation.extract_date_hour(time)
-        if hour not in groups:
-            groups[hour] = []
+        chunk = int(time.timestamp() / SECONDS_PER_CHUNK)
+        if chunk not in groups:
+            groups[chunk] = []
 
-        groups[hour].append(msg)
+        groups[chunk].append(msg)
 
     return groups
 
-def translate_slack_events(data):
+def translate_slack_events(data, user_id):
     '''Turn grouped message events into Events objects'''
-    groups = group_slack_events(data)
+    groups = group_slack_events(data, user_id)
     events = []
     for grouped in groups.items():
-        hour = grouped[0]
+        chunk = grouped[0]
         group = grouped[1]
         events.append(Events(
-            title=f"Received {len(group)} messages",
-            start=datetime.datetime.fromtimestamp(hour * 3600),
-            end=datetime.datetime.fromtimestamp((hour + 1) * 3600),
+            title=f"Sent {len(group)} messages",
+            start=datetime.datetime.fromtimestamp(chunk * SECONDS_PER_CHUNK),
+            end=datetime.datetime.fromtimestamp((chunk + 1) * SECONDS_PER_CHUNK),
         ))
 
     return events
 
 class SlackEventSource(EventSource):
     '''Implementation of event source for Slack API'''
+    state: slack_sdk.oauth.OAuthStateStore
     def connect(self, request):
-        slack_session = OAuth2Session(
+        self.state = slack_sdk.oauth.state_store.FileOAuthStateStore(expiration_seconds=300)
+
+        url_gen = slack_sdk.oauth.AuthorizeUrlGenerator(
             client_id=settings.SLACK_CLIENT_ID,
-            redirect_uri=settings.SLACK_CALLBACK,
-            scope=[
+            scopes=[
                 "channels:history",
                 "im:history",
                 "channels:read",
@@ -51,27 +62,21 @@ class SlackEventSource(EventSource):
                 "mpim:history",
                 "groups:history",
             ],
+            redirect_uri=settings.SLACK_CALLBACK,
         )
-        authorization_url, state = slack_session.authorization_url(
-            "https://slack.com/oauth/v2/authorize"
-        )
-        request.session["slack_state"] = state
-        return redirect(authorization_url)
-    
-    def import_events(self, request):
-        token = request.session.get("slack_token")
+        
+        url = url_gen.generate(self.state.issue())
+        return redirect(url)
 
-        if not token or "access_token" not in token:
+    def import_events(self, request):
+        if "slack_token" not in request.session:
             raise EventSource.NotAuthorisedError("Slack not connected")
         
-        access_token = token["access_token"]
-        headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get(
-            "https://slack.com/api/conversations.list", headers=headers,
-            timeout=settings.REQUEST_TIMEOUT_S
-        )
-        channel_info = response.json().get("channels", [])
+        user_token = request.session.get("slack_token")
+        client = slack_sdk.WebClient(token=user_token)
 
+        response = client.conversations_list()
+        channel_info = response.get("channels")
         if not channel_info:
             raise EventSource.ResponseError("No channels found", 200)
 
@@ -83,14 +88,8 @@ class SlackEventSource(EventSource):
 
         messages = []
         for channel in channels:
-            response = requests.get(
-                "https://slack.com/api/conversations.history",
-                headers=headers,
-                params={"channel": channel["channel_id"]},
-                timeout=settings.REQUEST_TIMEOUT_S,
-            )
-            message_list = response.json().get("messages", [])
-
+            response = slack_sdk.WebClient(token=user_token).conversations_history(channel=channel["channel_id"])
+            message_list = response.get("messages")
             for message in message_list:
                 messages.append(
                     {
@@ -102,5 +101,5 @@ class SlackEventSource(EventSource):
                     }
                 )
         
-        events = translate_slack_events(messages)
+        events = translate_slack_events(messages, request.session["slack_user_id"])
         return events
