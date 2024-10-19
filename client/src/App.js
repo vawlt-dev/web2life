@@ -99,8 +99,8 @@ export const App = () =>
 
             const results = await Promise.allSettled([
                 fetch("/getEvents").then((res) => (res.ok ? res.json() : [])),
-                fetch("https://127.0.0.1:8000/oauth/getGoogleCalendarEvents").then((res) => (res.ok ? res.json() : [])),
-                fetch("https://127.0.0.1:8000/oauth/getGmailMessages").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/import-events/google_calendar").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/import-events/gmail").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/oauth/getOutlookMessages").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/oauth/getMicrosoftCalendarEvents").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/import-events/github").then((res) => (res.ok ? res.json() : [])),

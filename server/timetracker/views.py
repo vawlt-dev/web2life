@@ -17,7 +17,6 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.shortcuts import redirect
-from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 
 from .event_source_list import EVENT_SOURCES
@@ -194,33 +193,6 @@ def delete_project(request):
         return HttpResponse()
     except:
         return HttpResponse()
-
-
-###########################
-#### GOOGLE FUNCTIONS #####
-###########################
-
-def google_connect_oauth(request):  # pylint: disable=unused-argument
-    flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_SECRET,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=[
-            "https://www.googleapis.com/auth/gmail.readonly",
-            "https://www.googleapis.com/auth/calendar.readonly",
-        ],
-        redirect_uri=settings.GOOGLE_CALLBACK,
-    )
-    authorization_url, _ = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true"
-    )
-
-    return redirect(authorization_url)
 
 ###########################
 ### MICROSOFT FUNCTIONS ###

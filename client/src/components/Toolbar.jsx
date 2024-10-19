@@ -212,7 +212,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
             </div>
 
             <div id={styles.OAuthGrid} ref={oauthDropdownRef}>
-                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/google")}>
+                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/connect-source/google_calendar")}>
                     <img src={googleLogo} alt="Google" />
                     <label>Continue with Google</label>
                 </button>
