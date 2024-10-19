@@ -9,7 +9,6 @@ export const SettingsModal = ({settingsOpen,
                                setColours}) => 
 {
     const [lightMode, setLightMode] = useState(localStorage['theme'] === "true");
-
     const [fromTime, setFromTime] = useState("12:30");
     const [toTime, setToTime] = useState("13:00");
 

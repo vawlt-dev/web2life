@@ -831,31 +831,38 @@ export const App = () =>
         getTemplates();
         getProjects();  
         getPreferences();
+
+        localStorage.getItem('theme') === "true" ? setLightMode() : setDarkMode()
         window.addEventListener('themeChange', (e) =>
         {
-            if (localStorage.getItem('theme') === "true")
-            {
-                document.documentElement.style.setProperty('--primaryColor', 'rgb(255, 255, 255)');
-                document.documentElement.style.setProperty('--secondaryColor', 'rgb(240, 240, 255)')
-                document.documentElement.style.setProperty('--textColor', 'black')
-                document.documentElement.style.setProperty('--textColor-invertHover', 'black')
-                document.documentElement.style.setProperty('--logoInvert', 'unset')
-                document.documentElement.style.setProperty('--borderColor', 'rgba(150, 150, 150, 0.5)')
-            }
-            else
-            {
-                document.documentElement.style.setProperty('--primaryColor', 'rgb(35, 45, 60)')
-                document.documentElement.style.setProperty('--secondaryColor', 'rgb(40, 50, 60)')
-                document.documentElement.style.setProperty('--textColor', 'white')
-                document.documentElement.style.setProperty('--textColor-invertHover', 'black')
-                document.documentElement.style.setProperty('--logoInvert', 'hue-rotate(190deg) invert()')
-                document.documentElement.style.setProperty('--borderColor', 'rgba(128, 128, 128, 0.1)')
-                
-            }
+            console.log(localStorage.getItem('theme'))
+            localStorage.getItem('theme') === "true" ? setLightMode() : setDarkMode()
         })
-
+        return () => 
+        {
+            window.removeEventListener('themeChange', () => {});
+        };
     }, [])
-
+    const setLightMode = () =>
+    {
+        console.log("setting light mode")
+        document.documentElement.style.setProperty('--primaryColor', 'rgb(255, 255, 255)');
+        document.documentElement.style.setProperty('--secondaryColor', 'rgb(240, 240, 255)')
+        document.documentElement.style.setProperty('--textColor', 'black')
+        document.documentElement.style.setProperty('--textColor-invertHover', 'black')
+        document.documentElement.style.setProperty('--logoInvert', 'unset')
+        document.documentElement.style.setProperty('--borderColor', 'rgba(150, 150, 150, 0.5)')
+    }
+    const setDarkMode = () =>
+    {
+        console.log("setting dark mode")
+        document.documentElement.style.setProperty('--primaryColor', 'rgb(35, 45, 60)')
+        document.documentElement.style.setProperty('--secondaryColor', 'rgb(40, 50, 60)')
+        document.documentElement.style.setProperty('--textColor', 'white')
+        document.documentElement.style.setProperty('--textColor-invertHover', 'black')
+        document.documentElement.style.setProperty('--logoInvert', 'hue-rotate(190deg) invert()')
+        document.documentElement.style.setProperty('--borderColor', 'rgba(128, 128, 128, 0.1)')
+    }
     // Main render
     return (        
         
