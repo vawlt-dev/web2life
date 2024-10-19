@@ -288,7 +288,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                     calendarFunctions.saveTemplate(e.target.templateName.value)
                     saveTemplateModalRef.current.classList.remove(styles.active);
                 }}>
-                    <div>
+                    <div id={styles.templateNameInputWrap}>
                         <label>Template Name</label>
                         <input type="text" name="templateName" placeholder="Template Name" required/>
                     </div>
@@ -307,13 +307,18 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                 <div>
                     {
                         templates && templates.length > 0 ?
-                        <select ref={selectTemplateRef}>
-                            {
-                                templates.map((template, index) =>(
-                                    <option key={index} value={template.id}>{template.title}</option>
-                                ))
-                            }
-                        </select>
+                        (
+                            <div>
+                                <select ref={selectTemplateRef} id={styles.loadTemplateSelect}>
+                                    {
+                                        templates.map((template, index) =>(
+                                            <option key={index} value={template.id}>{template.title}</option>
+                                        ))
+                                    }
+                                </select>
+                                <button onClick={() => calendarFunctions.deleteTemplate(selectTemplateRef.current.value)}>🗑</button>
+                            </div>
+                        )
                         :
                         <>No Templates yet</>
                     }

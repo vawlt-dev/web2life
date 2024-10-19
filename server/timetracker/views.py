@@ -14,7 +14,7 @@ from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.conf import settings
 from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
@@ -506,6 +506,19 @@ def load_template(request):
     except Exception as e:
         print("Exception occurred: ", str(e))
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+
+@require_http_methods(["DELETE"])
+def delete_template(request):
+    try:
+        templateId = json.loads(request.body).get("template")
+        template = Template.objects.get(id=templateId)
+        template.delete()
+        return JsonResponse(
+            {f"message": "successfully deleted template with ID: {templateId}"}
+        )
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
 
 
 # not needed currently, hours sorted by frontend

@@ -325,3 +325,23 @@ img
 {
     outline: 2px solid gray;
 }
+#loadTemplateModal > div
+{
+    text-align: center;
+}
+#templateNameInputWrap
+{
+    display: flex;
+    align-items: center;
+    height:30px;
+    
+}
+
+#loadTemplateSelect
+{
+    padding: 0;
+    width: 100%;
+    margin-right: 6px;
+    font-family: "Inter";
+    text-align: center;
+}

@@ -565,6 +565,7 @@ export const App = () =>
         {
             if(res.ok)
             {
+                getTemplates();
                 console.log("Successfully saved template")
             }
             else
@@ -596,7 +597,6 @@ export const App = () =>
             {
                 res.json().then(data =>
                 {
-                    console.log(data.data)
                     setEvents(prevEvents =>
                     [
                         /*
@@ -625,6 +625,29 @@ export const App = () =>
             {
                 console.log("Error loading template")
             }
+        })
+    }
+    const deleteTemplate = async (id) =>
+    {
+
+        console.log(JSON.stringify({"template": id}))
+        await fetch("/deleteTemplate",
+        {
+            method: "DELETE",
+            headers:
+            {
+                "X-CSRFToken": CSRFToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({template: id})
+        }).then(res =>
+        {
+            if(res.ok) 
+            { 
+                getTemplates();
+                console.log("Deleted template successfully")
+            }
+            else console.log("Error deleting template")
         })
     }
     
@@ -762,6 +785,7 @@ export const App = () =>
         openSettings,
         saveTemplate,
         loadTemplate,
+        deleteTemplate
     }
     const filteringFunctions = 
     {

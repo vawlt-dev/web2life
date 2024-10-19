@@ -7,11 +7,6 @@ import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
-/*
-    TODO:
-        1) Add delete method for the projects list
-        2) Add delete method for (local) events
-*/
 const hexToRgb = (colour) =>
 {
     let r = parseInt(colour.slice(1, 3), 16);

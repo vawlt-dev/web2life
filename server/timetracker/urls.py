@@ -34,14 +34,15 @@ urlpatterns = [
     path("deleteProject/", views.delete_project),
     path("manifest.json/", views.serve_manifest),
     path("filter-events/", views.filter_events),
-    #path("set_user/", views.set_user),
-    #path("get_users/", views.get_users),
-    #path("get_user_by_id/", views.get_user_by_id),
+    # path("set_user/", views.set_user),
+    # path("get_users/", views.get_users),
+    # path("get_user_by_id/", views.get_user_by_id),
     path("getPreferences/", views.get_preferences),
     path("setPreferences/", views.set_preferences),
     path("setTemplate/", views.create_template),
     path("getTemplates/", views.get_templates),
     path("loadTemplate/", views.load_template),
+    path("deleteTemplate/", views.delete_template),
     # OAuth Paths
     ##########################################
     path("oauth/callback/google", views_auth.google_callback),
@@ -56,7 +57,7 @@ urlpatterns = [
     # path("oauth/getGitlabEvents", views.get_gitlab_events),
     # Slack OAuth paths
     path("oauth/callback/slack", views_auth.slack_callback),
-	path("oauth/callback/slack_scopes", views_auth.slack_scope_callback),
+    path("oauth/callback/slack_scopes", views_auth.slack_scope_callback),
     # Custom event sources
     re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
     re_path(r"^import-events/(?P<name>.*)$", views_auth.import_events),
