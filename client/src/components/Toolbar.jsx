@@ -9,7 +9,7 @@ import slackLogo from "../resources/images/slack.png";
 import gitlabLogo from "../resources/images/gitlab.png";
 
 
-export const Toolbar = ({ calendarFunctions, templates }) => 
+export const Toolbar = ({ calendarFunctions, templates, currentViewEvents }) => 
 {
     const oauthDropdownRef = useRef(null);
     const templatesDropdownRef = useRef(null);
@@ -17,6 +17,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
 
     const saveTemplateModalRef = useRef(null);
     const loadTemplateModalRef = useRef(null);
+    const hoursBreakdownModalRef = useRef(null);
     const selectTemplateRef = useRef(null);
     
     const toggleDropdown = (dropdown) => 
@@ -271,7 +272,15 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                         (calendarFunctions.hours === 0 || calendarFunctions.hours > 1) ? "s" : null
                     }
                 </label>
-                <button></button>
+                <button onClick={() =>
+                {
+                    hoursBreakdownModalRef.current.classList.add(styles.active)
+                    hoursDropdownRef.current.classList.remove(styles.active)
+                }}>
+                    <label>
+                        View Hourly Breakdown
+                    </label>
+                </button>
             </div>
 
             <div id={styles.saveTemplateModal} ref={saveTemplateModalRef} onClick={(e) => 
@@ -333,6 +342,69 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                 </div>
             </div>
 
+            <div id={styles.hoursBreakdownModal} ref={hoursBreakdownModalRef} onClick=
+            {   
+                (e) => 
+                {
+                    if(e.target === hoursBreakdownModalRef.current)
+                    {
+                        hoursBreakdownModalRef.current.classList.remove(styles.active)
+                    };
+
+                }
+            }>
+                <div>
+                    <button onClick={() =>
+                    {
+                        hoursBreakdownModalRef.current.classList.remove(styles.active)
+                    }}
+                    >✖</button>
+                    <label>Hourly Breakdown</label>
+
+                    <table id={styles.hoursBreakdownGrid}>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Hours</th>
+                            </tr>
+                        </thead>
+                        {
+                            currentViewEvents && currentViewEvents.length > 0 ?
+                            (
+                                currentViewEvents.map((event, index) => 
+                                {
+                                    const start = new Date(event.start);
+                                    const end = new Date(event.end);
+                                    const duration = ((end - start) / (1000 * 60 * 60)).toFixed(2);
+
+                                    return (
+                                      
+                                            <tbody>
+                                                <tr key={index}>
+                                                    <td>{event.title}</td>
+                                                    <td>{`${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} ${start.getDate().toString().padStart(2, '0')}/${(start.getMonth() + 1).toString().padStart(2, '0')}/${start.getFullYear()}`}</td>
+                                                    <td>{`${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')} ${end.getDate().toString().padStart(2, '0')}/${(end.getMonth() + 1).toString().padStart(2, '0')}/${end.getFullYear()}`}</td>
+                                                    <td>{duration}</td>
+                                                </tr>
+                                            </tbody>
+                                    );
+                                })
+                            )
+                            :
+                            (
+                                <label>No Events to display</label>
+                            )
+                        }
+                    </table>
+
+
+                    <div>
+                        <label>Total Hours: {calendarFunctions.hours}</label>
+                    </div>
+                </div>
+            </div>
            
 
             <div>

@@ -42,6 +42,7 @@ export const App = () =>
     ) 
 
     const [events, setEvents] = useState([]);
+    const [currentViewEvents, setCurrentViewEvents] = useState([]);
     const [templates, setTemplates] = useState(null)
     const [activeEvents, setActiveEvents] = useState
     (
@@ -244,6 +245,7 @@ export const App = () =>
             return eventStart >= start && eventStart <= end;
         });
 
+        setCurrentViewEvents(filteredEvents);
         if (filteredEvents.length === 0) 
         {
             setHours(0);
@@ -879,7 +881,12 @@ export const App = () =>
                 setColours={setColours}
             />
 
-            <Toolbar calendarFunctions={calendarFunctions} templates={templates}/>
+            <Toolbar 
+                calendarFunctions={calendarFunctions} 
+                templates={templates}
+                currentViewEvents={currentViewEvents}
+            />
+
             <div id={styles.calendarWrap}>
                 <SecondaryMenu 
                     localizer={localizer} 

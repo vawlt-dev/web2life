@@ -176,7 +176,8 @@ img
     background-color: rgb(175, 175, 175);
 }
 #templatesGrid > button > label,
-#OAuthGrid > button > label
+#OAuthGrid > button > label,
+#hoursGrid > button > label
 {
     padding: 0;
     font-family: "Inter";
@@ -215,7 +216,8 @@ img
 {
     height: 40px;
 }
-#templatesGrid > button > label 
+#templatesGrid > button > label,
+#hoursGrid > button > label
 {
     font-size: 12px;
 }
@@ -245,7 +247,8 @@ img
     height: 40px;
 }
 #saveTemplateModal,
-#loadTemplateModal
+#loadTemplateModal,
+#hoursBreakdownModal
 {
     position: fixed;
     display: flex;
@@ -262,13 +265,15 @@ img
     transition: all ease 350ms;
 }
 #saveTemplateModal.active,
-#loadTemplateModal.active
+#loadTemplateModal.active,
+#hoursBreakdownModal.active
 {
     pointer-events: all;
     opacity: 1;
 }
 #saveTemplateModal > form,
-#loadTemplateModal > div
+#loadTemplateModal > div,
+#hoursBreakdownModal > div
 {
     display: flex;
     flex-direction: column;
@@ -344,4 +349,64 @@ img
     margin-right: 6px;
     font-family: "Inter";
     text-align: center;
+}
+
+
+#hoursBreakdownModal > div
+{
+    align-items: center;
+    padding: 24px;
+    width: 60%;
+    height: 50vh;
+}
+#hoursBreakdownModal > div > label
+{
+    font-size: 22px;
+    font-weight: 500;
+}
+
+#hoursBreakdownModal > div > #hoursBreakdownGrid
+{
+    border-collapse: collapse;
+    width: 100%;
+    height: 100%;
+    margin: 20px;
+}
+#hoursBreakdownModal > div > button
+{
+    align-self: flex-end;
+    background-color: #d7d7d7;
+    border: 0;
+    border-radius: 4px;
+    color: #555;
+    cursor: pointer;
+    font-size: 16px;
+    height: 30px;
+    text-align: center;
+    width: 26px;
+}
+#hoursBreakdownModal > div > #hoursBreakdownGrid > thead > tr > th
+{
+    padding: 6px;
+}
+
+#hoursBreakdownModal > div > #hoursBreakdownGrid > thead > tr > th,
+#hoursBreakdownModal > div > #hoursBreakdownGrid > tbody > tr > td
+{
+    width: 25%;
+}
+
+#hoursBreakdownModal > div > #hoursBreakdownGrid > thead > tr > th,
+#hoursBreakdownModal > div > #hoursBreakdownGrid > tbody > tr > td
+{
+    text-align: center;
+    border-bottom: 2px solid rgb(100, 100, 100);}
+#hoursBreakdownModal > div > #hoursBreakdownGrid > tbody > tr > td:not(:last-child)
+{
+    border-right: 2px solid rgb(100, 100, 100);}
+
+#hoursBreakdownModal > div > div:last-child > label
+{
+    font-weight: 500;
+    font-size: 18px;
 }
