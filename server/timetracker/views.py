@@ -318,101 +318,23 @@ def connect_source(request, name):
     return HttpResponse()
 
 
-def get_events_from_template_title(request):  # pylint: disable=unused-argument
-    # data = json.loads(request.body)
-    data = "Template for week ending Saturday 2024-10-12"
-    template_to_get_from = Template.objects.filter(title=data).last()
-    template_events_gotten = TemplateEvents.objects.all().filter(
-        templateId=template_to_get_from.id
-    )
-    print(template_events_gotten)
-    input_date = datetime.now()
-    if input_date:
-        # Calculate the start of the week (Sunday 00:00:00)
-        start_of_week = input_date - timedelta(days=input_date.weekday() + 2)
-        start_of_week = start_of_week.replace(
-            hour=11, minute=0, second=0, microsecond=0
-        )
-        start_of_week += timedelta(hours=12, minutes=59, seconds=59)
-
-    for template in template_events_gotten:
-        start = datetime.combine(start_of_week.date(), template.start)
-
-        end = datetime.combine(start_of_week.date(), template.end)
-        match template.day:
-            case "Sunday":
-                start += timedelta(days=0)
-                end += timedelta(days=0)
-            case "Monday":
-                start += timedelta(days=1)
-                end += timedelta(days=1)
-            case "Tuesday":
-                start += timedelta(days=2)
-                end += timedelta(days=2)
-            case "Wednesday":
-                start += timedelta(days=3)
-                end += timedelta(days=3)
-            case "Thursday":
-                start += timedelta(days=4)
-                end += timedelta(days=4)
-            case "Friday":
-                start += timedelta(days=5)
-                end += timedelta(days=5)
-            case "Saturday":
-                start += timedelta(days=6)
-                end += timedelta(days=6)
-        print(start.strftime("%A"))
-        if template.title == "Test Event":
-            print(start, end)
-        j = Events(
-            title=template.title,
-            start=start,
-            end=end,
-            projectId=template.projectId,
-        )
-        j.save()
-
-    return HttpResponse()
-
-
 def create_template(request):
     try:
         data = json.loads(request.body)
-        view = data.get("view")  # ISO format input date
         name = data.get("name")
-        date = datetime.fromisoformat(data.get("date"))
-        print(date)
-
-        if view == "week":
-            start = date - timedelta(days=date.weekday())
-            start = start.replace(hour=0, minute=0, second=0, microsecond=0)
-            end = start + timedelta(days=7)
-        elif view == "day":
-            start = date.replace(hour=0, minute=0, second=0, microsecond=0)
-            end = start + timedelta(days=1)
-        else:
-            return HttpResponse("Invalid view", status=400)
-
-        events_for_week = Events.objects.filter(
-            (
-                Q(start__gte=start) & Q(start__lt=end)
-                | (Q(end__lt=start) & Q(end__gte=start))
-            )
-        )
+        events = data.get("events")
+        print(events)
         template = Template(title=name)
         template.save()
 
-        for event in events_for_week:
-            print(event.start)
-            print(event.end)
-            print("**************")
-        for event in events_for_week:
+        for event in events:
+            print(event)
             template_event = TemplateEvents(
-                title=event.title,
-                start=event.start,
-                end=event.end,
-                description=event.description,
-                projectId=event.projectId,
+                title=event.get("title"),
+                start=event.get("start"),
+                end=event.get("end"),
+                description=event.get("description"),
+                projectId=event.get("projectId"),
                 templateId=template,
             )
             template_event.save()
@@ -442,62 +364,56 @@ def get_templates(request):  # pylint: disable=unused-argument
 def load_template(request):
     try:
         data = json.loads(request.body)
-        print(data)
-        template = data.get("template")
-        view = data.get("view")
-        date = data.get("date")
+        template_id = data.get("template")
+        view_range = data.get("range")
 
-        date = datetime.fromisoformat(date)
+        start_date = datetime.fromisoformat(view_range["start"])
+        end_date = datetime.fromisoformat(view_range["end"])
 
         try:
-            template = Template.objects.get(id=template)
+            template = Template.objects.get(id=template_id)
         except Template.DoesNotExist:
             return JsonResponse({"error": "Template doesn't exist"}, status=404)
 
         t_events = TemplateEvents.objects.filter(templateId=template)
-
-        if view == "week":
-            target_week_start = date - timedelta(days=date.weekday())
-        elif view == "day":
-            target_week_start = date
-        else:
-            return HttpResponse("Invalid view type", status=400)
 
         if not t_events.exists():
             return JsonResponse(
                 {"error": "No events found in the template"}, status=404
             )
 
-        week_start = min(t_events, key=lambda e: e.start).start
-        week_start = week_start - timedelta(days=week_start.weekday())
         events = []
 
         for event in t_events:
-            event_day_offset = event.start.weekday() - week_start.weekday()
+            days_offset = (
+                event.start.date() - min(t_events, key=lambda e: e.start).start.date()
+            ).days
 
-            new_start = (target_week_start + timedelta(days=event_day_offset)).replace(
+            new_start = (start_date + timedelta(days=days_offset)).replace(
                 hour=event.start.hour,
                 minute=event.start.minute,
                 second=event.start.second,
                 microsecond=event.start.microsecond,
             )
-            new_end = (target_week_start + timedelta(days=event_day_offset)).replace(
+
+            new_end = (start_date + timedelta(days=days_offset)).replace(
                 hour=event.end.hour,
                 minute=event.end.minute,
                 second=event.end.second,
                 microsecond=event.end.microsecond,
             )
 
-            events.append(
-                {
-                    "id": event.id,
-                    "title": event.title,
-                    "start": new_start,
-                    "end": new_end,
-                    "description": event.description,
-                    "projectId": event.projectId.id if event.projectId else None,
-                }
-            )
+            if start_date <= new_start <= end_date:
+                events.append(
+                    {
+                        "id": event.id,
+                        "title": event.title,
+                        "start": new_start,
+                        "end": new_end,
+                        "description": event.description,
+                        "projectId": event.projectId.id if event.projectId else None,
+                    }
+                )
 
         return JsonResponse({"data": events})
 

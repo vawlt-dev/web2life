@@ -61,6 +61,7 @@ export const App = () =>
     const [settingsOpen, openSettings] = useState(false);
     const [view, setView] = useState(Views.WEEK);
     const [date, setDate] = useState(new Date());
+    const [viewRange, setViewRange] = useState({})
     const [hours, setHours] = useState(0);
     const calRef = useRef(null);
 
@@ -198,7 +199,6 @@ export const App = () =>
             console.log(e);
         }
     };
-
     useEffect(() => 
     {
         //hour calculations
@@ -212,7 +212,7 @@ export const App = () =>
                 start = new Date(date);
 
                 //if the day of the week currently is sunday, go back a week otherwise will calculate for the next week
-                start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : -1));
+                start.setDate(start.getDate() + (start.getDay() === 0 ? -6 : 1 - start.getDay()));
                 start.setHours(0, 0, 0, 0);  
                 end = new Date(start);
                 end.setDate(start.getDate() + 6);
@@ -238,7 +238,11 @@ export const App = () =>
             default:
                 return;
         }
-
+        setViewRange(
+        {
+            start: start, 
+            end: end
+        })
         const filteredEvents = events.filter((event) => 
         {
             const eventStart = new Date(event.start);
@@ -552,8 +556,7 @@ export const App = () =>
     {
         const data =
         {
-            view: view,
-            date: date,
+            events: currentViewEvents,
             name: name
         }
         await fetch("/setTemplate/",
@@ -584,7 +587,8 @@ export const App = () =>
         {
             "template": template,
             "view": view,
-            "date": date
+            "date": date,
+            "range": viewRange
         }
         await fetch("/loadTemplate/",
         {
@@ -601,6 +605,7 @@ export const App = () =>
             {
                 res.json().then(data =>
                 {
+                    console.log(data.data)
                     setEvents(prevEvents =>
                     [
                         /*
