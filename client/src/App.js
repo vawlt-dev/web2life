@@ -89,6 +89,7 @@ export const App = () =>
         }
         return true;
     });
+
     ////////////
     // EVENTS //
     ////////////
@@ -208,9 +209,10 @@ export const App = () =>
         {
             case Views.WEEK:
                 start = new Date(date);
-                start.setDate(start.getDate() - start.getDay() + 1);
-                start.setHours(0, 0, 0, 0);
 
+                //if the day of the week currently is sunday, go back a week otherwise will calculate for the next week
+                start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : -1));
+                start.setHours(0, 0, 0, 0);  
                 end = new Date(start);
                 end.setDate(start.getDate() + 6);
                 end.setHours(23, 59, 59, 999);
@@ -274,10 +276,10 @@ export const App = () =>
         }
         merged.push(current);
 
-        const totalMinutes = merged.reduce((total, range) => 
+        const totalMinutes = merged.reduce((total, event) => 
         {
-            const durationMinutes = (range.end - range.start) / (1000 * 60);
-            return total + durationMinutes;
+            const duration = (event.end - event.start) / (1000 * 60);
+            return total + duration;
         }, 0);
 
         setHours((totalMinutes / 60).toFixed(2));
