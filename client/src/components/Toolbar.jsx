@@ -216,7 +216,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                     <img src={googleLogo} alt="Google" />
                     <label>Continue with Google</label>
                 </button>
-                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/microsoft")}>
+                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/connect-source/outlook")}>
                     <img src={microsoftLogo} alt="Microsoft" />
                     <label>Continue with Microsoft</label>
                 </button>
