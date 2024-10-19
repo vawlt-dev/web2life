@@ -195,31 +195,6 @@ def delete_project(request):
         return HttpResponse()
 
 ###########################
-### MICROSOFT FUNCTIONS ###
-###########################
-
-def microsoft_connect_oauth(request):
-    authorization_base_url = (
-        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
-    )
-
-    microsoft = OAuth2Session(
-        client_id=settings.MICROSOFT_CLIENT_ID,
-        redirect_uri=settings.MICROSOFT_CALLBACK,
-        scope=[
-            "https://graph.microsoft.com/Mail.Read",
-            "https://graph.microsoft.com/Calendars.Read",
-            "offline_access",
-        ],
-    )
-
-    authorization_url, state = microsoft.authorization_url(authorization_base_url)
-
-    request.session["microsoft_state"] = state
-
-    return redirect(authorization_url)
-
-###########################
 ##### SLACK FUNCTIONS #####
 ###########################
 def slack_connect_oauth(request):

@@ -11,6 +11,11 @@ class EventSource():
         when authorisation has not occured'''
         def __init__(self, message):
             super().__init__(message)
+    class ResponseError(Exception):
+        status_code: int
+        def __init__(self, message, code):
+            super().__init__(message)
+            self.status_code = code
 
     def connect(self, request): # pylint: disable=unused-argument
         '''Establish connection/authorisation to the source.'''

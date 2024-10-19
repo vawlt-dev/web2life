@@ -45,11 +45,7 @@ urlpatterns = [
     # OAuth Paths
     ##########################################
     path("oauth/callback/google", views_auth.google_callback),
-    # Microsoft OAuth paths
-    path("oauth/connect/microsoft", views.microsoft_connect_oauth),
     path("oauth/callback/microsoft", views_auth.microsoft_callback),
-    path("oauth/getOutlookMessages", views_auth.get_outlook_messages),
-    path("oauth/getMicrosoftCalendarEvents", views_auth.get_microsoft_calendar_events),
     # Github OAuth paths
     # path("oauth/connect/github", views.github_connect_oauth),
     path("oauth/callback/github", views_auth.github_callback),

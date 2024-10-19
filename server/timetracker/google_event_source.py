@@ -1,5 +1,4 @@
 import datetime
-import traceback
 from datetime import timedelta
 from datetime import datetime
 
@@ -161,7 +160,6 @@ def get_google_calendar_events(request):
     #    events.append(info)
 
     for e in events_list:
-        
         events.append(
             Events(
                 title=e.get("summary", "No title"),
