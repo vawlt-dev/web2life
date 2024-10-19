@@ -105,7 +105,7 @@ export const App = () =>
                 fetch("https://127.0.0.1:8000/import-events/microsoft_calendar").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/import-events/github").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/import-events/gitlab").then((res) => (res.ok ? res.json() : [])),
-                fetch("https://127.0.0.1:8000/oauth/getSlackEvents").then((res) => (res.ok ? res.json() : [])),
+                fetch("https://127.0.0.1:8000/import-events/slack").then((res) => (res.ok ? res.json() : [])),
             ]);
 
             setProgress({ loading: true, percent: 50 });
@@ -162,9 +162,11 @@ export const App = () =>
                 })),
                 ...slackNotifications.map((event) => normalizeEventDates({
                     ...event,
-                    title: "Slack Notification",
-                    start: new Date(Math.floor(parseFloat(event.time)) * 1000),
-                    end: new Date(Math.floor(parseFloat(event.time)) * 1000 + 3600000),
+                    //title: "Slack Notification",
+                    //start: new Date(Math.floor(parseFloat(event.time)) * 1000),
+                    //end: new Date(Math.floor(parseFloat(event.time)) * 1000 + 3600000),
+                    start: new Date(event.start),
+                    end: new Date(event.end),
                     resourceId: "importedEvents",
                     source: "slack",
                 })),

@@ -135,3 +135,4 @@ def translate_email_events(data):
         result.append(event)
 
     return result
+

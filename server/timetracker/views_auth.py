@@ -147,62 +147,11 @@ def slack_callback(request):
         )
 
         request.session["slack_token"] = token
+
         return redirect("/")
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
-
-
-def get_slack_events(request):
-    token = request.session.get("slack_token")
-
-    if not token or "access_token" not in token:
-        return JsonResponse({"error": "No access token found in session"})
-
-    access_token = token["access_token"]
-    headers = {"Authorization": f"Bearer {access_token}"}
-
-    try:
-        response = requests.get(
-            "https://slack.com/api/conversations.list", headers=headers,
-            timeout=settings.REQUEST_TIMEOUT_S
-        )
-        channel_info = response.json().get("channels", [])
-
-        if not channel_info:
-            return JsonResponse({"error": "No channels found"})
-
-        channels = []
-        for channel in channel_info:
-            channels.append(
-                {"channel_id": channel.get("id"), "channel_name": channel.get("name")}
-            )
-
-        messages = []
-        for channel in channels:
-            response = requests.get(
-                "https://slack.com/api/conversations.history",
-                headers=headers,
-                params={"channel": channel["channel_id"]},
-                timeout=settings.REQUEST_TIMEOUT_S,
-            )
-            message_list = response.json().get("messages", [])
-
-            for message in message_list:
-                messages.append(
-                    {
-                        "type": "message",
-                        "user": message.get("user"),
-                        "time": message.get("ts"),
-                        "text": message.get("text"),
-                        "channel": channel["channel_name"],
-                    }
-                )
-
-        return JsonResponse({"data": messages})
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)})
 
 #======================================================================================
 # GitHub

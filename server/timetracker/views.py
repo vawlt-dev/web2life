@@ -195,28 +195,6 @@ def delete_project(request):
         return HttpResponse()
 
 ###########################
-##### SLACK FUNCTIONS #####
-###########################
-def slack_connect_oauth(request):
-    slack_session = OAuth2Session(
-        client_id=settings.SLACK_CLIENT_ID,
-        redirect_uri=settings.SLACK_CALLBACK,
-        scope=[
-            "channels:history",
-            "im:history",
-            "channels:read",
-            "im:read",
-            "mpim:history",
-            "groups:history",
-        ],
-    )
-    authorization_url, state = slack_session.authorization_url(
-        "https://slack.com/oauth/v2/authorize"
-    )
-    request.session["slack_state"] = state
-    return redirect(authorization_url)
-
-###########################
 #### SERVER FUNCTIONS #####
 ###########################
 

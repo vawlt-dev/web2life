@@ -224,7 +224,7 @@ export const Toolbar = ({ calendarFunctions, templates }) =>
                     <img src={githubLogo} alt="GitHub" />
                     <label>Continue with GitHub</label>
                 </button>
-                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/oauth/connect/slack")}>
+                <button onClick={() => (window.location.href = "https://127.0.0.1:8000/connect-source/slack")}>
                     <img src={slackLogo} alt="Slack" />
                     <label>Continue with Slack</label>
                 </button>
