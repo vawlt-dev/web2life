@@ -6,7 +6,7 @@
 #settingsModal
 {
     opacity: 0;
-    position: fixed;    
+    position: absolute;    
     display: flex;
     flex-direction: column;
     pointer-events: none;
@@ -14,9 +14,12 @@
 }
 #settingsModal.active
 {
+
     opacity: 1;
     width: 100vw;
-    min-height: 100vh;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
     background-color: var(--primaryColor);
     z-index: 9999;
     pointer-events: all;
@@ -300,7 +303,6 @@
 .repoEntry > button
 {
     width: 50px;
-    height: 20px;
     border: 0;
     padding: 0;
     background-color: rgb(255, 0, 0);
