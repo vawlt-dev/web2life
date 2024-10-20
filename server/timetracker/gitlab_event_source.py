@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 from requests_oauthlib import OAuth2Session
 import requests
+import dateutil
 
 from .event_source import EventSource
 from . import security
@@ -35,7 +36,7 @@ def import_events_from_project(headers, project_id, user):
         events.append(
             {
                 "repo": repo_name,
-                "time": event.get("created_at"),
+                "time": dateutil.parser.isoparse(event.get("created_at")),
                 "message": push_data.get("message"),
             }
         )
@@ -85,5 +86,5 @@ class GitLabEventSource(EventSource):
                 events.extend(import_events_from_project(headers, project, user))
             except Exception as e:
                 print(f"Error importing GitLab events: {e}")
-        translated = event_translation.translate_github_events(events)
+        translated = event_translation.translate_git_events(events)
         return translated

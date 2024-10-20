@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 
 from requests_oauthlib import OAuth2Session
+import dateutil
 
 from .event_source import EventSource
 from . import prefs as user_prefs
@@ -19,7 +20,7 @@ def get_user_events_for_repo(session, user, repo):
             events.append(
                 {
                     "type": "push",
-                    "time": commit["author"]["date"],
+                    "time": dateutil.parser.isoparse(commit["author"]["date"]),
                     "repo": repo,
                     "message": commit["message"],
                 }
@@ -64,5 +65,5 @@ class GithubEventSource(EventSource):
             events.extend(get_user_events_for_repo(github_session, user, repo))
 
         # Translate events
-        translated = event_translation.translate_github_events(events)
+        translated = event_translation.translate_git_events(events)
         return translated

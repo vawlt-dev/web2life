@@ -11,7 +11,6 @@ from requests_oauthlib import OAuth2Session
 
 import slack_sdk
 import slack_sdk.oauth
-import jwt
 
 from .event_source_list import EVENT_SOURCES
 
@@ -31,7 +30,6 @@ def import_events(request, name):
 #======================================================================================
 # Google
 #======================================================================================
-
 def google_callback(request):
     flow = Flow.from_client_config(
         {

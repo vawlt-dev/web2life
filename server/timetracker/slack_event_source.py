@@ -38,10 +38,23 @@ def translate_slack_events(data, user_id):
     for grouped in groups.items():
         chunk = grouped[0]
         group = grouped[1]
+        channel_counts = {}
+        description = ""
+        for msg in group:
+            if msg["channel"] not in channel_counts:
+                channel_counts[msg["channel"]] = 0
+            channel_counts[msg["channel"]] += 1
+        
+        for i in channel_counts.items():
+            channel = i[0]
+            count = i[1]
+            description += f"{count} messages in {channel}\n"
+
         events.append(Events(
-            title=f"Sent {len(group)} messages",
-            start=datetime.datetime.fromtimestamp(chunk * SECONDS_PER_CHUNK),
-            end=datetime.datetime.fromtimestamp((chunk + 1) * SECONDS_PER_CHUNK),
+            title = f"Sent {len(group)} messages",
+            description = description,
+            start = datetime.datetime.fromtimestamp(chunk * SECONDS_PER_CHUNK),
+            end = datetime.datetime.fromtimestamp((chunk + 1) * SECONDS_PER_CHUNK),
         ))
 
     return events

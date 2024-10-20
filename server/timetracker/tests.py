@@ -12,40 +12,47 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
     def test_github_event_translation(self):
         '''Test grouping of Git events'''
         repo_name = "my/repo"
+        other_repo = "other/repo"
         now = datetime.datetime.now().timestamp()
         data = [
             {
                 "repo": repo_name,
-                "time": datetime.datetime.fromtimestamp(now).isoformat(),
+                "time": datetime.datetime.fromtimestamp(now),
                 "message": "Add some stuff to the thing"
             },
             {
                 "repo": repo_name,
-                "time": datetime.datetime.fromtimestamp(now).isoformat(),
+                "time": datetime.datetime.fromtimestamp(now),
                 "message": "Add some stuff to the thing again"
             },
             # Commit without message
             {
-                "repo": repo_name,
-                "time": datetime.datetime.fromtimestamp(now).isoformat(),
+                "repo": other_repo,
+                "time": datetime.datetime.fromtimestamp(now),
             },
 
             # In the next hour
             {
                 "repo": repo_name,
-                "time": datetime.datetime.fromtimestamp(now+3600).isoformat(),
+                "time": datetime.datetime.fromtimestamp(now+3600),
                 "message": "Add some stuff to the thing"
             },
             {
                 "repo": repo_name,
-                "time": datetime.datetime.fromtimestamp(now+3600).isoformat(),
+                "time": datetime.datetime.fromtimestamp(now+3600),
                 "message": "Add some stuff to the thing again"
             },
         ]
-        events = event_translation.translate_github_events(data)
 
-        self.assertEqual(events[0].title, "Pushed 3 commits to my/repo")
-        self.assertEqual(events[1].title, "Pushed 2 commits to my/repo")
+        groups = event_translation.group_git_events(data)
+        # 2 groups for 2 repos
+        self.assertEqual(len(groups), 2)
+        # my/repo events span across 2 hours
+        self.assertEqual(len(groups[repo_name]), 2)
+        # other/repo only has events in one hour
+        self.assertEqual(len(groups[other_repo]), 1)
+
+        print(event_translation.translate_git_events(data))
 
     def test_email_grouping(self):
         '''Test grouping of email events'''
@@ -127,7 +134,7 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
         test_endpoint("/static/this_file_doesnt_exist.js", [404])
         test_endpoint_https("/connect-source/gmail", [200, 302])
         test_endpoint_https("/connect-source/outlook", [200, 302])
-        test_endpoint_https("/oauth/connect/slack", [200, 302])
+        test_endpoint_https("/connect-source/slack", [200, 302])
         test_endpoint_https("/connect-source/github", [200, 302])
         test_endpoint_https("/connect-source/gitlab", [200, 302])
         test_post("/setPreferences/", {"githubusername": "joe"})

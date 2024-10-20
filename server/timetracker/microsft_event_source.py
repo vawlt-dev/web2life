@@ -72,16 +72,6 @@ def get_microsoft_calendar_events(request):
         raise EventSource.ResponseError("Microsoft responded with an error code", 400)
 
     calendar_data = response.json().get("value", [])
-    #calendar_events = [
-    #    {
-    #        "title": event.get("subject", "No title"),
-    #        "start_time": event.get("start", {}).get(
-    #            "dateTime", "Unknown start time"
-    #        ),
-    #        "end_time": event.get("end", {}).get("dateTime", "Unknown end time"),
-    #    }
-    #    for event in calendar_data
-    #]
 
     events = [
         Events(
