@@ -198,7 +198,6 @@ export const AppCalendar =
     {
         setEditModalActive(true);
         let modal = modalRef.current;
-            
         if(args.box)
         {
             //click 
@@ -227,6 +226,21 @@ export const AppCalendar =
             modal.style.top = `${args.bounds.top}px`
             modal.style.left = `${args.bounds.left}px`
         }
+        else
+        {
+            if(args.clientX > main.getBoundingClientRect().width / 2)
+            {
+                args.clientX -= modal.getBoundingClientRect().width;
+            }
+            if(args.clientY > main.getBoundingClientRect().height / 2)
+            {
+                args.clientY -= modal.getBoundingClientRect().height;
+            }
+            //click came from an existing event
+            modal.style.top = `${args.clientY}px`
+            modal.style.left = `${args.clientX}px`
+        }
+        console.log(modal.style)
     } 
     const handleAllDayEvent = (event) => 
     {
@@ -388,7 +402,6 @@ export const AppCalendar =
                 }
             } 
             window.addEventListener('mousedown',l)
-            
             return
         }
 
@@ -406,7 +419,7 @@ export const AppCalendar =
             }
             return notTemporary;
         })
-        openModal(info)
+        openModal(e)
     }
     
     const handleCancel = () =>
@@ -447,7 +460,7 @@ export const AppCalendar =
             console.log(e)
         }
     }
-  /*   let example = 
+   /*   let example = 
     [
         {
             "id":1,

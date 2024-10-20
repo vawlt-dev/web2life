@@ -322,4 +322,5 @@ div[role="button"].event > div[class="rbc-event-content"]
     opacity: 1;
     transition: opacity ease 500ms;
     border: 2px solid var(--borderColor);
+    font-size: 12px;
 }
