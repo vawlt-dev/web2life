@@ -337,6 +337,7 @@ export const Toolbar = ({ calendarFunctions, templates, currentViewEvents }) =>
                         {
                             e.preventDefault();
                             calendarFunctions.loadTemplate(selectTemplateRef.current.value)
+                            loadTemplateModalRef.current.classList.remove(styles.active)
                         }}>Load Template</button>
                     </div>
                 </div>

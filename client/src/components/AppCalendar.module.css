@@ -306,3 +306,20 @@ div[role="button"].event > div[class="rbc-event-content"]
     pointer-events: none;
     cursor:not-allowed;
 }
+#popup
+{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity linear 0ms;
+    padding: 20px;
+    border-radius: 6px;
+}
+#popup.active
+{
+    width: 150px;
+    height: 175px;
+    opacity: 1;
+    transition: opacity ease 500ms;
+    border: 2px solid var(--borderColor);
+}

@@ -414,7 +414,7 @@ def load_template(request):
                         "projectId": event.projectId.id if event.projectId else None,
                     }
                 )
-
+        print(events)
         return JsonResponse({"data": events})
 
     except json.JSONDecodeError:

@@ -76,7 +76,7 @@ export const AppCalendar =
     
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
-
+    const main = document.querySelector('main');
     //key listener for the CTRL key
     useEffect(() =>
     {
@@ -99,9 +99,10 @@ export const AppCalendar =
             }
         }
 
+
         window.addEventListener('keydown', ctrlDown, {capture:true})
         window.addEventListener('keyup', ctrlUp, {capture:true})
-
+        
         return () =>
         {
             window.removeEventListener('keydown', ctrlDown);
@@ -129,6 +130,7 @@ export const AppCalendar =
     const projectAddRef = useRef(null);
     const projectsRef = useRef(null);
     const noProjectsRef = useRef(null);
+    const popupRef = useRef(null);
     
     const handleAddProject = (projects) =>
     {
@@ -195,8 +197,8 @@ export const AppCalendar =
     const openModal = (args) =>
     {
         setEditModalActive(true);
-        let modal = modalRef.current,
-            main = document.querySelector('main');
+        let modal = modalRef.current;
+            
         if(args.box)
         {
             //click 
@@ -226,7 +228,7 @@ export const AppCalendar =
             modal.style.left = `${args.bounds.left}px`
         }
     } 
-   const handleAllDayEvent = (event) => 
+    const handleAllDayEvent = (event) => 
     {
         if (event.allDay) 
         {
@@ -314,7 +316,7 @@ export const AppCalendar =
                 info.event.resourceId,
                 true
             )
-            const data = 
+            const data =
             {
                 title: info.event.title,
                 project: info.event.project,
@@ -322,7 +324,7 @@ export const AppCalendar =
                 start: info.start,
                 end: info.end,
                 allDay: info.event.allDay,
-            }    
+            }
             setEvents((prevEvents) => [...prevEvents, newEvent]);
 
             //prevents 3 temp events spawning and looking gross on calendar
@@ -342,10 +344,53 @@ export const AppCalendar =
         }
     }
 
-    const handleEventClick = (info) =>
+    const handleEventClick = (info, e) =>
     {
+        
         //for now, make imported events unviewable
-        if(info.resourceId !== 'localEvents') return
+        if(info.resourceId !== 'localEvents')
+        {   
+            let labelColour = 'black';
+
+            popupRef.current.style.left = `${e.target.getBoundingClientRect().x + 190}px`
+            if(e.target.getBoundingClientRect().x > (main.getBoundingClientRect().width / 2))
+            {
+                popupRef.current.style.left = `${e.target.getBoundingClientRect().x - 160}px`
+            }
+            popupRef.current.style.top = `${e.target.getBoundingClientRect().y - 45}px`
+            console.log('Color for resourceId:', info.resourceId, colours[info.resourceId]);
+            popupRef.current.style.backgroundColor = colours[info.source]
+            
+            const {r,g,b} = hexToRgb(colours[info.source])
+        
+            if(r > 128 && g > 128 && b > 128)
+            {
+                labelColour = 'black';
+            }
+            else
+            {
+                labelColour = 'white'
+            }
+            popupRef.current.style.color = labelColour;
+            
+            popupRef.current.innerHTML = info.description
+            popupRef.current.classList.add(styles.active);
+            const l = (e) =>
+            {
+                if(popupRef.current)
+                {
+                    if(popupRef.current.classList.contains(styles.active))
+                    {
+                        popupRef.current.classList.remove(styles.active);
+                        popupRef.current.style.top = 0;
+                        popupRef.current.style.left = 0;
+                    }
+                }
+            } 
+            window.addEventListener('mousedown',l)
+            
+            return
+        }
 
         //push the selected event to the back
         let event = events.find(event => event.id === info.id);
@@ -402,7 +447,45 @@ export const AppCalendar =
             console.log(e)
         }
     }
-
+  /*   let example = 
+    [
+        {
+            "id":1,
+            "title":"Test",
+            "start":new Date("2024-10-16 11:15:00"),
+            "end": new Date("2024-10-16 14:00:00"),
+            "allDay":0,
+            "description":"Test 16th",
+            "projectId_id":null
+        },
+        {
+            "id":1,
+            "title":"Test",
+            "start":new Date("2024-10-17 11:15:00"),
+            "end": new Date("2024-10-17 14:00:00"),
+            "allDay":0,
+            "description":"Test 17th",
+            "projectId_id":null
+        },
+        {
+            "id":1,
+            "title":"Test",
+            "start":new Date("2024-10-18 11:15:00"),
+            "end": new Date("2024-10-18 14:00:00"),
+            "allDay":0,
+            "description":"test 18th",
+            "projectId_id":null
+        },
+        {
+            "id":1,
+            "title":"Test",
+            "start":new Date("2024-10-19 11:15:00"),
+            "end": new Date("2024-10-19 14:00:00"),
+            "allDay":0,
+            "description":"",
+            "projectId_id":null
+        },
+    ]; */
     return (
         <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""} ref={modalRef}>
@@ -562,10 +645,10 @@ export const AppCalendar =
                 view={calendarFunctions.view}
                 
                 onSelectSlot={info => handleSelectSlot(info)}
-                onSelectEvent={(info) => { handleEventClick(info)}}
+                onSelectEvent={(info, e) => { handleEventClick(info, e)}}
                 onEventDrop={(info) => handleEventTimeChange(info)}
                 onEventResize={(info) => handleEventTimeChange(info)}
-
+                
                 onDragStart={(e) =>
                 {
                     if(ctrlPressed)
@@ -623,7 +706,6 @@ export const AppCalendar =
                     ]
                     :
                     null
-                    
                 }
                 resourceIdAccessor={(resource) => { return resource.id } }
                 resourceTitleAccessor={(resource) => { return resource.title }}
@@ -647,6 +729,7 @@ export const AppCalendar =
                 onNavigate={(date) => calendarFunctions.setDate(date)}
                 onView={(view) => calendarFunctions.setView(view)}
                 dayLayoutAlgorithm={'overlap'}
+                
                 resizable
                 selectable
                 
@@ -669,8 +752,8 @@ export const AppCalendar =
                     return event.resourceId === "localEvents";
                 }}
                 toolbar={null}
-                popup={true}
             />
+            <div id={styles.popup} ref={popupRef}/>
         </main>
     )
 };
