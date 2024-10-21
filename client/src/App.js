@@ -614,7 +614,7 @@ export const App = () =>
                             could be extended to clear only current view by using a switch on the view - ie
                             view == "week": clear events between range(date.monday, date.sunday), etc                        
                         */
-
+                        
                         //this works for now
                         ...prevEvents.filter(e => !e.templateEvent),
                         ...data.data.map((event) =>

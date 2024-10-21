@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+import datetime as datelib
 
 import pytz
 import django.middleware.csrf
@@ -379,8 +380,7 @@ def load_template(request):
         print(f"Range: {data['range']}")
 
         start_date = datetime.fromisoformat(view_range["start"])
-        start_date = datetime.combine(start_date.date(), datetime.min.time()) + timedelta(days=1)
-        #end_date = datetime.fromisoformat(view_range["end"])
+        start_date = datetime.combine(start_date.date(), datetime.min.time())
 
         print(f"start_date: {start_date}")
 
@@ -404,8 +404,8 @@ def load_template(request):
             start_ts = event.start.timestamp()
             end_ts = event.end.timestamp()
 
-            new_start = datetime.fromtimestamp(start_ts + start_offset)
-            new_end = datetime.fromtimestamp(end_ts + start_offset)
+            new_start = datetime.fromtimestamp(start_ts + start_offset).astimezone(datelib.timezone.utc)
+            new_end = datetime.fromtimestamp(end_ts + start_offset).astimezone(datelib.timezone.utc)
 
             print(new_start)
             print(new_end)
@@ -414,8 +414,8 @@ def load_template(request):
                 {
                     "id": event.id,
                     "title": event.title,
-                    "start": new_start,
-                    "end": new_end,
+                    "start": new_start.isoformat(),
+                    "end": new_end.isoformat(),
                     "description": event.description,
                     "projectId": event.projectId.id if event.projectId else None,
                 }
