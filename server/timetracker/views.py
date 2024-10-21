@@ -321,18 +321,28 @@ def connect_source(request, name):
 def create_template(request):
     try:
         data = json.loads(request.body)
+        print(f"Range: {data['range']}")
         name = data.get("name")
         events = data.get("events")
-        print(events)
+        range = data.get("range")
         template = Template(title=name)
         template.save()
 
+        start_date = datetime.fromisoformat(range["start"])
+        start_date = datetime.combine(start_date.date(), datetime.min.time()) + timedelta(days=1)
+
+        print(f"start_date: {start_date}")
+
         for event in events:
             print(event)
+            e_start = datetime.fromisoformat(event["start"])
+            e_end = datetime.fromisoformat(event["end"])
+            e_seconds = (e_end - e_start).total_seconds()
+            offset = e_start.timestamp() - start_date.timestamp()
             template_event = TemplateEvents(
                 title=event.get("title"),
-                start=event.get("start"),
-                end=event.get("end"),
+                start=datetime.fromtimestamp(offset),
+                end=datetime.fromtimestamp(offset + e_seconds),
                 description=event.get("description"),
                 projectId=event.get("projectId"),
                 templateId=template,
@@ -340,7 +350,6 @@ def create_template(request):
             template_event.save()
 
         return HttpResponse("Template and events created successfully")
-
     except ValueError:
         return HttpResponse("Invalid date format", status=400)
     except Exception as e:
@@ -367,8 +376,13 @@ def load_template(request):
         template_id = data.get("template")
         view_range = data.get("range")
 
+        print(f"Range: {data['range']}")
+
         start_date = datetime.fromisoformat(view_range["start"])
-        end_date = datetime.fromisoformat(view_range["end"])
+        start_date = datetime.combine(start_date.date(), datetime.min.time()) + timedelta(days=1)
+        #end_date = datetime.fromisoformat(view_range["end"])
+
+        print(f"start_date: {start_date}")
 
         try:
             template = Template.objects.get(id=template_id)
@@ -384,37 +398,29 @@ def load_template(request):
 
         events = []
 
+        start_offset = start_date.timestamp()
+
         for event in t_events:
-            days_offset = (
-                event.start.date() - min(t_events, key=lambda e: e.start).start.date()
-            ).days
+            start_ts = event.start.timestamp()
+            end_ts = event.end.timestamp()
 
-            new_start = (start_date + timedelta(days=days_offset)).replace(
-                hour=event.start.hour,
-                minute=event.start.minute,
-                second=event.start.second,
-                microsecond=event.start.microsecond,
+            new_start = datetime.fromtimestamp(start_ts + start_offset)
+            new_end = datetime.fromtimestamp(end_ts + start_offset)
+
+            print(new_start)
+            print(new_end)
+
+            events.append(
+                {
+                    "id": event.id,
+                    "title": event.title,
+                    "start": new_start,
+                    "end": new_end,
+                    "description": event.description,
+                    "projectId": event.projectId.id if event.projectId else None,
+                }
             )
-
-            new_end = (start_date + timedelta(days=days_offset)).replace(
-                hour=event.end.hour,
-                minute=event.end.minute,
-                second=event.end.second,
-                microsecond=event.end.microsecond,
-            )
-
-            if start_date <= new_start <= end_date:
-                events.append(
-                    {
-                        "id": event.id,
-                        "title": event.title,
-                        "start": new_start,
-                        "end": new_end,
-                        "description": event.description,
-                        "projectId": event.projectId.id if event.projectId else None,
-                    }
-                )
-        print(events)
+        print(f"Events generated from template: {events}")
         return JsonResponse({"data": events})
 
     except json.JSONDecodeError:

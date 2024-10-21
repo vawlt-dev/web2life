@@ -557,7 +557,8 @@ export const App = () =>
         const data =
         {
             events: currentViewEvents,
-            name: name
+            name: name,
+            range: viewRange,
         }
         await fetch("/setTemplate/",
         {
