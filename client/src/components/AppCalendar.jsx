@@ -14,7 +14,6 @@ const hexToRgb = (colour) =>
     let b = parseInt(colour.slice(5, 7), 16);
     return { r, g, b };
 }
-
 const createEvent = (id, 
                      title, 
                      start, 
@@ -279,7 +278,7 @@ export const AppCalendar =
 
 
 
-    const handleSubmit = (e) =>
+    const handleSubmit = async (e) =>
     {
         e.preventDefault();
         const formData = new FormData(modalInputRef.current);
@@ -296,16 +295,29 @@ export const AppCalendar =
 
         if(events.length > 0 && ('isTemporary' in events[events.length - 1]))
         {
-            webFunctions.putEvent(data)
+            await webFunctions.putEvent(data).then(res =>
+            {
+                if(!res.ok)
+                {
+                    webFunctions.getEvents();
+                }
+            
+            })
         }
         else
         {
             let event = events.find(e => e.id === events[events.length - 1].id);
-            webFunctions.patchEvent(event, data) 
+            await webFunctions.patchEvent(event, data).then(res =>
+            {
+                if(!res.ok)
+                {
+                    webFunctions.getEvents();
+                }
+            }) 
         }
         setEditModalActive(false)
     }
-    const handleEventTimeChange = (info) =>
+    const handleEventTimeChange = async (info) =>
     {
         let event = events.find(e => e.id === info.event.id);
         const data = 
@@ -343,7 +355,13 @@ export const AppCalendar =
 
             //prevents 3 temp events spawning and looking gross on calendar
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
-            webFunctions.putEvent(data);
+            await webFunctions.putEvent(data).then((res) =>
+            {
+                if(!res.ok)
+                {
+                    webFunctions.getEvents();
+                }
+            })
         }
         else
         {
@@ -354,7 +372,13 @@ export const AppCalendar =
                 return updatedEvents;
             });
             
-            webFunctions.patchEvent(event, data)
+            await webFunctions.patchEvent(event, data).then(res =>
+            {
+                if(!res.ok)
+                {
+                    webFunctions.getEvents();
+                }
+            })
         }
     }
 

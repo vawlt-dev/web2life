@@ -306,17 +306,7 @@ export const App = () =>
                 body: JSON.stringify(event)
             }).then(res =>
             {
-                if(res.ok)
-                {
-                    console.log("Successfully posted data")
-                }
-                else
-                {
-                    console.log("Error with submitting custom event")
-                }
-            }).then(() =>
-            {
-                getEvents()
+                return res;
             })
         } 
         catch (err) 
@@ -335,7 +325,7 @@ export const App = () =>
 
         try 
         {
-            const response = await fetch("patchEvent/", 
+            fetch("patchEvent/", 
             {
                 method: "PATCH",
                 headers: {
@@ -343,27 +333,16 @@ export const App = () =>
                     "X-CSRFToken": CSRFToken,
                 },
                 body: JSON.stringify(data),
+            }).then(res =>
+            {
+                return res;
             });
 
-            if (response.ok) 
-            {
-                console.log("Successfully updated event time");
-            }
-            else 
-            {
-                console.error("Error updating event times, status:", response.status, response.statusText);
-                const errorText = await response.text();
-                console.error("Server response:", errorText);
-            }
         } 
         catch (err) 
         {
-            console.error("Network error or request failed:", err);
+            console.error(err);
         } 
-        finally 
-        {
-            getEvents();
-        }
     };
 
     const deleteEvent = async (update) =>
