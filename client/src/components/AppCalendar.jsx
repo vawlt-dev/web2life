@@ -20,6 +20,7 @@ const createEvent = (id = uuid(),
                      start, 
                      end, 
                      project = null, 
+                     description = "",
                      allDay, 
                      resourceId = 'localEvents', 
                      isTemporary = true
@@ -32,6 +33,7 @@ const createEvent = (id = uuid(),
             start: start,
             end: end,
             project: project,
+            description: description,
             allDay: allDay,
             resourceId: resourceId,
             isTemporary: isTemporary
@@ -124,36 +126,13 @@ export const AppCalendar =
             }
         }
     }, [calendarFunctions.view])
+   
     useEffect(() => 
     {
-        if (selectedEvent && selectedEvent.projectId) 
+        if (selectedEvent) 
         {
-            setSelectedProject(selectedEvent.projectId);
-        } 
-        else if (events.length > 0 && events[events.length - 1].project) 
-        {
-            setSelectedProject(events[events.length - 1].project);
-        } 
-        else 
-        {
-            // no project
-            setSelectedProject(0); 
-        }
-    }, [selectedEvent, events]);
-    useEffect(() => 
-    {
-        if (selectedEvent && selectedEvent.description) 
-        {
-            setSelectedDescription(selectedEvent.description);
-        } 
-        else if (events.length > 0 && events[events.length - 1].description) 
-        {
-            setSelectedDescription(events[events.length - 1].description);
-        } 
-        else 
-        {
-            // no project
-            setSelectedDescription(""); 
+            setSelectedDescription(selectedEvent.description || "");
+            setSelectedProject(selectedEvent.projectId || 0);
         }
     }, [selectedEvent, events]);
 
@@ -215,11 +194,11 @@ export const AppCalendar =
         if(!args.allDay)
         {
             let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
-            event = createEvent(null, "New Event", args.start, args.end, null , timeDiff >= 24, 'localEvents');
+            event = createEvent(null, "New Event", args.start, args.end, null, "", timeDiff >= 24, 'localEvents');
         }
         else
         {
-            event = createEvent(null, "New Event", args.start, args.end, null, false, 'localEvents');
+            event = createEvent(null, "New Event", args.start, args.end,null, "", false, 'localEvents');
                 
         }
             
@@ -286,6 +265,7 @@ export const AppCalendar =
             new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0)),
             //round to next nearest 15 min period and account for hour rollover
             new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 15) * 15, 0, 0) + 15 * 60000), 
+            "",
             null,
             false,
             null,
@@ -360,17 +340,6 @@ export const AppCalendar =
     const handleEventTimeChange = async (info) =>
     {
         let event = events.find(e => e.id === info.event.id);
-        const newEvent = createEvent
-        (
-            null,
-            info.event.title,
-            info.event.start,
-            info.event.end,
-            info.event.project,
-            info.event.allDay,
-            info.event.resourceId,
-            true
-        )
         const data = 
         {
             title: event.title,
@@ -382,29 +351,23 @@ export const AppCalendar =
         }
         if(ctrlPressed)
         {
+            
             //prevents 3 temp events spawning and looking gross on calendar
-            setEvents((prevEvents) => [...prevEvents, newEvent]);
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
             
-            console.log(newEvent)
             await webFunctions.putEvent(data).then((res) =>
             {
-                if(res.ok)
-                {   
-                    setEvents(prevEvents =>
-                        prevEvents.map(event =>
-                            event.isTemporary
-                                ? { ...event, isTemporary: false }
-                                : event
-                        )
-                    );
+                if(!res.id)
+                {
                     webFunctions.getEvents();
                 }
                 else
                 {
-                    webFunctions.getEvents();
+                    const updatedEvent = { ...res, resourceId: 'localEvents' };
+                    setEvents((prevEvents) => [...prevEvents, updatedEvent])
                 }
             })
+        
         }
         else
         {
@@ -485,13 +448,12 @@ export const AppCalendar =
             }
             return notTemporary;
         })
-        setSelectedEvent(event)
+        setSelectedEvent(event);
+        setSelectedDescription(event.description || "");
+        setSelectedProject(event.project || 0);
         openModal(e)
     }
-    useEffect(() =>
-    {
-        console.log(selectedEvent)
-    }, [selectedEvent])
+
     const handleCancel = () =>
     {
         setEditModalActive(false)
@@ -659,9 +621,12 @@ export const AppCalendar =
                             <button id={styles.editModalDelete} onClick={(e) => 
                             {
                                 e.preventDefault()
-                                handleDelete(events[events.length - 1].id)
                                 setEditModalActive(false);
-                                setSelectedEvent(null);
+                                setTimeout(() => 
+                                {
+                                    handleDelete(events[events.length - 1].id)
+                                    setSelectedEvent(null);
+                                }, 300);
                             }}>
                             Delete
                             </button> 
@@ -694,10 +659,10 @@ export const AppCalendar =
                             e.event.title,
                             e.event.start,
                             e.event.end,
+                            e.event.description,
                             e.event.project,
                             e.event.allDay,
                             e.event.resourceId,
-                            false
                         );
                         setEvents((prevEvents) => [...prevEvents, copy])
                     }
