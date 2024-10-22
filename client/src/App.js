@@ -627,7 +627,8 @@ export const App = () =>
                                 ...event,
                                 templateEvent: true,
                                 start: startDate, 
-                                end: endDate
+                                end: endDate,
+                                resourceId: "localEvents"
                             };
                         })
                     ]);
