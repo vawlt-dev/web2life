@@ -417,19 +417,18 @@ export const AppCalendar =
 
     const handleEventClick = (info, e) =>
     {
-        
-        //for now, make imported events unviewable
         if(info.resourceId !== 'localEvents')
         {   
             const lineBreaks = info.description.replace(/\n/g, '<br>')
             let labelColour = 'black';
 
-            popupRef.current.style.left = `${e.target.getBoundingClientRect().x + 190}px`
-            if(e.target.getBoundingClientRect().x > (main.getBoundingClientRect().width / 2))
-            {
-                popupRef.current.style.left = `${e.target.getBoundingClientRect().x - 160}px`
+            const rect = e.target.getBoundingClientRect();
+
+            popupRef.current.style.left = `${rect.left + window.scrollX + 190}px`;
+            if (rect.left > (main.getBoundingClientRect().width / 2)) {
+                popupRef.current.style.left = `${rect.left + window.scrollX - 160}px`;
             }
-            popupRef.current.style.top = `${e.target.getBoundingClientRect().y - 45}px`
+            popupRef.current.style.top = `${rect.top + window.scrollY - 45}px`;
             console.log('Color for resourceId:', info.resourceId, colours[info.resourceId]);
             popupRef.current.style.backgroundColor = colours[info.source]
             
