@@ -421,6 +421,7 @@ export const AppCalendar =
         //for now, make imported events unviewable
         if(info.resourceId !== 'localEvents')
         {   
+            const lineBreaks = info.description.replace(/\n/g, '<br>')
             let labelColour = 'black';
 
             popupRef.current.style.left = `${e.target.getBoundingClientRect().x + 190}px`
@@ -444,7 +445,7 @@ export const AppCalendar =
             }
             popupRef.current.style.color = labelColour;
             
-            popupRef.current.innerHTML = info.description
+            popupRef.current.innerHTML = lineBreaks
             popupRef.current.classList.add(styles.active);
             const l = (e) =>
             {
@@ -571,6 +572,15 @@ export const AppCalendar =
             "projectId_id":null
         },
     ]; */
+    useEffect(() =>
+    {
+        events.forEach(event => {
+            if(event.source === "slack")
+            {
+                console.log(event)
+            }
+        })
+    }, [events])
     return (
         <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""} ref={modalRef}>
