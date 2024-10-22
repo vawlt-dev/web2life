@@ -606,32 +606,27 @@ export const App = () =>
                 res.json().then(data => 
                 {
                     console.log(data.data);
-
                     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     console.log("User Time Zone:", userTimeZone);
-
-                    setEvents(prevEvents => 
-                    [
-                        ...prevEvents.filter(e => !e.templateEvent),
-                        ...data.data.map(event => 
-                        {
-                            const utcStartDate = new Date(event.start);
-                            const utcEndDate = new Date(event.end);
-
-                            // need to add the timezone offset bc for some reason it reads it in the local timezone WITHOUT adjusting it
-                            const startDate = new Date(utcStartDate.getTime() - (utcStartDate.getTimezoneOffset() * 60000));
-                            const endDate = new Date(utcEndDate.getTime() - (utcEndDate.getTimezoneOffset() * 60000));
-
-
-                            return {
-                                ...event,
-                                templateEvent: true,
-                                start: startDate, 
+                    data.data.forEach(event =>
+                    {
+                        const utcStartDate = new Date(event.start);
+                        const utcEndDate = new Date(event.end);
+                        // need to add the timezone offset bc for some reason it reads it in the local timezone WITHOUT adjusting it
+                        const startDate = new Date(utcStartDate.getTime() - (utcStartDate.getTimezoneOffset() * 60000));
+                        const endDate = new Date(utcEndDate.getTime() - (utcEndDate.getTimezoneOffset() * 60000));
+                        putEvent(
+                            {
+                                title: event.title,
+                                start: startDate,
                                 end: endDate,
-                                resourceId: "localEvents"
-                            };
-                        })
-                    ]);
+                                description: event.description,
+                                projectId: event.projectId,
+
+                            }
+                        )
+                    })
+                    getEvents()
                     console.log("Loaded template successfully");
                 });
             } 

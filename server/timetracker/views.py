@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+import dateutil.parser
 
 import pytz
 import django.middleware.csrf
@@ -39,36 +40,47 @@ def get_events(request):  # pylint: disable=unused-argument
                 "project_title": event.projectId.title if event.projectId else None,
             }
         )
-        print(event)
     return JsonResponse({"data": events})
 
 
 @require_POST
 def set_event(request):
+    print("In setEvent")
     print(request.body)
     try:
         data = json.loads(request.body)
         project = None
+
+        if data.get("projectId"):
+            try:
+                project = Project.objects.get(id=data["projectId"])
+            except Project.DoesNotExist:
+                print("No project found, defaulting to null")
+        else:
+            print("No project provided, setting project to None")
+
         try:
-            project = Project.objects.get(title=data["project"])
-        except:
-            print("No project found, defaulting to null")
+            start_datetime = dateutil.parser.isoparse(data["start"])
+            end_datetime = dateutil.parser.isoparse(data["end"])
 
-        event = Events(
-            title=data["title"],
-            description=data["description"],
-            start=data["start"],
-            end=data["end"],
-            allDay=True if data["allDay"] == "on" else False,
-            projectId=project,
-        )
+            event = Events(
+                title=data["title"],
+                description=data["description"],
+                start=start_datetime,
+                end=end_datetime,
+                allDay=False,
+                projectId=project,
+            )
+            event.save()
+            print("Event Saved")
+            return HttpResponse("Event saved successfully.")
+        except Exception as e:
+            print("Error saving event:", e)
+            return HttpResponse(f"Error saving event: {e}", status=500)
 
-        event.save()
-        return HttpResponse()
     except Exception as e:
-        print(e)
-        # @TODO: Return error code
-        return HttpResponse()
+        print("Error in request body:", e)
+        return HttpResponse(f"Error processing event: {e}", status=400)
 
 
 def get_event_by_id(request):
@@ -171,7 +183,6 @@ def delete_event(request):
         data = json.loads(request.body)
         event = Events.objects.get(id=data["id"])
         event.delete()
-        print(event)
     except Exception as e:
         print(e)
     return HttpResponse()
@@ -327,7 +338,6 @@ def create_template(request):
         template.save()
 
         for event in events:
-            print(event)
             e_start = datetime.fromisoformat(event["start"])
             e_end = datetime.fromisoformat(event["end"])
             template_event = TemplateEvents(
@@ -338,7 +348,6 @@ def create_template(request):
                 projectId=event.get("projectId"),
                 templateId=template,
             )
-            print(template_event.start)
             template_event.save()
 
         return HttpResponse("Template and events created successfully")
@@ -358,7 +367,6 @@ def get_templates(request):  # pylint: disable=unused-argument
                 "title": template.title,
             }
         )
-    print(templates)
     return JsonResponse({"data": templates})
 
 
