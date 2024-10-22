@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Calendar, Views} from 'react-big-calendar'
+import {v6 as uuid} from 'uuid'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
@@ -14,7 +15,7 @@ const hexToRgb = (colour) =>
     let b = parseInt(colour.slice(5, 7), 16);
     return { r, g, b };
 }
-const createEvent = (id, 
+const createEvent = (id = uuid(), 
                      title, 
                      start, 
                      end, 
@@ -291,32 +292,52 @@ export const AppCalendar =
             start: new Date(formData.get('start')),
             end: new Date(formData.get('end')),
             allDay: formData.get('allDay'),
-        }        
+        };
 
-        if(events.length > 0 && ('isTemporary' in events[events.length - 1]))
+        if (events.length > 0 && ('isTemporary' in events[events.length - 1]))
         {
             await webFunctions.putEvent(data).then(res =>
             {
-                if(!res.ok)
+                if (res)
+                {
+                    res.resourceId = 'localEvents';
+                    setEvents(prevEvents => 
+                    [
+                        ...prevEvents.filter(event => !event.isTemporary),
+                        res
+                    ]);
+                }
+                else
                 {
                     webFunctions.getEvents();
                 }
-            
-            })
+            });
         }
         else
         {
             let event = events.find(e => e.id === events[events.length - 1].id);
             await webFunctions.patchEvent(event, data).then(res =>
             {
-                if(!res.ok)
+                if (!res.ok)
                 {
                     webFunctions.getEvents();
                 }
-            }) 
+                else
+                {
+                    setEvents(prevEvents =>
+                        prevEvents.map(e =>
+                            e.id === event.id
+                                ? { ...e, ...data }
+                                : e
+                        )
+                    );
+                }
+            });
+            console.log("ELSE")
         }
-        setEditModalActive(false)
-    }
+
+        setEditModalActive(false);
+    };
     const handleEventTimeChange = async (info) =>
     {
         let event = events.find(e => e.id === info.event.id);
@@ -357,10 +378,22 @@ export const AppCalendar =
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
             await webFunctions.putEvent(data).then((res) =>
             {
-                if(!res.ok)
-                {
-                    webFunctions.getEvents();
-                }
+                if(res.ok)
+            {
+                // On successful put, remove the isTemporary flag
+                setEvents(prevEvents =>
+                    prevEvents.map(event =>
+                        event.isTemporary
+                            ? { ...event, isTemporary: false }
+                            : event
+                    )
+                );
+                webFunctions.getEvents();
+            }
+            else
+            {
+                webFunctions.getEvents();
+            }
             })
         }
         else
@@ -483,6 +516,21 @@ export const AppCalendar =
         {
             console.log(e)
         }
+    }
+    const handleDelete = async (id) =>
+    {
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== id))
+        await webFunctions.deleteEvent(id).then(res =>
+        {
+            if(!res.ok)
+            {
+                webFunctions.getEvents();
+            }
+            else
+            {
+                console.log("Event deleted successfully")
+            }
+        })
     }
    /*   let example = 
     [
@@ -618,38 +666,7 @@ export const AppCalendar =
                         />
 
                     </div>
-                    <div>
-                        <label htmlFor='allDay'>All Day Event</label>
-                        <input 
-                            type='checkbox' 
-                            checked=
-                            {
-                                events[events.length - 1] ? 
-                                    events[events.length - 1].allDay ? 
-                                    true : 
-                                    false 
-                                : false
-                            } 
-                            id='allDay'
-                            name='allDay'
-                            onChange={(e) => 
-                            {
-                                setEvents(prevEvents => 
-                                {
-                                    const events = [...prevEvents];
-                                    if(events.length > 0)
-                                    {
-                                        events[events.length - 1] = 
-                                        {
-                                            ...events[events.length - 1],
-                                            allDay: e.target.checked
-                                        }
-                                    }
-                                    return events;
-                                }); 
-                            }}
-                        />
-                    </div>
+                    
                     <div>
                         <label htmlFor='description'>Description</label>
                         <textarea id='description' name='description' maxLength={500}/>
@@ -661,7 +678,7 @@ export const AppCalendar =
                             <button id={styles.editModalDelete} onClick={(e) => 
                             {
                                 e.preventDefault()
-                                webFunctions.deleteEvent(events[events.length - 1].id)
+                                handleDelete(events[events.length - 1].id)
                                 setEditModalActive(false)
                             }}>
                             Delete

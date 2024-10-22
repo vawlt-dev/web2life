@@ -72,8 +72,18 @@ def set_event(request):
                 projectId=project,
             )
             event.save()
-            print("Event Saved")
-            return HttpResponse("Event saved successfully.")
+            event_data = {
+                "id": event.id,
+                "title": event.title,
+                "description": event.description,
+                "start": event.start,
+                "end": event.end,
+                "allDay": event.allDay,
+                "projectId": (
+                    event.projectId.id if event.projectId else None
+                ),  # Handle project if present
+            }
+            return JsonResponse(event_data)
         except Exception as e:
             print("Error saving event:", e)
             return HttpResponse(f"Error saving event: {e}", status=500)

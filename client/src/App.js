@@ -296,7 +296,7 @@ export const App = () =>
     {
         try 
         {
-            fetch("/setEvent/",
+            const res = await fetch("/setEvent/",
             {
                 method: "POST", 
                 headers: 
@@ -304,14 +304,19 @@ export const App = () =>
                     'X-CSRFToken': CSRFToken
                 },
                 body: JSON.stringify(event)
-            }).then(res =>
-            {
-                return res;
             })
+            if(!res.ok)
+            {
+                throw new Error(`Error: ${await res.text()}`)
+            }
+            const data = await res.json();
+            data.start = new Date(data.start)
+            data.end = new Date(data.end)
+            return data;
         } 
         catch (err) 
         {
-            console.log(err)            
+            throw err
         }
     }
 
@@ -325,7 +330,7 @@ export const App = () =>
 
         try 
         {
-            fetch("patchEvent/", 
+            const res = await fetch("patchEvent/", 
             {
                 method: "PATCH",
                 headers: {
@@ -333,22 +338,19 @@ export const App = () =>
                     "X-CSRFToken": CSRFToken,
                 },
                 body: JSON.stringify(data),
-            }).then(res =>
-            {
-                return res;
-            });
-
+            })
+            return res;
         } 
         catch (err) 
         {
-            console.error(err);
+            throw err;
         } 
     };
 
     const deleteEvent = async (update) =>
     {
         const data = { id: update }
-        fetch("deleteEvent/",
+        const res = await fetch("deleteEvent/",
         {
             method: "POST",
             headers:
@@ -356,18 +358,8 @@ export const App = () =>
                 'X-CSRFToken': CSRFToken
             },
             body: JSON.stringify(data)
-        }).then(res =>
-        {
-            if(res.ok)
-            {
-                console.log("Successfully deleted event")
-            }
-            else
-            {
-                console.log("Error with deleting event")
-            }
-            getEvents();
         })
+        return res;
     }
 
     //////////////
