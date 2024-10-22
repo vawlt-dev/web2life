@@ -58,6 +58,8 @@ def get_or_add_project_from_name(name):
 
 
 class Template(models.Model):
+    '''Just an ID and name. Template events with their templateID as this
+    template's ID are part of this template.'''
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, default="")
 
@@ -69,6 +71,7 @@ class Template(models.Model):
 
 
 class TemplateEvents(models.Model):
+    '''Events that are part of a template'''
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, default="")
     start = models.DateTimeField(null=True)

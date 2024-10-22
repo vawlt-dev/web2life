@@ -1,14 +1,11 @@
-import requests
 import datetime
 
 import slack_sdk
 import slack_sdk.oauth
-from requests_oauthlib import OAuth2Session
-from .event_source import EventSource
 from django.conf import settings
 from django.shortcuts import redirect
 
-from . import event_translation
+from .event_source import EventSource
 from .models import Events
 
 # How many seconds per group of messages
@@ -44,7 +41,7 @@ def translate_slack_events(data, user_id):
             if msg["channel"] not in channel_counts:
                 channel_counts[msg["channel"]] = 0
             channel_counts[msg["channel"]] += 1
-        
+
         for i in channel_counts.items():
             channel = i[0]
             count = i[1]
@@ -62,7 +59,7 @@ def translate_slack_events(data, user_id):
 class SlackEventSource(EventSource):
     '''Implementation of event source for Slack API'''
     state: slack_sdk.oauth.OAuthStateStore
-    def connect(self, request):
+    def connect(self, request): # pylint: disable=unused-argument
         self.state = slack_sdk.oauth.state_store.FileOAuthStateStore(expiration_seconds=300)
 
         url_gen = slack_sdk.oauth.AuthorizeUrlGenerator(
@@ -77,7 +74,7 @@ class SlackEventSource(EventSource):
             ],
             redirect_uri=settings.SLACK_CALLBACK,
         )
-        
+
         url = url_gen.generate(self.state.issue())
         return redirect(url)
 

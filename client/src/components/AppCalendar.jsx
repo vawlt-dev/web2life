@@ -286,7 +286,7 @@ export const AppCalendar =
         const data = 
         {
             title: formData.get("title"),
-            project: formData.get("project"),
+            project: selectedProject,
             description: formData.get("description"),
             start: new Date(formData.get('start')),
             end: new Date(formData.get('end')),

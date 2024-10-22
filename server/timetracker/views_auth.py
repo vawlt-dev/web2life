@@ -1,7 +1,7 @@
 import json
 
 import requests
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.shortcuts import redirect
@@ -19,7 +19,7 @@ def import_events(request, name):
         source = EVENT_SOURCES[name]
         events = source.import_events(request)
         event_dict = []
-        
+
         for e in events:
             event_dict.append(model_to_dict(e))
 
@@ -153,7 +153,7 @@ def slack_callback(request):
     request.session["slack_user_id"] = user_id
 
     return redirect("/")
-    
+
 
 def slack_scope_callback(request):
     request.session["slack_token"] = request.GET["access_token"]

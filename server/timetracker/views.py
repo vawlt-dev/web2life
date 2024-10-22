@@ -10,15 +10,12 @@ import django.middleware.csrf
 import django.db
 import django.db.models
 import django.db.models.utils
-from django.db.models import Q
 from django.utils._os import safe_join
 from django.views.static import serve
 from django import views
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.conf import settings
-from django.shortcuts import redirect
-from requests_oauthlib import OAuth2Session
 
 from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
@@ -51,7 +48,7 @@ def set_event(request):
         data = json.loads(request.body)
         project = None
 
-        if data.get("project"):
+        if "project" in data:
             try:
                 project = Project.objects.get(id=data["project"])
             except Project.DoesNotExist:
@@ -80,7 +77,7 @@ def set_event(request):
                 "end": event.end,
                 "allDay": event.allDay,
                 "projectId": (
-                    event.projectId.id if event.projectId else None
+                    event.projectId.id if project is not None else None
                 ),  # Handle project if present
             }
             return JsonResponse(event_data)
@@ -378,32 +375,6 @@ def get_templates(request):  # pylint: disable=unused-argument
             }
         )
     return JsonResponse({"data": templates})
-
-
-from datetime import datetime, timedelta
-import pytz
-
-
-from datetime import datetime, timedelta
-import pytz
-
-
-import calendar  # Import the calendar module
-
-
-from datetime import datetime, timedelta
-import pytz
-import calendar
-
-
-from datetime import datetime, timedelta
-import pytz
-import calendar
-
-
-from datetime import datetime, timedelta
-import pytz
-import calendar
 
 
 def load_template(request):

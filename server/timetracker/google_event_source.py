@@ -4,8 +4,6 @@ from datetime import datetime
 
 from django.conf import settings
 from django.shortcuts import redirect
-from django.http import JsonResponse, HttpResponse
-from django.forms.models import model_to_dict
 from googleapiclient.http import BatchHttpRequest
 import googleapiclient.discovery
 from google.oauth2.credentials import Credentials
@@ -132,7 +130,7 @@ def get_google_calendar_events(request):
         client_secret=credentials_info["client_secret"],
         scopes=credentials_info["scopes"],
     )
-    
+
     calendar = googleapiclient.discovery.build("calendar", "v3", credentials=credentials)
     one_month_ago = datetime.now() - timedelta(days=30)
 
@@ -171,13 +169,15 @@ def get_google_calendar_events(request):
     return events
 
 class GoogleCalendarEventSource(EventSource):
-    def connect(self, request):
+    '''EventSource implementation for Google Calendar'''
+    def connect(self, request): # pylint: disable=unused-argument
         return connect_google()
     def import_events(self, request):
         return get_google_calendar_events(request)
 
 class GoogleGMailEventSource(EventSource):
-    def connect(self, request):
-        return connect_google()
+    '''EventSource implementation for Gmail'''
+    def connect(self, request): # pylint: disable=unused-argument
+        return connect_google() 
     def import_events(self, request):
         return get_gmail_messages(request)

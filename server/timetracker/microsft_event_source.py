@@ -89,7 +89,7 @@ class MicrosftOutlookEventSource():
         return connect_microsoft(request)
     def import_events(self, request):
         return get_outlook_messages(request)
-    
+
 class MicrosftCalendarEventSource():
     def connect(self, request):
         return connect_microsoft(request)

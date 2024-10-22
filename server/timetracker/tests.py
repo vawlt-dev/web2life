@@ -2,6 +2,7 @@ import datetime
 import json
 from django.test import TestCase, Client
 from . import event_translation
+from . import models
 
 class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
     def setUp(self):
@@ -150,7 +151,6 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
             "start": now.isoformat(),
             "end": (now + datetime.timedelta(hours=2)).isoformat(),
             "allDay": "off",
-            "project": "My Project",
         }
 
         test_post("/setEvent/", dummy_event)
@@ -169,7 +169,7 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
                 "start": now.isoformat(),
                 "end": (now + datetime.timedelta(hours=2)).isoformat(),
                 "allDay": "off",
-                "project": "My Project",
+                "project": models.get_or_add_project_from_name("My Project").id,
             },
         })
 
