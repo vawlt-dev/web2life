@@ -321,32 +321,24 @@ def connect_source(request, name):
 def create_template(request):
     try:
         data = json.loads(request.body)
-        print(f"Range: {data['range']}")
         name = data.get("name")
         events = data.get("events")
-        range = data.get("range")
         template = Template(title=name)
         template.save()
-
-        start_date = datetime.fromisoformat(range["start"])
-        start_date = datetime.combine(start_date.date(), datetime.min.time()) + timedelta(days=1)
-
-        print(f"start_date: {start_date}")
 
         for event in events:
             print(event)
             e_start = datetime.fromisoformat(event["start"])
             e_end = datetime.fromisoformat(event["end"])
-            e_seconds = (e_end - e_start).total_seconds()
-            offset = e_start.timestamp() - start_date.timestamp()
             template_event = TemplateEvents(
                 title=event.get("title"),
-                start=datetime.fromtimestamp(offset),
-                end=datetime.fromtimestamp(offset + e_seconds),
+                start=datetime.astimezone(e_start, pytz.UTC),
+                end=datetime.astimezone(e_end, pytz.UTC),
                 description=event.get("description"),
                 projectId=event.get("projectId"),
                 templateId=template,
             )
+            print(template_event.start)
             template_event.save()
 
         return HttpResponse("Template and events created successfully")
@@ -370,19 +362,40 @@ def get_templates(request):  # pylint: disable=unused-argument
     return JsonResponse({"data": templates})
 
 
+from datetime import datetime, timedelta
+import pytz
+
+
+from datetime import datetime, timedelta
+import pytz
+
+
+import calendar  # Import the calendar module
+
+
+from datetime import datetime, timedelta
+import pytz
+import calendar
+
+
+from datetime import datetime, timedelta
+import pytz
+import calendar
+
+
+from datetime import datetime, timedelta
+import pytz
+import calendar
+
+
 def load_template(request):
     try:
         data = json.loads(request.body)
         template_id = data.get("template")
         view_range = data.get("range")
 
-        print(f"Range: {data['range']}")
-
-        start_date = datetime.fromisoformat(view_range["start"])
-        start_date = datetime.combine(start_date.date(), datetime.min.time()) + timedelta(days=1)
-        #end_date = datetime.fromisoformat(view_range["end"])
-
-        print(f"start_date: {start_date}")
+        new_start_date = datetime.fromisoformat(view_range.get("start")).date()
+        new_end_date = datetime.fromisoformat(view_range.get("end")).date()
 
         try:
             template = Template.objects.get(id=template_id)
@@ -397,36 +410,53 @@ def load_template(request):
             )
 
         events = []
-
-        start_offset = start_date.timestamp()
-
         for event in t_events:
-            start_ts = event.start.timestamp()
-            end_ts = event.end.timestamp()
+            original_event_start = event.start.date()
+            original_weekday = original_event_start.weekday()
+            new_weekday = new_start_date.weekday()
 
-            new_start = datetime.fromtimestamp(start_ts + start_offset)
-            new_end = datetime.fromtimestamp(end_ts + start_offset)
+            days_to_shift = (original_weekday - new_weekday) % 7
+            event_start_time = event.start.time()
 
-            print(new_start)
-            print(new_end)
+            if (
+                days_to_shift == 0
+                and original_weekday == 6
+                and event_start_time < datetime.strptime("11:00:00", "%H:%M:%S").time()
+            ):
+                days_to_shift = 7
 
-            events.append(
-                {
-                    "id": event.id,
-                    "title": event.title,
-                    "start": new_start,
-                    "end": new_end,
-                    "description": event.description,
-                    "projectId": event.projectId.id if event.projectId else None,
-                }
+            elif days_to_shift == 0 and original_weekday != 6:
+                if event_start_time < datetime.strptime("11:00:00", "%H:%M:%S").time():
+                    days_to_shift = 1
+                else:
+                    days_to_shift = 7
+
+            new_event_start_date = new_start_date + timedelta(days=days_to_shift)
+            new_event_end_date = new_event_start_date + (
+                event.end.date() - original_event_start
             )
-        print(f"Events generated from template: {events}")
+
+            new_event_start = datetime.combine(new_event_start_date, event.start.time())
+            new_event_end = datetime.combine(new_event_end_date, event.end.time())
+
+            if new_start_date <= new_event_start_date <= new_end_date:
+                events.append(
+                    {
+                        "id": event.id,
+                        "title": event.title,
+                        "start": new_event_start.astimezone(pytz.UTC),
+                        "end": new_event_end.astimezone(pytz.UTC),
+                        "description": event.description,
+                        "projectId": event.projectId,
+                    }
+                )
+
         return JsonResponse({"data": events})
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
-        print("Exception occurred: ", str(e))
+        print(f"Exception occurred: {str(e)}")
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 

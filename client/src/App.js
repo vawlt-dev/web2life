@@ -558,7 +558,6 @@ export const App = () =>
         {
             events: currentViewEvents,
             name: name,
-            range: viewRange,
         }
         await fetch("/setTemplate/",
         {
@@ -582,7 +581,7 @@ export const App = () =>
             }
         })
     }
-    const loadTemplate = async (template) =>
+    const loadTemplate = async (template) => 
     {
         const data = 
         {
@@ -591,52 +590,58 @@ export const App = () =>
             "date": date,
             "range": viewRange
         }
-        await fetch("/loadTemplate/",
+
+        await fetch("/loadTemplate/", 
         {
             method: "POST",
-            headers: 
-            {
+            headers: {
                 "Content-Type": 'application/json',
                 "X-CSRFToken": CSRFToken
             },
             body: JSON.stringify(data)
-        }).then(res =>
+        })
+        .then(res => 
         {
-            if(res.ok)
-            {
-                res.json().then(data =>
+            if (res.ok) {
+                res.json().then(data => 
                 {
-                    console.log(data.data)
-                    setEvents(prevEvents =>
-                    [
-                        /*
-                            purge all template events before adding on new ones
-                            could be extended to clear only current view by using a switch on the view - ie
-                            view == "week": clear events between range(date.monday, date.sunday), etc                        
-                        */
+                    console.log(data.data);
 
-                        //this works for now
+                    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    console.log("User Time Zone:", userTimeZone);
+
+                    setEvents(prevEvents => 
+                    [
                         ...prevEvents.filter(e => !e.templateEvent),
-                        ...data.data.map((event) =>
-                        (
-                            {
-                                //convert from utc to local date obj
+                        ...data.data.map(event => 
+                        {
+                            const utcStartDate = new Date(event.start);
+                            const utcEndDate = new Date(event.end);
+
+                            // need to add the timezone offset bc for some reason it reads it in the local timezone WITHOUT adjusting it
+                            const startDate = new Date(utcStartDate.getTime() - (utcStartDate.getTimezoneOffset() * 60000));
+                            const endDate = new Date(utcEndDate.getTime() - (utcEndDate.getTimezoneOffset() * 60000));
+
+
+                            return {
                                 ...event,
                                 templateEvent: true,
-                                start: new Date(event.start),
-                                end: new Date(event.end),
-                            }
-                        ))
-                    ])
-                    console.log("Loaded template successfully")
-                })
-            }
-            else
+                                start: startDate, 
+                                end: endDate
+                            };
+                        })
+                    ]);
+                    console.log("Loaded template successfully");
+                });
+            } 
+            else 
             {
-                console.log("Error loading template")
+                console.log("Error loading template");
             }
-        })
-    }
+        });
+    };
+
+
     const deleteTemplate = async (id) =>
     {
 
