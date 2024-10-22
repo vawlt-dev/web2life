@@ -272,7 +272,6 @@ export const AppCalendar =
     {
         e.preventDefault();
         const formData = new FormData(modalInputRef.current);
-
         const data = 
         {
             title: formData.get("title"),
@@ -282,7 +281,6 @@ export const AppCalendar =
             end: new Date(formData.get('end')),
             allDay: formData.get('allDay'),
         };
-
         if (events.length > 0 && ('isTemporary' in events[events.length - 1]))
         {
             await webFunctions.putEvent(data).then(res =>

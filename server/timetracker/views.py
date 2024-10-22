@@ -65,7 +65,7 @@ def set_event(request):
                 start=start_datetime,
                 end=end_datetime,
                 allDay=False,
-                projectId=int(project),
+                projectId=project,
             )
             event.save()
             event_data = {
@@ -75,7 +75,7 @@ def set_event(request):
                 "start": event.start,
                 "end": event.end,
                 "allDay": event.allDay,
-                "project": int(
+                "project": (
                     event.projectId.id if event.projectId else None
                 ),  # Handle project if present
             }
@@ -131,9 +131,8 @@ def patch_event(request):
         new_event = data["newEvent"]
         new_start = new_event["start"]
         new_end = new_event["end"]
-        new_project = int(new_event["project"])
+        new_project = new_event["project"]
         new_description = new_event["description"]
-
         event.start = new_start
         event.end = new_end
         event.description = new_description
@@ -155,7 +154,7 @@ def patch_event(request):
             "start": event.start,
             "end": event.end,
             "allDay": event.allDay,
-            "project": int(event.projectId.id) if event.projectId else None,
+            "project": event.projectId.id if event.projectId else None,
         }
 
         return JsonResponse(event_data)
