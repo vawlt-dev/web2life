@@ -73,7 +73,9 @@ export const AppCalendar =
         localizer
     }) => 
 {    
-    
+    const [selectedEvent, setSelectedEvent] = useState(false);
+    const [selectedProject, setSelectedProject] = useState(0);
+    const [selectedDescription, setSelectedDescription] = useState("");
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
     const main = document.querySelector('main');
@@ -122,6 +124,38 @@ export const AppCalendar =
             }
         }
     }, [calendarFunctions.view])
+    useEffect(() => 
+    {
+        if (selectedEvent && selectedEvent.projectId) 
+        {
+            setSelectedProject(selectedEvent.projectId);
+        } 
+        else if (events.length > 0 && events[events.length - 1].project) 
+        {
+            setSelectedProject(events[events.length - 1].project);
+        } 
+        else 
+        {
+            // no project
+            setSelectedProject(0); 
+        }
+    }, [selectedEvent, events]);
+    useEffect(() => 
+    {
+        if (selectedEvent && selectedEvent.description) 
+        {
+            setSelectedDescription(selectedEvent.description);
+        } 
+        else if (events.length > 0 && events[events.length - 1].description) 
+        {
+            setSelectedDescription(events[events.length - 1].description);
+        } 
+        else 
+        {
+            // no project
+            setSelectedDescription(""); 
+        }
+    }, [selectedEvent, events]);
 
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
@@ -240,23 +274,8 @@ export const AppCalendar =
             modal.style.top = `${args.clientY}px`
             modal.style.left = `${args.clientX}px`
         }
-        console.log(modal.style)
     } 
-    const handleAllDayEvent = (event) => 
-    {
-        if (event.allDay) 
-        {
-            const start = new Date(event.start);
-            const end = new Date(event.end);
 
-            start.setHours(0, 0, 0, 0);
-            end.setHours(23, 59, 59, 999);
-
-            return { start: start, end: end };
-        }
-
-        return { start: new Date(event.start), end: new Date(event.end) };
-    };
     const handleToolbarEventAdd = () =>
     {
         let event = createEvent
@@ -333,14 +352,25 @@ export const AppCalendar =
                     );
                 }
             });
-            console.log("ELSE")
         }
 
         setEditModalActive(false);
+        setSelectedEvent(null);
     };
     const handleEventTimeChange = async (info) =>
     {
         let event = events.find(e => e.id === info.event.id);
+        const newEvent = createEvent
+        (
+            null,
+            info.event.title,
+            info.event.start,
+            info.event.end,
+            info.event.project,
+            info.event.allDay,
+            info.event.resourceId,
+            true
+        )
         const data = 
         {
             title: event.title,
@@ -352,48 +382,28 @@ export const AppCalendar =
         }
         if(ctrlPressed)
         {
-            const newEvent = createEvent
-            (
-                null,
-                info.event.title,
-                info.event.start,
-                info.event.end,
-                info.event.project,
-                info.event.allDay,
-                info.event.resourceId,
-                true
-            )
-            const data =
-            {
-                title: info.event.title,
-                project: info.event.project,
-                description: info.event.description,
-                start: info.start,
-                end: info.end,
-                allDay: info.event.allDay,
-            }
-            setEvents((prevEvents) => [...prevEvents, newEvent]);
-
             //prevents 3 temp events spawning and looking gross on calendar
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
+            
+            console.log(newEvent)
             await webFunctions.putEvent(data).then((res) =>
             {
                 if(res.ok)
-            {
-                // On successful put, remove the isTemporary flag
-                setEvents(prevEvents =>
-                    prevEvents.map(event =>
-                        event.isTemporary
-                            ? { ...event, isTemporary: false }
-                            : event
-                    )
-                );
-                webFunctions.getEvents();
-            }
-            else
-            {
-                webFunctions.getEvents();
-            }
+                {   
+                    setEvents(prevEvents =>
+                        prevEvents.map(event =>
+                            event.isTemporary
+                                ? { ...event, isTemporary: false }
+                                : event
+                        )
+                    );
+                    webFunctions.getEvents();
+                }
+                else
+                {
+                    webFunctions.getEvents();
+                }
             })
         }
         else
@@ -462,7 +472,6 @@ export const AppCalendar =
             return
         }
 
-        //push the selected event to the back
         let event = events.find(event => event.id === info.id);
         
         setEvents(prevEvents =>
@@ -476,9 +485,13 @@ export const AppCalendar =
             }
             return notTemporary;
         })
+        setSelectedEvent(event)
         openModal(e)
     }
-    
+    useEffect(() =>
+    {
+        console.log(selectedEvent)
+    }, [selectedEvent])
     const handleCancel = () =>
     {
         setEditModalActive(false)
@@ -486,6 +499,7 @@ export const AppCalendar =
         setTimeout(() =>
         {
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
+            setSelectedEvent(null);
         }, 200)
     }
     const handleSelectAdd = (e) =>
@@ -532,54 +546,8 @@ export const AppCalendar =
             }
         })
     }
-   /*   let example = 
-    [
-        {
-            "id":1,
-            "title":"Test",
-            "start":new Date("2024-10-16 11:15:00"),
-            "end": new Date("2024-10-16 14:00:00"),
-            "allDay":0,
-            "description":"Test 16th",
-            "projectId_id":null
-        },
-        {
-            "id":1,
-            "title":"Test",
-            "start":new Date("2024-10-17 11:15:00"),
-            "end": new Date("2024-10-17 14:00:00"),
-            "allDay":0,
-            "description":"Test 17th",
-            "projectId_id":null
-        },
-        {
-            "id":1,
-            "title":"Test",
-            "start":new Date("2024-10-18 11:15:00"),
-            "end": new Date("2024-10-18 14:00:00"),
-            "allDay":0,
-            "description":"test 18th",
-            "projectId_id":null
-        },
-        {
-            "id":1,
-            "title":"Test",
-            "start":new Date("2024-10-19 11:15:00"),
-            "end": new Date("2024-10-19 14:00:00"),
-            "allDay":0,
-            "description":"",
-            "projectId_id":null
-        },
-    ]; */
-    useEffect(() =>
-    {
-        events.forEach(event => {
-            if(event.source === "slack")
-            {
-                console.log(event)
-            }
-        })
-    }, [events])
+
+  
     return (
         <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""} ref={modalRef}>
@@ -618,20 +586,18 @@ export const AppCalendar =
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
                                         <select 
-                                            defaultValue=
-                                            {
-                                                events[events.length - 1] && events[events.length - 1].project ? 
-                                                events[events.length - 1].project : 
-                                                "No Project"
-                                            } 
+                                            value={selectedProject}
                                             name="project" 
                                             ref={selectRef}
+                                            onChange={(e) => setSelectedProject(e.target.value)}
                                         >
                                             <option>No Project</option>
                                             {
                                                 projects.map((project) => 
                                                 (
-                                                    <option key={project.id}>{project.title}</option>
+                                                    <option key={project.id} value={project.id}>
+                                                        {project.title}
+                                                    </option>
                                                 ))
                                             }
                                         </select>
@@ -678,7 +644,13 @@ export const AppCalendar =
                     
                     <div>
                         <label htmlFor='description'>Description</label>
-                        <textarea id='description' name='description' maxLength={500}/>
+                        <textarea 
+                            id='description' 
+                            name='description' 
+                            maxLength={500}
+                            value={selectedDescription}
+                            onChange={(e) => setSelectedDescription(e.target.value)}
+                        />
                     </div>
 
                     <div id={styles.editModalButtonWrap} className={events.length > 0 && 'isTemporary' in events[events.length - 1] ? styles.singleButton : ''}>
@@ -688,7 +660,8 @@ export const AppCalendar =
                             {
                                 e.preventDefault()
                                 handleDelete(events[events.length - 1].id)
-                                setEditModalActive(false)
+                                setEditModalActive(false);
+                                setSelectedEvent(null);
                             }}>
                             Delete
                             </button> 

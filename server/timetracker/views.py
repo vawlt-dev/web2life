@@ -37,7 +37,7 @@ def get_events(request):  # pylint: disable=unused-argument
                 "end": event.end,
                 "allDay": event.allDay,
                 "description": event.description,
-                "project_title": event.projectId.title if event.projectId else None,
+                "project": event.projectId.id if event.projectId else None,
             }
         )
     return JsonResponse({"data": events})
@@ -51,9 +51,9 @@ def set_event(request):
         data = json.loads(request.body)
         project = None
 
-        if data.get("projectId"):
+        if data.get("project"):
             try:
-                project = Project.objects.get(id=data["projectId"])
+                project = Project.objects.get(id=data["project"])
             except Project.DoesNotExist:
                 print("No project found, defaulting to null")
         else:
