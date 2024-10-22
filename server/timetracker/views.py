@@ -42,13 +42,12 @@ def get_events(request):  # pylint: disable=unused-argument
 
 @require_POST
 def set_event(request):
-    print("In setEvent")
     print(request.body)
     try:
         data = json.loads(request.body)
         project = None
 
-        if "project" in data:
+        if data.get("project"):
             try:
                 project = Project.objects.get(id=data["project"])
             except Project.DoesNotExist:
@@ -66,7 +65,7 @@ def set_event(request):
                 start=start_datetime,
                 end=end_datetime,
                 allDay=False,
-                projectId=project,
+                projectId=int(project),
             )
             event.save()
             event_data = {
@@ -76,10 +75,11 @@ def set_event(request):
                 "start": event.start,
                 "end": event.end,
                 "allDay": event.allDay,
-                "projectId": (
-                    event.projectId.id if project is not None else None
+                "project": int(
+                    event.projectId.id if event.projectId else None
                 ),  # Handle project if present
             }
+
             return JsonResponse(event_data)
         except Exception as e:
             print("Error saving event:", e)
@@ -124,23 +124,48 @@ def filter_events(request):
 def patch_event(request):
     try:
         data = json.loads(request.body)
-        event = Events.objects.get(id=data["originalEvent"]["id"])
-        new_event = data["newEvent"]
+        print("Received data:", data)
 
+        event = Events.objects.get(id=data["originalEvent"]["id"])
+
+        new_event = data["newEvent"]
         new_start = new_event["start"]
         new_end = new_event["end"]
-        new_all_day = new_event["allDay"]
+        new_project = int(new_event["project"])
         new_description = new_event["description"]
-        # newProject = data["newEvent"]["project"]
 
         event.start = new_start
         event.end = new_end
-        event.allDay = new_all_day
         event.description = new_description
+
+        if new_project:
+            try:
+                event.projectId = Project.objects.get(id=new_project)
+            except Project.DoesNotExist:
+                return JsonResponse({"error": "Project does not exist"}, status=400)
+        else:
+            event.projectId = None
+
         event.save()
+
+        event_data = {
+            "id": event.id,
+            "title": event.title,
+            "description": event.description,
+            "start": event.start,
+            "end": event.end,
+            "allDay": event.allDay,
+            "project": int(event.projectId.id) if event.projectId else None,
+        }
+
+        return JsonResponse(event_data)
+
+    except Events.DoesNotExist:
+        return JsonResponse({"error": "Event does not exist"}, status=404)
+
     except Exception as e:
-        print(e)
-    return HttpResponse()
+        print("Error:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 # def update_event_times(request):

@@ -75,9 +75,7 @@ export const AppCalendar =
         localizer
     }) => 
 {    
-    const [selectedEvent, setSelectedEvent] = useState(false);
-    const [selectedProject, setSelectedProject] = useState(0);
-    const [selectedDescription, setSelectedDescription] = useState("");
+    const [selectedEvent, setSelectedEvent] = useState({ project: 0, description: "" });
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
     const main = document.querySelector('main');
@@ -127,14 +125,6 @@ export const AppCalendar =
         }
     }, [calendarFunctions.view])
    
-    useEffect(() => 
-    {
-        if (selectedEvent) 
-        {
-            setSelectedDescription(selectedEvent.description || "");
-            setSelectedProject(selectedEvent.projectId || 0);
-        }
-    }, [selectedEvent, events]);
 
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
@@ -286,8 +276,8 @@ export const AppCalendar =
         const data = 
         {
             title: formData.get("title"),
-            project: selectedProject,
-            description: formData.get("description"),
+            project: selectedEvent.project,
+            description: selectedEvent.description,
             start: new Date(formData.get('start')),
             end: new Date(formData.get('end')),
             allDay: formData.get('allDay'),
@@ -335,7 +325,6 @@ export const AppCalendar =
         }
 
         setEditModalActive(false);
-        setSelectedEvent(null);
     };
     const handleEventTimeChange = async (info) =>
     {
@@ -449,8 +438,6 @@ export const AppCalendar =
             return notTemporary;
         })
         setSelectedEvent(event);
-        setSelectedDescription(event.description || "");
-        setSelectedProject(event.project || 0);
         openModal(e)
     }
 
@@ -461,7 +448,6 @@ export const AppCalendar =
         setTimeout(() =>
         {
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
-            setSelectedEvent(null);
         }, 200)
     }
     const handleSelectAdd = (e) =>
@@ -548,10 +534,10 @@ export const AppCalendar =
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
                                         <select 
-                                            value={selectedProject}
+                                            value={selectedEvent.project || 0}
                                             name="project" 
                                             ref={selectRef}
-                                            onChange={(e) => setSelectedProject(e.target.value)}
+                                            onChange={(e) => setSelectedEvent(prevEvent => ({...prevEvent, project: e.target.value}))}
                                         >
                                             <option>No Project</option>
                                             {
@@ -610,8 +596,8 @@ export const AppCalendar =
                             id='description' 
                             name='description' 
                             maxLength={500}
-                            value={selectedDescription}
-                            onChange={(e) => setSelectedDescription(e.target.value)}
+                            value={selectedEvent.description || ""}
+                            onChange={(e) => setSelectedEvent(prevEvent => ({...prevEvent, description:e.target.value}))}
                         />
                     </div>
 
@@ -625,7 +611,6 @@ export const AppCalendar =
                                 setTimeout(() => 
                                 {
                                     handleDelete(events[events.length - 1].id)
-                                    setSelectedEvent(null);
                                 }, 300);
                             }}>
                             Delete
