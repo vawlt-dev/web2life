@@ -75,6 +75,7 @@ export const AppCalendar =
         localizer
     }) => 
 {    
+    const [popupActive, setPopupActive] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState({ project: 0, description: "" });
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
@@ -124,8 +125,17 @@ export const AppCalendar =
             }
         }
     }, [calendarFunctions.view])
-   
+    
+    const handlePopupClick = (e) => 
+    {
+        if (popupActive && popupRef.current && !popupRef.current.contains(e.target)) 
+        {
+            closePopup();
+        }
+    };
 
+    
+    
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
     const selectRef = useRef(null);
@@ -135,6 +145,17 @@ export const AppCalendar =
     const noProjectsRef = useRef(null);
     const popupRef = useRef(null);
     
+     const closePopup = () => 
+     {
+        if (popupRef.current.classList.contains(styles.active)) 
+        {
+            popupRef.current.classList.remove(styles.active);
+            popupRef.current.style.top = 0;
+            popupRef.current.style.left = 0;
+        }
+        setPopupActive(false);
+    };
+
     const handleAddProject = (projects) =>
     {
         if(projects === true)
@@ -172,6 +193,11 @@ export const AppCalendar =
 
     const handleSelectSlot = (args) =>
     {
+        if(popupActive)
+        {
+            closePopup();
+            return;
+        }
         let event = null;
         if(editModalActive)
         {
@@ -377,6 +403,11 @@ export const AppCalendar =
 
     const handleEventClick = (info, e) =>
     {
+        if(popupActive)
+        {
+            closePopup();
+            return;
+        }
         if(info.resourceId !== 'localEvents')
         {   
             const lineBreaks = info.description.replace(/\n/g, '<br>')
@@ -389,9 +420,8 @@ export const AppCalendar =
                 popupRef.current.style.left = `${rect.left + window.scrollX - 160}px`;
             }
             popupRef.current.style.top = `${rect.top + window.scrollY - 45}px`;
-            console.log('Color for resourceId:', info.resourceId, colours[info.resourceId]);
             popupRef.current.style.backgroundColor = colours[info.source]
-            
+                            
             const {r,g,b} = hexToRgb(colours[info.source])
         
             if(r > 128 && g > 128 && b > 128)
@@ -406,19 +436,9 @@ export const AppCalendar =
             
             popupRef.current.innerHTML = lineBreaks
             popupRef.current.classList.add(styles.active);
-            const l = (e) =>
-            {
-                if(popupRef.current)
-                {
-                    if(popupRef.current.classList.contains(styles.active))
-                    {
-                        popupRef.current.classList.remove(styles.active);
-                        popupRef.current.style.top = 0;
-                        popupRef.current.style.left = 0;
-                    }
-                }
-            } 
-            window.addEventListener('mousedown',l)
+            setPopupActive(true)
+            console.log(popupRef)
+            
             return
         }
 
