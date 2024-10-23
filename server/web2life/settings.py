@@ -20,9 +20,7 @@ dotenv.load_dotenv()
 
 REQUEST_TIMEOUT_S = 10
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Google OAuth2.0 configs
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_SECRET = os.getenv("GOOGLE_SECRET")
@@ -150,14 +148,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
+FRONTEND_BUILD_PATH = os.path.join(BASE_DIR, "server", "frontend")
 
-FRONTEND_BUILD_PATH = "../client/build"
-
-PREFS_PATH = f"{FRONTEND_BUILD_PATH}/prefs.json"
-
-STATIC_SOURCE = safe_join(FRONTEND_BUILD_PATH, "static")
-
-STATICFILES_DIRS = [STATIC_SOURCE]
+PREFS_PATH = os.path.join(FRONTEND_BUILD_PATH, "prefs.json")
+print("FRONTEND_BUILD_PATH:", FRONTEND_BUILD_PATH)
+STATICFILES_DIRS = [
+    os.path.join(FRONTEND_BUILD_PATH, "static"),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
