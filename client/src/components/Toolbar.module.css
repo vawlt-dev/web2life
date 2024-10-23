@@ -357,7 +357,8 @@ img
     align-items: center;
     padding: 24px;
     width: 60%;
-    height: 50vh;
+    min-height: 50vh;
+    height: fit-content;
 }
 #hoursBreakdownModal > div > label
 {
