@@ -126,13 +126,6 @@ export const AppCalendar =
         }
     }, [calendarFunctions.view])
     
-    const handlePopupClick = (e) => 
-    {
-        if (popupActive && popupRef.current && !popupRef.current.contains(e.target)) 
-        {
-            closePopup();
-        }
-    };
 
     
     
@@ -193,6 +186,12 @@ export const AppCalendar =
 
     const handleSelectSlot = (args) =>
     {
+        setSelectedEvent(prevEvent => 
+        ({
+            ...prevEvent,  
+            project: 0,
+            description: ""
+        }));
         if(popupActive)
         {
             closePopup();
@@ -347,7 +346,12 @@ export const AppCalendar =
                 }
             });
         }
-
+        setSelectedEvent(prevEvent => 
+        ({
+            ...prevEvent,  
+            project: 0,
+            description: ""
+        }));
         setEditModalActive(false);
     };
     const handleEventTimeChange = async (info) =>

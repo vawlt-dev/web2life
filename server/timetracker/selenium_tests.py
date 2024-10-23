@@ -218,7 +218,9 @@ try:
         )
     )
     edit_modal_save.click()
-
+    time.sleep(3)
+    edit_modal_classes = edit_modal.get_attribute("class")
+    assert not edit_modal_classes.__contains__("active")
     # Event should have saved
     event = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
@@ -227,12 +229,28 @@ try:
     )
 
     assert event is not None, "Event not found"
-
-
 except Exception as e:
     print(f"An error occurred in Test 2, Module 1: {e}")
-# AppCalendar_appCalendarWrap__VIxyo > div.rbc-addons-dnd.rbc-calendar > div > div.rbc-time-content > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)
 print("Test 2: Module 1 complete")
+
+# Module 2: Event Creation from Secondary Menu
+
+try:
+    secondary_menu_add_menu = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "[id*='SecondaryMenu_addEventWrap']")
+        )
+    )
+
+    secondary_menu_add_button = secondary_menu_add_menu.find_element(
+        By.XPATH, ".//div[contains(@id, 'SecondaryMenu_addEventButton')]/button"
+    )
+
+    secondary_menu_add_button.click()
+    edit_modal_name_input.send_keys("Selenium Test 2")
+
+except Exception as e:
+    print(f"An error occurred: {e}")
 time.sleep(10000)
 
 # end tests
