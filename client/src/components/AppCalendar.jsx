@@ -112,7 +112,10 @@ export const AppCalendar =
             window.removeEventListener('keyup', ctrlUp);
         }
     }, [])
-
+    useEffect(() =>
+    {
+        console.log(selectedEvent)
+    }, [selectedEvent])
     //unselectable right column in day view
     useEffect(() =>
     {
@@ -125,9 +128,6 @@ export const AppCalendar =
             }
         }
     }, [calendarFunctions.view])
-    
-
-    
     
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
@@ -559,9 +559,12 @@ export const AppCalendar =
                                             value={selectedEvent.project || 0}
                                             name="project" 
                                             ref={selectRef}
-                                            onChange={(e) => setSelectedEvent(prevEvent => ({...prevEvent, project: e.target.value}))}
+                                            onChange={(e) => setSelectedEvent(prevEvent => ({
+                                                ...prevEvent, 
+                                                project: Number(e.target.value)
+                                            }))}
                                         >
-                                            <option>No Project</option>
+                                            <option value={0}>No Project</option>
                                             {
                                                 projects.map((project) => 
                                                 (
