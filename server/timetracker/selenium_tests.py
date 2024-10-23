@@ -1,5 +1,6 @@
 from pathlib import Path
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -18,6 +19,7 @@ service = Service(executable_path=chrome_path)
 
 driver = webdriver.Chrome(service=service, options=options)
 driver.get("https://127.0.0.1:8000")
+actions = ActionChains(driver)
 
 
 def get_time(view, shift):
@@ -227,7 +229,6 @@ try:
             (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test']")
         )
     )
-
     assert event is not None, "Event not found"
 except Exception as e:
     print(f"An error occurred in Test 2, Module 1: {e}")
@@ -248,10 +249,88 @@ try:
 
     secondary_menu_add_button.click()
     edit_modal_name_input.send_keys("Selenium Test 2")
+    edit_modal_description.send_keys("This is the second Selenium test")
 
+    edit_modal_save.click()
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    assert event is not None, "Event not found"
+
+    event_start_time_str = (
+        event.get_attribute("title").split(" ")[0]
+        + " "
+        + event.get_attribute("title").split(" ")[1]
+    )
+
+    event_start_time = datetime.strptime(event_start_time_str, "%I:%M %p").replace(
+        year=datetime.now().year, month=datetime.now().month, day=datetime.now().day
+    )
+    now = datetime.now()
+    time_difference = abs((now - event_start_time).total_seconds()) / 60
+
+    # time of the new event should be within 15 minutes of the current time
+    assert time_difference <= 15
 except Exception as e:
     print(f"An error occurred: {e}")
-time.sleep(10000)
+
+print("Test 2: Module 2 complete")
+
+# Module 3: Dragging Events
+try:
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    original_title = event.get_attribute("title")
+    resize_anchor = event.find_elements(
+        By.CSS_SELECTOR, ".rbc-addons-dnd-resize-ns-anchor"
+    )
+    actions.click_and_hold(resize_anchor[0]).move_by_offset(0, -100).release().perform()
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    resize_anchor = event.find_elements(
+        By.CSS_SELECTOR, ".rbc-addons-dnd-resize-ns-anchor"
+    )
+    actions.click_and_hold(resize_anchor[1]).move_by_offset(0, 100).release().perform()
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    title = event.get_attribute("title")
+    assert original_title is not title
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    original_title = title
+    actions.click_and_hold(event).move_by_offset(0, -200).release().perform()
+
+    event = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "div[role='button'][title*='Selenium Test 2']")
+        )
+    )
+    title = event.get_attribute("title")
+    assert original_title is not title
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+print("Test 3: Module 1 complete")
+time.sleep(10)
 
 # end tests
 driver.quit()
