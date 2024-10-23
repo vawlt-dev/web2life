@@ -121,6 +121,7 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
                 valid_codes = [200]
             response = self.client.post(uri, json.dumps(data), content_type="application/json")
             assert_response(response, valid_codes)
+            return response
 
         test_endpoint("/")
         test_endpoint("/getEvents/")
@@ -153,7 +154,7 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
             "allDay": "off",
         }
 
-        test_post("/setEvent/", dummy_event)
+        response = test_post("/setEvent/", dummy_event).json()
 
         test_post("/addProject/", {
             "project": "Project added by /addProject/"
@@ -161,7 +162,7 @@ class EventTranslationTest(TestCase): #pylint: disable=missing-class-docstring
 
         test_post("/patchEvent/", {
             "originalEvent": {
-                "id": 0
+                "id": response["id"]
             },
             "newEvent": {
                 "title": "My Event (With Changes)",
