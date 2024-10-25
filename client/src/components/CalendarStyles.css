@@ -4,6 +4,7 @@ main
     transform: translateX( );
     min-height: 10px;
 }
+/* this is the all day indicator */
 .rbc-allday-cell
 {
     display: none;

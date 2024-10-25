@@ -51,7 +51,6 @@ function debounce(callback, delay)
 
 const CustomEvent = (info) =>
 {
-    console.log(info)
     return(
         <div>
             <label className={styles.eventTitle}>{info.title}</label>
@@ -231,10 +230,12 @@ export const AppCalendar =
         if(!args.allDay)
         {
             let timeDiff = (Math.abs(new Date(args.end) - new Date(args.start))) / (1000 * 60 * 60);
-            event = createEvent(null, "New Event", args.start, args.end, null, "", timeDiff >= 24, 'localEvents');
+            event = createEvent(0, "New Event", args.start, args.end, null, "", timeDiff >= 24, 'localEvents');
         }
         else
         {
+            //all day events aren't currently supported - the slot at the top for this was removed for styling
+            //the style to change this back is in the CalendarStyles.css file
             event = createEvent(null, "New Event", args.start, args.end,null, "", false, 'localEvents');
         }
             
@@ -424,9 +425,13 @@ export const AppCalendar =
             })
         }
     }
-
+    useEffect(() =>
+    {
+        console.log(selectedEvent)
+    }, [selectedEvent])
     const handleEventClick = (info, e) =>
     {
+        console.log(info)
         if(popupActive)
         {
             closePopup();
@@ -465,10 +470,15 @@ export const AppCalendar =
 
             return;
         }
-
-        let event = events.find(event => event.id === info.id);
-        setEvents(events.filter(event => !('isTemporary' in event)))
+        console.log("In")
         
+        let event = events.find(event => event.id === info.id);
+        if(event && event.isTemporary && event.id === 0)
+        {
+            return;
+        }
+        setEvents(events.filter(event => !('isTemporary' in event)))
+
         setSelectedEvent(event);
         openModal(e)
     }
