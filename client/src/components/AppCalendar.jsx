@@ -39,6 +39,17 @@ const createEvent = (id,
     }) 
 }
 
+const CustomEvent = (info) =>
+{
+    console.log(info)
+    return(
+        <div>
+            <label className={styles.eventTitle}>{info.title}</label>
+            <section className={styles.eventDescription}>{info.event.description}</section>
+        </div>
+    )
+}
+
 const CustomHeader = (info) =>
 {
     let [date, dayOfWeek] = info.label.split(" ");
@@ -696,6 +707,7 @@ export const AppCalendar =
                 {
                     {
                         header: (info) => CustomHeader(info),
+                        event: (info) => CustomEvent(info)
                         
                     }
                 }

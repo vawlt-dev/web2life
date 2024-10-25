@@ -301,6 +301,14 @@ div[role="button"].event > div[class="rbc-event-content"]
     font-size: 16px;
     padding-top: 6px;
 }
+
+.eventDescription
+{
+    white-space: pre-wrap;
+    font-size: 10px;
+    text-align: left;
+    margin: 6px;
+}
 .noSelect
 {
     pointer-events: none;
