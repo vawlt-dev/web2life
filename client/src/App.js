@@ -609,6 +609,23 @@ export const App = () =>
         })
     }
 
+    const predictDescription = async (title) =>
+    {
+        const token = await getCSRFToken();
+        const response = await fetch("/ai/getPrediction/",
+        {
+            method: "POST",
+            headers:
+            {
+                "X-CSRFToken": token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(title)
+        })
+        
+        const data = await response.json();
+        return data.data;
+    }
     const handleNavigate = (action) =>
     {
         let tempDate = new Date(date);
@@ -705,7 +722,8 @@ export const App = () =>
         putProject,
         patchEvent,
         deleteEvent,
-        deleteProject
+        deleteProject,
+        predictDescription
     }
     let addEventFromSecondaryMenu;
     const calendarFunctions = 

@@ -46,6 +46,8 @@ GITLAB_CLIENT_ID = os.getenv("GITLAB_CLIENT_ID")
 GITLAB_SECRET = os.getenv("GITLAB_SECRET")
 GITLAB_CALLBACK = os.getenv("GITLAB_CALLBACK_URI")
 
+# AI config
+OPENAI_SECRET = os.getenv("OPENAI_SECRET")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

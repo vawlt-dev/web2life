@@ -58,6 +58,8 @@ urlpatterns = [
     # Slack OAuth paths
     path("oauth/callback/slack", views_auth.slack_callback),
     path("oauth/callback/slack_scopes", views_auth.slack_scope_callback),
+    # AI Prediction
+    re_path("ai/getPrediction/", views.get_ai_prediction),
     # Custom event sources
     re_path(r"^connect-source/(?P<name>.*)$", views.connect_source),
     re_path(r"^import-events/(?P<name>.*)$", views_auth.import_events),

@@ -5,8 +5,9 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import "./CalendarStyles.css"
 import styles from "./AppCalendar.module.css"
-const DragAndDropCalendar = withDragAndDrop(Calendar)
 
+
+const DragAndDropCalendar = withDragAndDrop(Calendar)
 const hexToRgb = (colour) =>
 {
     let r = parseInt(colour.slice(1, 3), 16);
@@ -37,6 +38,15 @@ const createEvent = (id,
         resourceId: resourceId,
         isTemporary: isTemporary
     }) 
+}
+function debounce(callback, delay) 
+{
+    let timer;
+    return function (...args) 
+    {
+        clearTimeout(timer);
+        timer = setTimeout(() => callback.apply(this, args), delay);
+    };
 }
 
 const CustomEvent = (info) =>
@@ -137,13 +147,33 @@ export const AppCalendar =
     
     const modalInputRef = useRef(null);
     const modalRef = useRef(null)
+
     const selectRef = useRef(null);
     const projectInputRef = useRef(null);
     const projectAddRef = useRef(null);
     const projectsRef = useRef(null);
     const noProjectsRef = useRef(null);
     const popupRef = useRef(null);
-    
+    const [prediction, setPrediction] = useState(null)
+    const debouncedPrediction = useRef(debounce((value) =>
+    {
+        webFunctions.predictDescription(value).then((res) =>
+        {
+            setPrediction(res)
+        }).catch((err) =>
+        {
+            console.log(err)
+        })
+    }, 2000)).current;
+    useEffect(() =>
+    {
+        console.log(prediction)
+    }, [prediction])
+    const handleTitleChange = (e) =>
+    {
+        const value = e.target.value;
+        debouncedPrediction(value)
+    }
     const closePopup = () => 
     {
         if (popupRef.current.classList.contains(styles.active)) 
@@ -513,17 +543,18 @@ export const AppCalendar =
                 <form id={styles.editModalForm} ref={modalInputRef} onSubmit={handleSubmit}>
                     
                     <input placeholder='Add a title' 
-                           name='title' 
-                           required 
-                           maxLength={50} 
-                           defaultValue=
-                           {
+                            name='title' 
+                            required 
+                            maxLength={50} 
+                            defaultValue=
+                            {
                                 selectedEvent ? 
                                     selectedEvent.title === "New Event" ? 
                                     null : 
                                     selectedEvent.title 
                                 : null
                             }
+                            onChange={(e) => handleTitleChange(e) }
                            />
 
                     <div id={styles.editModalProject} data-testid={'editModal'}>
@@ -605,6 +636,7 @@ export const AppCalendar =
                             name='description' 
                             maxLength={500}
                             value={selectedEvent.description}
+                            placeholder={prediction || ""}
                             onChange={(e) => setSelectedEvent(prevEvent => ({...prevEvent, description:e.target.value}))}
                         />
                     </div>

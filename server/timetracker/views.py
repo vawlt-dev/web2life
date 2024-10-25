@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import dateutil.parser
 
+import openai
 import pytz
 import django.middleware.csrf
 import django.db
@@ -21,6 +22,8 @@ from .event_source_list import EVENT_SOURCES
 from . import prefs as user_prefs
 from .models import Events, TemplateEvents, Template
 from .models import Project
+
+openai.api_key = settings.OPENAI_SECRET
 
 
 def get_events(request):  # pylint: disable=unused-argument
@@ -484,6 +487,39 @@ def delete_template(request):
         )
     except Exception as e:
         return JsonResponse({"error": str(e)})
+
+
+def get_ai_prediction(request):
+    description = "No description available"
+    try:
+        data = json.loads(request.body)
+        title = data
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Assume the role of a calendar assistant and "
+                    + f"predict a suitable description for the title '{title}'."
+                    + """
+                        Please be concise and assume the response will be used in a professional setting.
+                        Be as concise and direct as possible.
+                        Use only the available context of the title to generate a response - be factual.
+                        If you don't have enough information to generate a description - simply reply 'Not enough information'.
+                        Be active in your language choice, do not use passive speech like "refers to". Sound human.
+                        Refer to yourself as an individual entity. Don't use the term 'with' or 'us'.
+                        Don't qualify nouns or use unnecessarily decorative adjectives or adverbs.
+                        Use future-tense language such as 'plan for', 'gather', 'arrange' and 'discuss'.
+                        """,
+                }
+            ],
+        )
+        description = response.choices[0].message.content
+    except Exception as e:
+        print(f"Error in OpenAI API request: {e}")
+        description = "Error retrieving prediction"
+
+    return JsonResponse({"data": description})
 
 
 # not needed currently, hours sorted by frontend
