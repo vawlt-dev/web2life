@@ -16,18 +16,13 @@ export const App = () =>
     {
         week:
         {
+            //sets the starting date to monday for the calendar
             dow: 1,
         }
     })
     const localizer = momentLocalizer(moment)
     const [breakTime, setBreakTime] = useState(null);    
     const [CSRFToken, setCSRFToken] = useState(null)
-    const [initialLoad, setInitialLoad] = useState(true);
-    const [progress, setProgress] = useState(
-    {
-        loading: true,
-        percent: 0,
-    });
 
     const [colours, setColours] = useState
     (
@@ -97,9 +92,9 @@ export const App = () =>
     ////////////
     const getEvents = async () => 
     {
-        try {
-            setProgress({ loading: true, percent: 0 });
-
+        try 
+        {
+            //using allSettled bc we don't expect all promises to resolve
             const results = await Promise.allSettled([
                 fetch("/getEvents").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/import-events/google_calendar").then((res) => (res.ok ? res.json() : [])),
@@ -110,8 +105,6 @@ export const App = () =>
                 fetch("https://127.0.0.1:8000/import-events/gitlab").then((res) => (res.ok ? res.json() : [])),
                 fetch("https://127.0.0.1:8000/import-events/slack").then((res) => (res.ok ? res.json() : [])),
             ]);
-
-            setProgress({ loading: true, percent: 50 });
 
             const localEvents = results[0].status === "fulfilled" ? results[0].value?.data || [] : [];
             const googleCalendarEvents = results[1].status === "fulfilled" ? results[1].value?.data || [] : [];
@@ -128,80 +121,37 @@ export const App = () =>
                 end: event.end instanceof Date ? event.end : new Date(event.end),
             });
             
-            setEvents([
-                ...localEvents.map((event) => normalizeEventDates({
+            //helper function to add options onto each array
+            const mapEvents = (events, options) =>
+            {
+                return events.map((event) => normalizeEventDates({
                     ...event,
-                    resourceId: "localEvents",
-                })),
-                ...googleCalendarEvents.map((event) => normalizeEventDates({
-                    ...event,
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    resourceId: "importedEvents",
-                    source: "google",
-                })),
-                ...microsoftCalendarEvents.map((event) => normalizeEventDates({
-                    ...event,
-                    start: new Date(event.start_time),
-                    end: new Date(event.end_time),
-                    resourceId: "importedEvents",
-                    source: "microsoft",
-                })),
-                ...outlookNotifications.map((event) => normalizeEventDates({
-                    ...event,
-                    title: "Outlook Notification",
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    resourceId: "importedEvents",
-                    source: "microsoft",
-                })),
-                ...gitlabNotifications.map((event) => normalizeEventDates({
-                    ...event,
-                    //title: "Gitlab Notification",
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    resourceId: "importedEvents",
-                    source: "gitlab",
-                })),
-                ...slackNotifications.map((event) => normalizeEventDates({
-                    ...event,
-                    //title: "Slack Notification",
-                    //start: new Date(Math.floor(parseFloat(event.time)) * 1000),
-                    //end: new Date(Math.floor(parseFloat(event.time)) * 1000 + 3600000),
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    resourceId: "importedEvents",
-                    source: "slack",
-                })),
-                ...githubNotifications.map((event) => normalizeEventDates({
-                    ...event,
-                    //title: "Github Notification",
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    resourceId: "importedEvents",
-                    source: "github",
-                })),
-                ...gmailNotifications.map((event) => normalizeEventDates({
-                    ...event,
-                    //title: "Google Notification",
-                    //start: new Date(notification.date),
-                    //end: new Date(new Date(notification.date).getTime() + 3600000),
-                    resourceId: "importedEvents",
-                    source: "google",
-                })),
-            ]);
+                    start: event.start ? new Date(event.start) : new Date(event.start_time),
+                    end: event.end ? new Date(event.end) : new Date(event.end_time),
+                    ...options
+                }));
+            };
 
-            setProgress({ loading: false, percent: 100 });
-            setInitialLoad(false);
+            setEvents([
+                ...mapEvents(localEvents, { resourceId: "localEvents" }),
+                ...mapEvents(googleCalendarEvents, { resourceId: "importedEvents", source: "google"}),
+                ...mapEvents(microsoftCalendarEvents, { resourceId: "importedEvents", source: "microsoft"}),
+                ...mapEvents(outlookNotifications, { title: "Outlook Notification", resourceId: "importedEvents", source: "microsoft"}),
+                ...mapEvents(gitlabNotifications, { resourceId: "importedEvents", source: "gitlab"}),
+                ...mapEvents(githubNotifications, { resourceId: "importedEvents", source: "github"}),
+                ...mapEvents(slackNotifications, { resourceId: "importedEvents", source: "slack"}),
+                ...mapEvents(gmailNotifications, { resourceId: "importedEvents", source: "google"}),
+            ]);
         } 
         catch (e) 
         {
             console.log(e);
         }
     };
+
+    //hour calculations
     useEffect(() => 
     {
-        //hour calculations
         if (events.length === 0) return;
 
         let start, end;
@@ -238,11 +188,8 @@ export const App = () =>
             default:
                 return;
         }
-        setViewRange(
-        {
-            start: start, 
-            end: end
-        })
+        setViewRange({ start, end })
+
         const filteredEvents = events.filter((event) => 
         {
             const eventStart = new Date(event.start);
@@ -256,8 +203,23 @@ export const App = () =>
             return;
         }
 
-        const sorted = filteredEvents
-            .map((event) => ({
+        //filter out breaks
+        const filterBreaks = filteredEvents.filter((event) => 
+        {
+            if (!breakTime) return true;
+
+            if (event.start <= breakTime.start || event.end >= breakTime.end) 
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+        //handle overlapping events so we don't double count the time
+        const sorted = filterBreaks
+            .map((event) => (
+            {
                 start: new Date(event.start),
                 end: new Date(event.end),
             }))
@@ -289,11 +251,13 @@ export const App = () =>
         }, 0);
 
         setHours((totalMinutes / 60).toFixed(2));
-    }, [events, view, date]);
+    }, [events, view, date, breakTime]);
 
 
     const putEvent = async (event) =>
     {
+        // we return the resolve bc we want the state of the calendar to act responsively
+        // we only call getEvents as a calendar state reset if an error is thrown
         try 
         {
             const res = await fetch("/setEvent/",
@@ -312,7 +276,6 @@ export const App = () =>
             const data = await res.json();
             data.start = new Date(data.start)
             data.end = new Date(data.end)
-            console.log(data)
             return data;
         } 
         catch (err) 
@@ -328,7 +291,6 @@ export const App = () =>
             originalEvent: originalEvent,
             newEvent: newEvent,
         };
-
         try 
         {
             const res = await fetch("patchEvent/", 
@@ -366,7 +328,6 @@ export const App = () =>
     //////////////
     // PROJECTS //
     //////////////
-    
   
     const getProjects = () =>
     {
@@ -410,7 +371,6 @@ export const App = () =>
             getProjects();
         })
     }
-
 
     const deleteProject = async(update) =>
     {
@@ -513,7 +473,6 @@ export const App = () =>
                     getPreferences();
                 } 
             })
-            
         } 
         catch (err) 
         {
@@ -609,11 +568,8 @@ export const App = () =>
         });
     };
 
-
     const deleteTemplate = async (id) =>
     {
-
-        console.log(JSON.stringify({"template": id}))
         await fetch("/deleteTemplate",
         {
             method: "DELETE",
@@ -652,10 +608,7 @@ export const App = () =>
             }
         })
     }
-    useEffect(() =>
-    {
-        console.log(templates)
-    }, [templates])
+
     const handleNavigate = (action) =>
     {
         let tempDate = new Date(date);
@@ -711,6 +664,7 @@ export const App = () =>
                 break;
             }
         }
+        //animation for calendar when a nav button is pressed
         main.animate(
             [
                 {
@@ -729,11 +683,9 @@ export const App = () =>
             [
                 {
                     opacity: 0.5
-
                 },
                 {
                     opacity: 1
-
                 }
             ],
             {
@@ -806,6 +758,7 @@ export const App = () =>
             console.error("Error fetching CSRF token:", error);
         }
     };
+
     //ON PAGE LOAD FUNCTION
     useEffect(() =>
     {
@@ -888,6 +841,5 @@ export const App = () =>
             </div>
             <Footer/>
         </div>
-    
     );
 }

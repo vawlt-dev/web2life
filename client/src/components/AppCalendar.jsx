@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Calendar, Views} from 'react-big-calendar'
-import {v6 as uuid} from 'uuid'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
@@ -15,7 +14,7 @@ const hexToRgb = (colour) =>
     let b = parseInt(colour.slice(5, 7), 16);
     return { r, g, b };
 }
-const createEvent = (id = uuid(), 
+const createEvent = (id, 
                      title, 
                      start, 
                      end, 
@@ -27,18 +26,17 @@ const createEvent = (id = uuid(),
                     ) =>
 {
     return (
-        {
-            id: id,
-            title: title,
-            start: start,
-            end: end,
-            project: project,
-            description: description,
-            allDay: allDay,
-            resourceId: resourceId,
-            isTemporary: isTemporary
-        }
-    ) 
+    {
+        id: id,
+        title: title,
+        start: start,
+        end: end,
+        project: project,
+        description: description,
+        allDay: allDay,
+        resourceId: resourceId,
+        isTemporary: isTemporary
+    }) 
 }
 
 const CustomHeader = (info) =>
@@ -80,6 +78,7 @@ export const AppCalendar =
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
     const main = document.querySelector('main');
+    
     //key listener for the CTRL key
     useEffect(() =>
     {
@@ -102,7 +101,6 @@ export const AppCalendar =
             }
         }
 
-
         window.addEventListener('keydown', ctrlDown, {capture:true})
         window.addEventListener('keyup', ctrlUp, {capture:true})
         
@@ -112,10 +110,7 @@ export const AppCalendar =
             window.removeEventListener('keyup', ctrlUp);
         }
     }, [])
-    useEffect(() =>
-    {
-        console.log(selectedEvent)
-    }, [selectedEvent])
+    
     //unselectable right column in day view
     useEffect(() =>
     {
@@ -138,8 +133,8 @@ export const AppCalendar =
     const noProjectsRef = useRef(null);
     const popupRef = useRef(null);
     
-     const closePopup = () => 
-     {
+    const closePopup = () => 
+    {
         if (popupRef.current.classList.contains(styles.active)) 
         {
             popupRef.current.classList.remove(styles.active);
@@ -177,6 +172,7 @@ export const AppCalendar =
     
     useEffect(() =>
     {
+        //clears the input for the title input when the edit modal closes
         if(!editModalActive && modalInputRef)
         {
             modalInputRef.current.reset();
@@ -192,17 +188,19 @@ export const AppCalendar =
             project: 0,
             description: ""
         }));
+
         if(popupActive)
         {
             closePopup();
             return;
         }
+
         let event = null;
         if(editModalActive)
         {
-            if('isTemporary' in events[events.length - 1])
+            if('isTemporary' in selectedEvent)
             {
-                setEvents(prevEvents => prevEvents.slice(0, -1))
+                setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id))
             }
         } 
 
@@ -214,12 +212,11 @@ export const AppCalendar =
         else
         {
             event = createEvent(null, "New Event", args.start, args.end,null, "", false, 'localEvents');
-                
         }
             
         setEvents(prevEvents => [...prevEvents, event])    
+        setSelectedEvent(event);
         openModal(args) 
-            
     }
 
     const openModal = (args) =>
@@ -287,14 +284,15 @@ export const AppCalendar =
             true,
         )
         setEvents(prevEvents => [...prevEvents, event]);
+        setSelectedEvent(event)
         openModal({ box: { x: 500, y: 300 } })
     }
+    //associate calendarFunctions variable with this function after declaration so we can use it in the toolbar
     calendarFunctions.addEventFromSecondaryMenu = handleToolbarEventAdd;
-
-
 
     const handleSubmit = async (e) =>
     {
+        //stops a page reload
         e.preventDefault();
         const formData = new FormData(modalInputRef.current);
         const data = 
@@ -306,12 +304,14 @@ export const AppCalendar =
             end: new Date(formData.get('end')),
             allDay: formData.get('allDay'),
         };
-        if (events.length > 0 && ('isTemporary' in events[events.length - 1]))
+        if (events.length > 0 && ('isTemporary' in selectedEvent))
         {
+            //user is adding a new event
             await webFunctions.putEvent(data).then(res =>
             {
                 if (res)
                 {
+                    //if the response is good, add the event from the server to the events array and filter out the temporary one
                     res.resourceId = 'localEvents';
                     setEvents(prevEvents => 
                     [
@@ -321,13 +321,15 @@ export const AppCalendar =
                 }
                 else
                 {
+                    //if response is bad, reset calendar
                     webFunctions.getEvents();
                 }
             });
         }
         else
         {
-            let event = events.find(e => e.id === events[events.length - 1].id);
+            //user is updating an existing event
+            let event = events.find(e => e.id === selectedEvent.id);
             await webFunctions.patchEvent(event, data).then(res =>
             {
                 if (!res.ok)
@@ -368,7 +370,7 @@ export const AppCalendar =
         }
         if(ctrlPressed)
         {
-            
+            //issue with calendar state? 3 temporary events spawn when ctrl dragging
             //prevents 3 temp events spawning and looking gross on calendar
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
             
@@ -384,11 +386,11 @@ export const AppCalendar =
                     setEvents((prevEvents) => [...prevEvents, updatedEvent])
                 }
             })
-        
         }
         else
         {
-            setEvents(prevEvents => {
+            setEvents(prevEvents => 
+            {
                 const updatedEvents = prevEvents.map(e => 
                 e.id === event.id ? { ...e, start: info.start, end: info.end } : e
                 );
@@ -414,6 +416,7 @@ export const AppCalendar =
         }
         if(info.resourceId !== 'localEvents')
         {   
+            //adds breaks to notification popups
             const lineBreaks = info.description.replace(/\n/g, '<br>')
             let labelColour = 'black';
 
@@ -441,9 +444,8 @@ export const AppCalendar =
             popupRef.current.innerHTML = lineBreaks
             popupRef.current.classList.add(styles.active);
             setPopupActive(true)
-            console.log(popupRef)
-            
-            return
+
+            return;
         }
 
         let event = events.find(event => event.id === info.id);
@@ -470,7 +472,7 @@ export const AppCalendar =
         setTimeout(() =>
         {
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
-        }, 200)
+        }, 250)
     }
     const handleSelectAdd = (e) =>
     {
@@ -516,8 +518,8 @@ export const AppCalendar =
             }
         })
     }
-
-  
+    
+    //CALENDAR RENDERING
     return (
         <main id={styles.appCalendarWrap}>
             <div id={styles.editModal} className={editModalActive ? styles.active : ""} ref={modalRef}>
@@ -534,10 +536,10 @@ export const AppCalendar =
                            maxLength={50} 
                            defaultValue=
                            {
-                                events[events.length - 1] ? 
-                                    events[events.length - 1].title === "New Event" ? 
+                                selectedEvent ? 
+                                    selectedEvent.title === "New Event" ? 
                                     null : 
-                                    events[events.length - 1].title 
+                                    selectedEvent.title 
                                 : null
                             }
                            />
@@ -595,8 +597,8 @@ export const AppCalendar =
                             name='start'
                             defaultValue=
                             {   
-                                events.length > 0 && events[events.length - 1].start ? 
-                                GMTToISO(events[events.length - 1].start) : 
+                                selectedEvent && selectedEvent.start ? 
+                                GMTToISO(selectedEvent.start) : 
                                 null
                             }
                         />
@@ -607,12 +609,11 @@ export const AppCalendar =
                             name='end'
                             defaultValue=
                             {
-                                events.length > 0 && events[events.length - 1].end ?
-                                GMTToISO(events[events.length - 1].end) :
+                                selectedEvent && selectedEvent.end ?
+                                GMTToISO(selectedEvent.end) :
                                 null
                             }
                         />
-
                     </div>
                     
                     <div>
@@ -626,16 +627,16 @@ export const AppCalendar =
                         />
                     </div>
 
-                    <div id={styles.editModalButtonWrap} className={events.length > 0 && 'isTemporary' in events[events.length - 1] ? styles.singleButton : ''}>
+                    <div id={styles.editModalButtonWrap} className={events.length > 0 && 'isTemporary' in selectedEvent ? styles.singleButton : ''}>
                         {
-                            events.length > 0 && !('isTemporary' in events[events.length - 1]) ? 
+                            events.length > 0 && !('isTemporary' in selectedEvent) ? 
                             <button id={styles.editModalDelete} onClick={(e) => 
                             {
                                 e.preventDefault()
                                 setEditModalActive(false);
                                 setTimeout(() => 
                                 {
-                                    handleDelete(events[events.length - 1].id)
+                                    handleDelete(selectedEvent.id)
                                 }, 300);
                             }}>
                             Delete

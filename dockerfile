@@ -25,4 +25,4 @@ COPY --from=frontend-builder /web2life/client/build /web2life/server/frontend
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver_plus", "0.0.0.0:8000", "--cert-file", "cert.crt"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver_plus 0.0.0.0:8000 --cert-file cert.crt"]

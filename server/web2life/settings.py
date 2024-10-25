@@ -148,19 +148,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"
-# use this for docker
+# disable this is if running locally
 # FRONTEND_BUILD_PATH = os.path.join(BASE_DIR, "server", "frontend")
-# FRONTEND_BUILD_PATH = os.path.join(BASE_DIR, "client", "build")
 # STATICFILES_DIRS = [
-#    os.path.join(FRONTEND_BUILD_PATH, "static"),
+#     os.path.join(FRONTEND_BUILD_PATH, "static"),
 # ]
 
+# Disable this if using docker
+FRONTEND_BUILD_PATH = os.path.join(BASE_DIR, "client", "build")
 STATIC_URL = "/static/"
 FRONTEND_BUILD_PATH = "../client/build"
-PREFS_PATH = f"{FRONTEND_BUILD_PATH}/prefs.json"
 STATIC_SOURCE = safe_join(FRONTEND_BUILD_PATH, "static")
 STATICFILES_DIRS = [STATIC_SOURCE]
 
+PREFS_PATH = f"{FRONTEND_BUILD_PATH}/prefs.json"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
