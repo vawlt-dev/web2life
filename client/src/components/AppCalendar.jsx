@@ -74,7 +74,7 @@ export const AppCalendar =
     }) => 
 {    
     const [popupActive, setPopupActive] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState({ project: 0, description: "" });
+    const [selectedEvent, setSelectedEvent] = useState({ });
     const [editModalActive, setEditModalActive] = useState(false);
     const [ctrlPressed, setCtrlPressed] = useState(false);
     const main = document.querySelector('main');
@@ -170,25 +170,8 @@ export const AppCalendar =
         }
     }
     
-    useEffect(() =>
-    {
-        //clears the input for the title input when the edit modal closes
-        if(!editModalActive && modalInputRef)
-        {
-            modalInputRef.current.reset();
-        }
-    }, [editModalActive])
-    
-
     const handleSelectSlot = (args) =>
     {
-        setSelectedEvent(prevEvent => 
-        ({
-            ...prevEvent,  
-            project: 0,
-            description: ""
-        }));
-
         if(popupActive)
         {
             closePopup();
@@ -348,12 +331,6 @@ export const AppCalendar =
                 }
             });
         }
-        setSelectedEvent(prevEvent => 
-        ({
-            ...prevEvent,  
-            project: 0,
-            description: ""
-        }));
         setEditModalActive(false);
     };
     const handleEventTimeChange = async (info) =>
@@ -449,18 +426,8 @@ export const AppCalendar =
         }
 
         let event = events.find(event => event.id === info.id);
+        setEvents(events.filter(event => !('isTemporary' in event)))
         
-        setEvents(prevEvents =>
-        {
-            //remove all the temporary events
-            const notTemporary = prevEvents.filter(e => !('isTemporary' in e));
-            if(notTemporary[notTemporary.length - 1].id !== event.id)
-            {
-                const filtered = notTemporary.filter(e => e.id !== event.id);
-                return [...filtered,  event]
-            }
-            return notTemporary;
-        })
         setSelectedEvent(event);
         openModal(e)
     }
@@ -474,6 +441,10 @@ export const AppCalendar =
             setEvents((prevEvents) => prevEvents.filter(e => !('isTemporary' in e)))
         }, 250)
     }
+    useEffect(() =>
+    {
+        console.log(selectedEvent)
+    }, [selectedEvent])
     const handleSelectAdd = (e) =>
     {
         e.preventDefault();
@@ -558,7 +529,7 @@ export const AppCalendar =
                                 (
                                     <div id={styles.projectDropDown} className={styles.active} ref={projectsRef}>
                                         <select 
-                                            value={selectedEvent.project || 0}
+                                            value={selectedEvent.project}
                                             name="project" 
                                             ref={selectRef}
                                             onChange={(e) => setSelectedEvent(prevEvent => ({
@@ -622,7 +593,7 @@ export const AppCalendar =
                             id='description' 
                             name='description' 
                             maxLength={500}
-                            value={selectedEvent.description || ""}
+                            value={selectedEvent.description}
                             onChange={(e) => setSelectedEvent(prevEvent => ({...prevEvent, description:e.target.value}))}
                         />
                     </div>
